@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html style="font-size: 37.5px">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport"
+          content="width=device-width,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0,user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes" >
+    <title>行峡网</title>
+    <link rel="shortcut icon" type="image/png" href="static/favicon.png"/>
+    <link rel="stylesheet" type="text/css" href="static/css/reset.css">
+    <link rel="stylesheet" type="text/css" href="static/css/iconfont.css">
+    <style type="text/css">
+      /*修改vux默认样式*/
+      /*用来应对不知道【为什么打包之后会自动添加padding】的问题*/
+      .weui-cell{
+        padding: 0 !important;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <!-- built files will be auto injected -->
+  <script>
+    // 动态修改font-size
+    window.onresize=function () {
+      var clientWidth = document.documentElement.clientWidth
+      document.documentElement.style.fontSize = clientWidth/10 + 'px'
+    }
+  </script>
+  </body>
+</html>
