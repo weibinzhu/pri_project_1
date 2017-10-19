@@ -140,6 +140,70 @@
             invitationNum: 5,
             addedGongli: 500
           },
+          {
+            name: '郑某某',
+            isCertificated: true,
+            avatar: '/static/avatar.png',
+            date: '2016-09-10',
+            invitationNum: 5,
+            addedGongli: 500
+          },
+          {
+            name: '郑某某',
+            isCertificated: true,
+            avatar: '/static/avatar.png',
+            date: '2016-09-10',
+            invitationNum: 5,
+            addedGongli: 500
+          },
+          {
+            name: '郑某某',
+            isCertificated: true,
+            avatar: '/static/avatar.png',
+            date: '2016-09-10',
+            invitationNum: 5,
+            addedGongli: 500
+          },
+          {
+            name: '郑某某',
+            isCertificated: true,
+            avatar: '/static/avatar.png',
+            date: '2016-09-10',
+            invitationNum: 5,
+            addedGongli: 500
+          },
+          {
+            name: '郑某某',
+            isCertificated: true,
+            avatar: '/static/avatar.png',
+            date: '2016-09-10',
+            invitationNum: 5,
+            addedGongli: 500
+          },
+          {
+            name: '郑某某',
+            isCertificated: true,
+            avatar: '/static/avatar.png',
+            date: '2016-09-10',
+            invitationNum: 5,
+            addedGongli: 500
+          },
+          {
+            name: '郑某某',
+            isCertificated: true,
+            avatar: '/static/avatar.png',
+            date: '2016-09-10',
+            invitationNum: 5,
+            addedGongli: 500
+          },
+          {
+            name: '郑某某',
+            isCertificated: true,
+            avatar: '/static/avatar.png',
+            date: '2016-09-10',
+            invitationNum: 5,
+            addedGongli: 500
+          },
         ], // 直接邀请
         firstInvitationList: [
           {
@@ -158,6 +222,7 @@
             invitationNum: 511,
             addedGongli: 500
           },
+
         ], // 一级邀请
         secondInvitationList: [
           {
@@ -179,9 +244,9 @@
         ], // 二级邀请
       }
     },
-    computed:{
-      noInvitation(){
-        return this.directInvitationList.length===0 || this.firstInvitationList.length===0 || this.secondInvitationList.length===0
+    computed: {
+      noInvitation() {
+        return this.directInvitationList.length === 0 || this.firstInvitationList.length === 0 || this.secondInvitationList.length === 0
       }
     },
     methods: {
@@ -221,10 +286,10 @@
       background-position: 0 0
       background-size: 100% px2-2-rem(312)
       .invitationNotice
-        position :absolute
-        color:#00a0e9
-        top:px2-2-rem(-68)
-        right :px2-2-rem(50)
+        position: absolute
+        color: #00a0e9
+        top: px2-2-rem(-68)
+        right: px2-2-rem(50)
       .userBasicInfo
         display: flex
         flex-direction: row
@@ -295,12 +360,15 @@
       border-radius: px2-2-rem(8)
       box-shadow: 0px 2px 5px 0px rgba(229, 229, 229, 1)
       .invitationTabBar
+        position: sticky
+        top:0
         height: px2-2-rem(82)
         display: flex
         flex-direction: row
         align-items: center
         justify-content: space-between
         padding: 0 px2-2-rem(32)
+        background-color :#ffffff
         .invitationTabItem
           box-sizing: border-box
           height: px2-2-rem(82)
@@ -313,7 +381,7 @@
         flex-direction: column
         align-items: center
         .invitationListItem
-          box-sizing :border-box
+          box-sizing: border-box
           display: flex
           flex-direction: row
           align-items: center
@@ -322,7 +390,7 @@
           font-size: px2-2-rem(32)
           color: #353535
           padding: 0 px2-2-rem(32)
-          border-top : 1px solid #e5e5e5
+          border-top: 1px solid #e5e5e5
           img
             width: px2-2-rem(100)
             height: px2-2-rem(100)
@@ -356,8 +424,8 @@
                 font-size: px2-2-rem(26)
             .inviterStatistic
               color: #999999
-              font-size :px2-2-rem(26)
+              font-size: px2-2-rem(26)
               span
                 margin: 0 px2-2-rem(20)
-                color:#e4790f
+                color: #e4790f
 </style>
