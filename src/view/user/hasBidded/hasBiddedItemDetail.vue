@@ -24,55 +24,6 @@
       <div class="detailInfoHeader"><img class="headerImg" src="./write@3x.png"/>服务要求：</div>
       <p class="requirement">{{requirement}}</p>
     </div>
-    <!--<div class="sectionHeader">投标人：</div>-->
-    <!--<div class="bidderListWrapper">-->
-    <!--<div class="noBidder" v-if="bidder.length === 0">-->
-    <!--<img src="./logo@2x.png"/>-->
-    <!--</div>-->
-    <!--<div class="bidder" v-for="(item,index) in bidder" v-if="item.status==2 || taskStatus==6">-->
-    <!--<img class="bidderAvatar" src="./avatar.png"/>-->
-    <!--<div class="bidderInfo">-->
-    <!--<div class="name">-->
-    <!--{{item.name}}-->
-    <!--<div class="tag" v-if="item.isCertificated">已认证</div>-->
-    <!--</div>-->
-    <!--<div class="detail">-->
-    <!--<div class="location">{{item.location}}</div>-->
-    <!--<div class="desc" v-for="(desc,index) in item.desc">-->
-    <!--{{desc}}-->
-    <!--</div>-->
-    <!--</div>-->
-    <!--<div class="score">-->
-    <!--<div class="gongli">功力值：<span>{{item.gongli}}</span></div>-->
-    <!--<div class="times">交易量：<span>{{item.times}}</span></div>-->
-    <!--</div>-->
-    <!--</div>-->
-    <!--&lt;!&ndash;加一层判断，只有在任务管理里面点开才需要这些按钮&ndash;&gt;-->
-    <!--<div class="btnWrapper" v-if="taskStatus != -1">-->
-    <!--<div class="bidderBtnNormal" v-if="item.status == 0">-->
-    <!--<div class="chooseHim">选Ta</div>-->
-    <!--<div class="eliminate">淘汰</div>-->
-    <!--</div>-->
-    <!--<div class="bidderBtnGiveUp" v-else-if="item.status == 1">-->
-    <!--<div class="chooseHim">选Ta</div>-->
-    <!--<div class="giveUp">已放弃</div>-->
-    <!--</div>-->
-    <!--<div class="bidderBtnChosen" v-else>-->
-    <!--<div class="chosen">中标</div>-->
-    <!--</div>-->
-    <!--</div>-->
-    <!--</div>-->
-    <!--</div>-->
-    <!--项目文件柜-->
-    <!--<div class="filesBlockWrapper" v-if="taskStatus == 3 || taskStatus == 4 || taskStatus == 5">-->
-    <!--<div class="filesBlockHeader">项目文件柜</div>-->
-    <!--<div class="filesContent">-->
-    <!--<router-link tag="div" :to="item.url" class="file" v-for="(item,index) in files" :key="index">-->
-    <!--<div class="fileImg">{{item.extension}}</div>-->
-    <!--<div class="fileText">{{item.name}}</div>-->
-    <!--</router-link>-->
-    <!--</div>-->
-    <!--</div>-->
     <!--各种底部功能条-->
     <footer class="taskDetailFooter taskSelected" v-if="taskStatus == 0">
       <div class="contact" @click="toggleWxId"><img src="./service@3x.png"/>联系顾问</div>
@@ -82,18 +33,6 @@
       </div>
       <router-link to="/contract" tag="div" class="viewContractBtn">发起合同</router-link>
     </footer>
-
-    <!--<footer class="taskDetailFooter taskGiveUp" v-if="taskStatus == 1">已放弃</footer>-->
-    <!--<footer class="taskDetailFooter taskManageMoney" v-if="taskStatus == 2">-->
-    <!--<div class="contact" @click="toggleWxId"><img src="./service@3x.png"/>联系顾问</div>-->
-    <!--<router-link to="/applyCheck" tag="div" class="check">验收</router-link>-->
-    <!--<router-link to="/takeCareMoney" tag="div" class="manageMoneyBtn">托管赏金</router-link>-->
-    <!--</footer>-->
-    <!--<footer class="taskDetailFooter taskHasBeenPaid" v-if="taskStatus == 3">-->
-    <!--<div class="contact" @click="toggleWxId"><img src="./service@3x.png"/>联系顾问</div>-->
-    <!--<router-link to="/contract" tag="div" class="viewContractBtn">查看合同</router-link>-->
-    <!--<router-link to="/applyCheck" tag="div" class="check">验收</router-link>-->
-    <!--</footer>-->
     <footer class="taskDetailFooter taskComment" v-if="taskStatus == 1">
       <div class="contact" @click="toggleWxId"><img src="./service@3x.png"/>联系顾问</div>
       <router-link to="/contract" tag="div" class="viewContractBtn">查看合同</router-link>
