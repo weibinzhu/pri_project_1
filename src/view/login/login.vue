@@ -3,13 +3,13 @@
     <img class="loginLogo" src="/static/logo@3x.png"/>
     <div class="inputItem">
       <img src="./mobile@3x.png"/>
-      <input type="text" placeholder="手机号"/>
+      <input type="text" placeholder="手机号" v-model="phoneNum"/>
     </div>
     <div class="inputItem">
       <img src="./lock@3x.png"/>
-      <input type="password" placeholder="密码"/>
+      <input type="password" placeholder="密码" v-model="psw"/>
     </div>
-    <router-link to="/home" tag="div" class="loginBtn">登录<div class="findPsw" @click.stop="findPsw">找回密码</div></router-link>
+    <div @click="login" class="loginBtn">登录<div class="findPsw" @click.stop="findPsw">找回密码</div></div>
     <div class="wxLoginBtn"><img class="wxLogo" src="./wechat@3x.png"/>微信登录</div>
     <footer class="signUpWrapper">
       <p>还没行峡网的账号？</p>
@@ -20,15 +20,40 @@
 
 <script type="text/ecmascript-6">
   export default {
+    name:'login',
     data(){
       return{
-
+        phoneNum:'',// 电话号码
+        psw:'',// 密码
       }
     },
     methods:{
+      login(){
+        // 登录
+        let data = {
+          'phone': this.phoneNum.toString(),
+          'password':this.psw.toString()
+        }
+        this.$http.post(`${this.globalDOMAIN}Employ/Public/login`,data,{emulateJSON: true}).then((response)=>{
+          if (!response.body.status){
+            alert(response.body.msg)
+            return false
+          }else{
+            // alert('登录成功')
+            this.$store.commit('setUserId',{userId:response.body.data.userid})
+            console.log(this.$store.state.userId)
+            this.$router.push({path:'/home'})
+          }
+        })
+      },
       findPsw(){
+        // 找回密码
         this.$router.push({path:'/signUpPhone?type=2'})
-
+      }
+    },
+    computed:{
+      globalDOMAIN(){
+        return this.$store.state.globalDOMAIN
       }
     }
   }

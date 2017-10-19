@@ -26,8 +26,6 @@ const dictionary = {
 Validator.updateDictionary(dictionary);
 // 表单验证配置end
 Vue.use(vueResource);// 使用vue-resource
-
-
 Vue.config.productionTip = false
 
 

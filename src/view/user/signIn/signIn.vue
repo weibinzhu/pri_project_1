@@ -15,7 +15,7 @@
     <div class="progressDesc">
       <div v-for="(item,index) in days" class="progressText">{{index + 1}}</div>
     </div>
-    <div class="signInBtn">
+    <div @click="toSignIn" class="signInBtn">
       签到
     </div>
   </div>
@@ -55,6 +55,13 @@
       let currentLeft = notice.style.left
       let newLeft = (currentLeft.substring(0, 5) / 1) + this.signInDays * 1.36
       notice.style.left = newLeft + 'rem'
+    },
+    methods:{
+      toSignIn(){
+        this.$http.post('http://xingxia.sz.ztbweb.cn/index.php/Employ/User/sign').then((res)=>{
+          console.log(res)
+        })
+      }
     },
     components: {
       'v-header': header

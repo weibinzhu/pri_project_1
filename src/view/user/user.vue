@@ -8,7 +8,7 @@
           <div class="userName">郑某某
             <tag :tagClass="'tagWhite'" :tagName="'审核中'"></tag>
           </div>
-          <div class="userId">ID: 45895</div>
+          <div class="userId">ID: {{userId}}</div>
         </div>
         <div class="userPoint" :style="{'background-image': `url(${userPointUrl})`}">
           <span>功力值 {{gongli}}</span>
@@ -97,6 +97,7 @@
 
 <script type="text/ecmascript-6">
   import Tag from '@/components/tag'
+
   export default {
     data() {
       return {
@@ -130,6 +131,11 @@
               link: '/home/signIn'
             },
             {
+              icon: '/static/user/group@2x.png',
+              text: '我的联盟',
+              link: '/myUnion'
+            },
+            {
               icon: '/static/user/addPeople.png',
               text: '邀请管理',
               link: '/invitationManage'
@@ -159,22 +165,25 @@
         currentUserType: 0,// 当且版本，0为雇主版，1为创客版
         userHeaderBgUrl: '/static/user/bg@3x.png',// 头图地址
         userPointUrl: '/static/user/hot_fill@3x.png',// 功力值背景
-        myUnion: {
-          icon: '/static/user/group@2x.png',
-          text: '我的联盟',
-          link: '/myUnion'
-        },// 【我的联盟】菜单项，只有雇主主页有
         showGetWxModel: false,// 客服弹框显隐
         wxId: '112dw',// 客服微信号
       }
     },
+    computed: {
+      userId() {
+        return this.$store.state.userId
+      },// 用户ID
+      globalDOMAIN() {
+        return this.$store.state.globalDOMAIN
+      },// 请求域名
+    },
     created() {
-      // 一开始如果就是雇主
-      // 后来发现雇主和峡客都需要这个菜单项
-      // 不过还是大致保留这个逻辑，以便以后需要的时候可以用
-      if (this.currentUserType == 0) {
-        this.linklist.sublist_2.splice(2, 0, this.myUnion)
-      }
+//      let data = {
+//        'user_id': this.userId
+//      }
+//      this.$http.get(`${this.globalDOMAIN}Employ/User/getUserInfo`).then((response) => {
+//        console.log(response)
+//      })
     },
     watch: {
       // 监听用户类型变化，改变菜单选项
@@ -239,9 +248,9 @@
         link = this.getDataSet(target, 'url')
         if (link) {
           this.$router.push({path: link})
-        }else{
+        } else {
           // 如果并没有绑定link
-          this.toggleModel('.getWxModel','showGetWxModel')
+          this.toggleModel('.getWxModel', 'showGetWxModel')
         }
       },
       toggleModel(selector, flag) {
@@ -259,7 +268,7 @@
         }
       },
     },
-    components:{
+    components: {
       Tag
     }
   };

@@ -19,7 +19,7 @@
     </div>
     <!--用户协议-->
     <div class="signUpPhoneAgreement">
-      <input id="agreement" name="agreement" type="checkbox"/>
+      <input id="agreement" name="agreement" type="checkbox" v-model="checked"/>
       <label for="agreement" class="agreement">
       </label>
       <a href="http://www.baidu.com">阅读并同意《行峡网平台服务协议》</a>
@@ -35,7 +35,7 @@
   import header from '../../components/v-header/v-header.vue'
 
   export default {
-    name:'signUpPhone',
+    name: 'signUpPhone',
     data() {
       return {
         type: 1,// 页面类型，1代表是手机注册页，2代表是密码重置页
@@ -45,7 +45,13 @@
         correctCode: 11212,// 正确的验证码（前端应该不知道，应由后端判断验证是否成功
         isCodeCorrect: true,// 验证码是否正确，由后端返回
         psw: '',// 密码
-        btnText:'下一步: 选择身份',//按钮提示文字
+        btnText: '下一步: 选择身份',//按钮提示文字
+        checked: false,// checkbox
+      }
+    },
+    computed: {
+      globalDOMAIN() {
+        return this.$store.state.globalDOMAIN
       }
     },
     mounted() {
@@ -59,7 +65,6 @@
     },
     methods: {
       toggleBtn() {
-        // 切换密码显隐
         let passwordInput = document.querySelector('.passwordInput')
         let currentStatus = passwordInput.getAttribute('type')
         if (currentStatus == 'password') {
@@ -69,30 +74,44 @@
           passwordInput.setAttribute('type', 'password')
           this.passwordShow = false
         }
-      },
+      },// 切换密码显隐
       onNextStepBtnClick() {
-        // 点击【下一步】后的判断
-        // 暂时只能用作演示，实际上需要与后端配合，需要进行修改
-        if (!this.phoneNum) {
-          alert('请输入手机号并获取验证码')
+        let that = this
+        if (!this.checked) {
+          alert('若不同意用户协议则不能注册')
           return false
-        } else if (!(this.code == this.correctCode)) { // 只能用双等，输入的是字符串
-          alert(`验证码不正确，（验证码是${this.correctCode}，测试用）`)
-          return false
-        } else if (!this.psw) {
-          alert('请设置密码')
-          return false
-        } else {
-          if(this.type==1){
-            // 如果当前是【手机注册状态】
-            this.$router.push({path: '/selectIdentity'})
-          }else if (this.type == 2){
-            // 如果当前是【密码重置状态】
-            alert('重置成功')
-            this.$router.push({path: '/login'})
-          }
         }
-      }
+        if (this.type == 1) {
+          // 如果当前是【手机注册状态】
+
+          // data
+          let phone, psw, code
+          phone = this.phoneNum.toString()
+          psw = this.psw.toString()
+          code = this.code.toString()
+          let data = {
+            'phone': phone,
+            'password': psw,
+            'smsCode': code
+          }
+
+          // 发送请求
+          this.$http.post(`${this.globalDOMAIN}Employ/Public/register`, data, {emulateJSON: true}).then((response) => {
+            if (!response.body.status) {
+              // 失败的话
+              alert(response.body.msg)
+            } else {
+              // 成功的话给出提示并跳转
+              alert(response.body.msg)
+              this.$router.push({path: '/selectIdentity'})
+            }
+          })
+        } else if (this.type == 2) {
+          // 如果当前是【密码重置状态】
+          alert('重置成功')
+          this.$router.push({path: '/login'})
+        }
+      }// 点击【下一步】后的判断
     },
     components: {
       'v-header': header
@@ -128,16 +147,16 @@
         width: px2-2-rem(38)
         height: px2-2-rem(38)
         margin: 0 px2-2-rem(30)
-      .pswEyeClose,.pswEye
+      .pswEyeClose, .pswEye
         width: px2-2-rem(38)
         height: px2-2-rem(38)
         margin: 0 px2-2-rem(30)
-        background-size :px2-2-rem(72) px2-2-rem(38)
-        background-image :url("./psw_eye.png")
+        background-size: px2-2-rem(72) px2-2-rem(38)
+        background-image: url("./psw_eye.png")
       .pswEyeClose
-        background-position :0 0
+        background-position: 0 0
       .pswEye
-        background-position :px2-2-rem(38) 0
+        background-position: px2-2-rem(38) 0
       input
         flex: 1
       .getCodeBtn
@@ -158,13 +177,13 @@
         display: block
         height: px2-2-rem(30)
         width: px2-2-rem(30)
-        background-image :url("/static/checkbox.png")
-        background-size :px2-2-rem(60) px2-2-rem(30)
+        background-image: url("/static/checkbox.png")
+        background-size: px2-2-rem(60) px2-2-rem(30)
         margin-right: px2-2-rem(20)
       input[type=checkbox]
         display: none
       input[type=checkbox]:checked + .agreement
-        background-position :px2-2-rem(30) 0
+        background-position: px2-2-rem(30) 0
     .nextStepBtn
       width: px2-2-rem(688)
       height: px2-2-rem(86)
