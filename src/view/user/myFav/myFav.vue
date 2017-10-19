@@ -18,7 +18,8 @@
         <img class="avatar" :src="service.avatar"/>
         <div class="serviceInfo">
           <div class="serviceName">{{service.serviceName}}</div>
-          <div class="name">{{service.name}}<span class="certificate" v-if="service.isCertificated">已认证</span></div>
+
+          <div class="name">{{service.name}} <tag v-if="service.isCertificated"></tag></div>
           <div class="descWrapper">
             <span class="desc" v-for="(desc,index) in service.serviceDesc">{{desc}}</span>
           </div>
@@ -27,14 +28,15 @@
       <div class="myFavCompany" v-for="(company,index) in myFavCompany" v-show="activeTab == 2">
         <img class="companyImg" :src="company.avatar"/>
         <div class="companyInfo">
-          <div class="companyName">{{company.name}}<span class="certificate"  v-if="company.isCertificated">已认证</span></div>
+          <div class="companyName">{{company.name}}
+            <tag v-if="company.isCertificated"></tag></div>
           <div class="companyIndustry">{{company.industry}}</div>
         </div>
       </div>
       <div class="myFavXiake" v-for="(xiake,index) in myFavXiake" v-show="activeTab == 3">
         <img class="xiakeImg" :src="xiake.avatar"/>
         <div class="xiakeInfo">
-          <div class="xiakeName">{{xiake.name}}<span class="certificate" v-if="xiake.isCertificated">已认证</span></div>
+          <div class="xiakeName">{{xiake.name}}<tag v-if="xiake.isCertificated"></tag></div>
           <div class="descWrapper">
             <span class="desc" v-for="(desc,index) in xiake.desc">{{desc}}</span>
           </div>
@@ -53,7 +55,7 @@
 
 <script type="text/ecmascript-6">
   import header from '@/components/v-header/v-header'
-
+  import Tag from '@/components/tag'
   export default {
     data() {
       return {
@@ -141,6 +143,7 @@
       }
     },
     components: {
+      Tag,
       'v-header': header
     },
     methods: {
@@ -282,16 +285,4 @@
       margin-left: 0.3rem
     .desc:last-child:after
       content: ''
-      // 已认证标签
-  .certificate
-    display: inline-block
-    height: 0.3514rem
-    width: 1.216rem
-    line-height: 0.3514rem
-    border: 1px solid #00a0e9
-    border-radius: 5px
-    color: #00a0e9
-    font-size: 0.2703rem
-    text-align: center
-    margin-left: 0.2703rem
 </style>

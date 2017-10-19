@@ -35,7 +35,8 @@
         </p>
         <div class="proNameWrapper">
           <div class="proName">{{item.name}}</div>
-          <div class="proCertificated" v-if="item.isCertificated">已认证</div>
+          <tag v-if="item.isCertificated"></tag>
+          <!--<div class="proCertificated" v-if="item.isCertificated">已认证</div>-->
         </div>
       </div>
       <!--</div>-->
@@ -74,7 +75,8 @@
         <div class="serviceDetail">
           <div class="nameWrapper">
             <div class="name">{{item.name}}</div>
-            <div class="certificated">已认证</div>
+            <tag v-if="item.isCertificated"></tag>
+            <!--<div class="certificated">已认证</div>-->
           </div>
           <div class="descWrapper">
             <div class="desc" v-for="(desc,index) in item.descList">{{desc}}</div>
@@ -93,7 +95,7 @@
 <script type="text/ecmascript-6">
   import Divider from 'vux/src/components/divider/index.vue'
   import Filter from '@/components/filter/filter.vue';
-
+  import Tag from '@/components/tag'
   export default {
     data() {
       return {
@@ -173,7 +175,7 @@
             gongli: 780, // 功力值
             times: 6, // 交易量
             rate: 4.6,// 好评度
-            isCertificated: true,
+            isCertificated: false,
             id: 12597812,// 服务id
           },
           {
@@ -253,6 +255,7 @@
       },
     },
     components: {
+      Tag,
       Divider,
       'v-filter': Filter
     }
@@ -403,16 +406,6 @@
           display: flex
           align-items: center
           font-size: px2-2-rem(26)
-          .proCertificated
-            width: px2-2-rem(88)
-            height: px2-2-rem(26)
-            line-height: px2-2-rem(26)
-            text-align: center
-            font-size: px2-2-rem(22)
-            margin-left: px2-2-rem(20)
-            border: 1px solid #00a0e9
-            border-radius: px2-2-rem(8)
-            color: #00a0e9
     .dividerWrapper
       display: flex
       align-items: center
@@ -471,16 +464,6 @@
         .name
           height: px2-2-rem(28)
           line-height: px2-2-rem(28)
-        .certificated
-          width: px2-2-rem(88)
-          height: px2-2-rem(26)
-          line-height: px2-2-rem(26)
-          text-align: center
-          font-size: px2-2-rem(22)
-          margin-left: px2-2-rem(20)
-          border: 1px solid #00a0e9
-          border-radius: px2-2-rem(8)
-          color: #00a0e9
         .desc
           height: px2-2-rem(28)
           line-height: px2-2-rem(28)

@@ -14,7 +14,7 @@
         <div class="companyWrapper">
           <img :src='item.companyLogo'/>
           <div class="companyName">{{item.company}}</div>
-          <div class="certificate" v-if="item.isCertificated">已认证</div>
+          <tag v-if="item.isCertificated"></tag>
         </div>
         <div class="whoReservedMeItemBtn">
           <div @click.stop="toggleModel('.giveUpModel','showGiveUpModel')" class="giveUpBtn" v-if="item.status == 1">放弃</div>
@@ -43,7 +43,7 @@
 
 <script type="text/ecmascript-6">
   import header from '@/components/v-header/v-header'
-
+  import Tag from '@/components/tag'
   export default {
     data() {
       return {
@@ -143,6 +143,7 @@
       }
     },
     components: {
+      Tag,
       'v-header': header
     }
   }
@@ -203,18 +204,6 @@
             width: px2-2-rem(50)
             height: px2-2-rem(50)
             margin-right: px2-2-rem(20)
-          .certificate
-            position: relative
-            top: px2-2-rem(2)
-            height: px2-2-rem(26)
-            width: px2-2-rem(86)
-            line-height: px2-2-rem(26)
-            text-align: center
-            margin-left: px2-2-rem(20)
-            border-radius: px2-2-rem(8)
-            border: 1px solid #00a0e9
-            font-size: px2-2-rem(22)
-            color: #00a0e9
 
       .whoReservedMeItemBtn
         display: flex

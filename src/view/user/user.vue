@@ -6,7 +6,7 @@
         <img src="/static/avatar.png" class="userAvatar"/>
         <div class="userInfo">
           <div class="userName">郑某某
-            <div class="userStatus">审核中</div>
+            <tag :tagClass="'tagWhite'" :tagName="'审核中'"></tag>
           </div>
           <div class="userId">ID: 45895</div>
         </div>
@@ -96,6 +96,7 @@
 </template>
 
 <script type="text/ecmascript-6">
+  import Tag from '@/components/tag'
   export default {
     data() {
       return {
@@ -258,6 +259,9 @@
         }
       },
     },
+    components:{
+      Tag
+    }
   };
 </script>
 
@@ -301,14 +305,6 @@
         justify-content: space-between
         align-items: center
         width: 2.8rem
-        .userStatus
-          border: 1px solid #ffffff
-          border-radius: 4px
-          width: 1.2rem
-          height: 0.35rem
-          line-height: 0.35rem
-          font-size: 0.266666rem
-          text-align: center
       .userId
         font-size: 0.36rem
     .userPoint

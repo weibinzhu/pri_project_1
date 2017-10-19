@@ -11,7 +11,7 @@
       </li>
     </ul>
     <div class="listWrapper">
-      <router-link :to="{name:'hasBiddedItemDetail',params:{id:item.id,status:item.status}}" tag="div" class="listItem"
+      <router-link :key="index" :to="{name:'hasBiddedItemDetail',params:{id:item.id,status:item.status}}" tag="div" class="listItem"
                    v-for="(item,index) in list" v-show="isThisItemShow(index)">
         <div class="itemInfo">
           <div class="title">{{item.name}}-{{statusList[item.status]}}</div>

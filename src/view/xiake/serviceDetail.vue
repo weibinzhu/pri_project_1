@@ -39,7 +39,7 @@
         <div class="xiakeInfo">
           <div class="name">
             郑某某
-            <div class="certificated" v-if="true">已认证</div>
+            <tag v-if="isCertificated"></tag>
           </div>
           <div class="tagsWrapper">
             <div class="tag">广州</div>
@@ -91,12 +91,13 @@
 
 <script type="text/ecmascript-6">
   import header from '../../components/v-header/v-header.vue'
-
+  import Tag from '@/components/tag'
   export default {
     name: 'serviceDetail',
     data() {
       return {
         id: undefined,
+        isCertificated:true, // 峡客是否已认证
         showAd: false,// 广告（下载行峡APP）显隐
         showGetWxModel:false,// 客服显隐
         wxId: 'fwfa21', // 客服微信号
@@ -137,6 +138,7 @@
       this.id = this.$route.params.id
     },
     components: {
+      Tag,
       'v-header': header
     }
   }
@@ -228,16 +230,6 @@
           flex-direction: row
           align-items: center
           flex-wrap: wrap
-        .certificated
-          width: px2-2-rem(90)
-          height: px2-2-rem(30)
-          line-height: px2-2-rem(30)
-          text-align: center
-          font-size: px2-2-rem(26)
-          border: 1px solid #00a0e9
-          border-radius: px2-2-rem(8)
-          color: #00a0e9
-          margin-left: px2-2-rem(20)
         .tag
           height: px2-2-rem(28)
           line-height: px2-2-rem(28)

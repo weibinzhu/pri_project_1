@@ -38,7 +38,7 @@
         <div class="bidderInfo">
           <div class="name">
             {{item.name}}
-            <div class="tag" v-if="item.isCertificated">已认证</div>
+            <tag v-if="item.isCertificated"></tag>
           </div>
           <div class="detail">
             <div class="location">{{item.location}}</div>
@@ -134,7 +134,7 @@
 
 <script type="text/ecmascript-6">
   import header from "@/components/v-header/v-header"
-
+  import Tag from '@/components/tag'
   export default {
     name: 'taskDetail',
     data() {
@@ -277,6 +277,7 @@
       }
     },
     components: {
+      Tag,
       'v-header': header
     }
   }
@@ -399,16 +400,6 @@
             align-items: center
             color: #353535
             font-size: px2-2-rem(32)
-          .tag
-            height: px2-2-rem(26)
-            color: #00a0e9
-            line-height: px2-2-rem(26)
-            font-size: px2-2-rem(26)
-            text-align: center
-            margin-left: px2-2-rem(20)
-            padding: px2-2-rem(5) px2-2-rem(20)
-            border: 1px solid #00a0e9
-            border-radius: px2-2-rem(8)
           .detail, .score
             display: flex
             flex-direction: row

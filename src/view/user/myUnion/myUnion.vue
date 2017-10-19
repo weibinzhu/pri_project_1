@@ -3,7 +3,7 @@
     <v-header title="我的联盟"></v-header>
     <div class="notice">须知</div>
     <img class="banner" src="/static/banner_@3x.png"/>
-    <router-link :to="{name:'unionDetail',params:{id:item.id}}" class="unionItemWrapper"
+    <router-link :key="index" :to="{name:'unionDetail',params:{id:item.id}}" class="unionItemWrapper"
                  v-for="(item,index) in unionListSorted">
       <div class="itemInfoWrapper">
         <div class="info">

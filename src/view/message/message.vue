@@ -4,7 +4,7 @@
       <li class="messageChat" :class="{active:activeId==0}" data-id="0"><span data-id="0">聊天</span></li>
       <li class="messageNotice" :class="{active:activeId==1}" data-id="1"><span data-id="1">通知</span></li>
     </ul>
-    <router-link tag="div" to="/messageTest" v-for="(item,index) in messages" v-show="activeId==item.type" class="messageItem">
+    <router-link :key="index" tag="div" to="/messageTest" v-for="(item,index) in messages" v-show="activeId==item.type" class="messageItem">
       <img :src="item.image"/>
       <div class="messageItemText">
         <div class="title">

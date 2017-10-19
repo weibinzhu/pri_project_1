@@ -14,15 +14,13 @@
       <div class="inputWrapper">
         <img src="./lock@3x.png"/>
         <input v-model="psw" class="passwordInput" type="text" placeholder="请设置密码"/>
-        <img @click="toggleBtn" src="./registered_attention_forbid@3x.png" v-if="passwordShow"/>
-        <img @click="toggleBtn" src="./mobile@3x.png" v-else/>
+        <div @click="toggleBtn" :class="[passwordShow?'pswEye':'pswEyeClose']"></div>
       </div>
     </div>
     <!--用户协议-->
     <div class="signUpPhoneAgreement">
       <input id="agreement" name="agreement" type="checkbox"/>
       <label for="agreement" class="agreement">
-        <div></div>
       </label>
       <a href="http://www.baidu.com">阅读并同意《行峡网平台服务协议》</a>
     </div>
@@ -130,6 +128,16 @@
         width: px2-2-rem(38)
         height: px2-2-rem(38)
         margin: 0 px2-2-rem(30)
+      .pswEyeClose,.pswEye
+        width: px2-2-rem(38)
+        height: px2-2-rem(38)
+        margin: 0 px2-2-rem(30)
+        background-size :px2-2-rem(72) px2-2-rem(38)
+        background-image :url("./psw_eye.png")
+      .pswEyeClose
+        background-position :0 0
+      .pswEye
+        background-position :px2-2-rem(38) 0
       input
         flex: 1
       .getCodeBtn
@@ -150,18 +158,13 @@
         display: block
         height: px2-2-rem(30)
         width: px2-2-rem(30)
-        border: 2px solid #e5e5e5
+        background-image :url("/static/checkbox.png")
+        background-size :px2-2-rem(60) px2-2-rem(30)
         margin-right: px2-2-rem(20)
       input[type=checkbox]
         display: none
       input[type=checkbox]:checked + .agreement
-        div
-          box-sizing: border-box
-          width: 0
-          height: 0
-          border-top: 10px solid red
-          border-left: 5px solid transparent
-          border-right: 5px solid transparent
+        background-position :px2-2-rem(30) 0
     .nextStepBtn
       width: px2-2-rem(688)
       height: px2-2-rem(86)
