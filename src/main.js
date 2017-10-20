@@ -12,6 +12,15 @@ Validator.addLocale(zh);
 const config = {
   locale: 'zh_CN'
 };
+Validator.extend('mobilePhone', {
+  messages: {
+    zh_CN:field => '请输入正确的手机号mn'
+  },
+  validate: value => {
+    return /^((13[0-9])|(14[5|7])|(15([0-3]|[5-9]))|(18[0,5-9]))\d{8}$/.test(value);
+  }
+});
+
 Vue.use(VeeValidate, config);
 const dictionary = {
   zh_CN: {
@@ -19,13 +28,21 @@ const dictionary = {
       email: () => '请填写正确的邮箱', // 触发‘email’规则时显示的内容,
     },
     attributes: {
-      wxId: '微信号' // name为wxId的东西为空时显示的内容
+      // 一个字典，本来显示左边，现在显示右边的中文
+      wxId: '微信号', // name为wxId的东西为空时显示的内容
+      phoneNum: '手机号',
+      password: '密码'
     }
   }
 };
 Validator.updateDictionary(dictionary);
 // 表单验证配置end
 Vue.use(vueResource);// 使用vue-resource
+// Vue.http.options.headers = {
+//   'token': '5256'
+// }
+
+
 Vue.config.productionTip = false
 
 

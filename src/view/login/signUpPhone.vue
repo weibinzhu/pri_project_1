@@ -18,7 +18,7 @@
       </div>
     </div>
     <!--用户协议-->
-    <div class="signUpPhoneAgreement">
+    <div class="signUpPhoneAgreement" v-if="type == 1">
       <input id="agreement" name="agreement" type="checkbox" v-model="checked"/>
       <label for="agreement" class="agreement">
       </label>
@@ -47,6 +47,7 @@
         psw: '',// 密码
         btnText: '下一步: 选择身份',//按钮提示文字
         checked: false,// checkbox
+        imageSRC:'',
       }
     },
     computed: {
@@ -77,24 +78,22 @@
       },// 切换密码显隐
       onNextStepBtnClick() {
         let that = this
-        if (!this.checked) {
-          alert('若不同意用户协议则不能注册')
-          return false
+        // data
+        let phone, psw, code
+        phone = this.phoneNum.toString()
+        psw = this.psw.toString()
+        code = this.code.toString()
+        let data = {
+          'phone': phone,
+          'password': psw,
+          'smsCode': code
         }
         if (this.type == 1) {
           // 如果当前是【手机注册状态】
-
-          // data
-          let phone, psw, code
-          phone = this.phoneNum.toString()
-          psw = this.psw.toString()
-          code = this.code.toString()
-          let data = {
-            'phone': phone,
-            'password': psw,
-            'smsCode': code
+          if (!this.checked) {
+            alert('若不同意用户协议则不能注册')
+            return false
           }
-
           // 发送请求
           this.$http.post(`${this.globalDOMAIN}Employ/Public/register`, data, {emulateJSON: true}).then((response) => {
             if (!response.body.status) {
@@ -108,8 +107,18 @@
           })
         } else if (this.type == 2) {
           // 如果当前是【密码重置状态】
-          alert('重置成功')
-          this.$router.push({path: '/login'})
+
+          // 发送请求
+          this.$http.post(`${this.globalDOMAIN}Employ/Public/resetPassword`, data, {emulateJSON: true}).then((response) => {
+            if (response.body.status) {
+              // 成功的话给出提示并跳转
+              alert('重置成功')
+              this.$router.push({path: '/login'})
+            } else {
+              // 失败的话
+              alert('重置失败')
+            }
+          })
         }
       }// 点击【下一步】后的判断
     },

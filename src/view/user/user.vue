@@ -5,7 +5,7 @@
         <!--<img src="/static/user/bg@2x.png" class="userInfoWrapperImg"/>-->
         <img src="/static/avatar.png" class="userAvatar"/>
         <div class="userInfo">
-          <div class="userName">郑某某
+          <div class="userName">{{nickName}}
             <tag :tagClass="'tagWhite'" :tagName="'审核中'"></tag>
           </div>
           <div class="userId">ID: {{userId}}</div>
@@ -97,10 +97,24 @@
 
 <script type="text/ecmascript-6">
   import Tag from '@/components/tag'
+  import {saveResDataToSession} from '@/common/utils/utils.js'
 
   export default {
     data() {
       return {
+        // 用户信息：
+        gongli: 0,// 功力值
+        nickName: '',// 用户昵称
+
+        // 当前状态、样式相关
+        userChangeText: '切换到创客版',// 用户切换提示
+        currentUserType: 0,// 当且版本，0为雇主版，1为创客版
+        userHeaderBgUrl: '/static/user/bg@3x.png',// 头图地址
+        userPointUrl: '/static/user/hot_fill@3x.png',// 功力值背景
+        showGetWxModel: false,// 客服弹框显隐
+
+        // 固定数据
+        wxId: '112dw',// 客服微信号
         linklist: {
           sublist_1: [
             {
@@ -160,30 +174,19 @@
             },
           ]
         },// 所有菜单项
-        gongli: 0,// 功力值
-        userChangeText: '切换到创客版',// 用户切换提示
-        currentUserType: 0,// 当且版本，0为雇主版，1为创客版
-        userHeaderBgUrl: '/static/user/bg@3x.png',// 头图地址
-        userPointUrl: '/static/user/hot_fill@3x.png',// 功力值背景
-        showGetWxModel: false,// 客服弹框显隐
-        wxId: '112dw',// 客服微信号
       }
     },
     computed: {
       userId() {
-        return this.$store.state.userId
+        return sessionStorage.getItem('userid')
       },// 用户ID
       globalDOMAIN() {
         return this.$store.state.globalDOMAIN
       },// 请求域名
     },
-    created() {
-//      let data = {
-//        'user_id': this.userId
-//      }
-//      this.$http.get(`${this.globalDOMAIN}Employ/User/getUserInfo`).then((response) => {
-//        console.log(response)
-//      })
+    mounted() {
+      this.gongli = sessionStorage.getItem('point')
+      this.nickName = sessionStorage.getItem('nickname')
     },
     watch: {
       // 监听用户类型变化，改变菜单选项
@@ -313,7 +316,6 @@
         flex-direction: row
         justify-content: space-between
         align-items: center
-        width: 2.8rem
       .userId
         font-size: 0.36rem
     .userPoint

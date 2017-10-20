@@ -28,7 +28,7 @@
         <img src="/static/arrow-right-gray.png"/>
       </router-link>
     </div>
-    <div class="settingLogout">退出登录</div>
+    <div class="settingLogout" @click="logout">退出登录</div>
   </div>
 </template>
 
@@ -39,6 +39,19 @@
     data() {
       return {
         bindStatus: '未绑定'
+      }
+    },
+    computed:{
+      globalDOMAIN(){
+        return this.$store.state.globalDOMAIN
+      }
+    },
+    methods:{
+      logout(){
+        let token = sessionStorage.getItem('token')
+        this.$http.post(`${this.globalDOMAIN}Employ/User/logout`,{},{headers:{'token':token}}).then((res)=>{
+          console.log(res)
+        })
       }
     },
     components: {

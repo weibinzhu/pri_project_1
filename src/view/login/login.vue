@@ -1,15 +1,20 @@
 <template>
   <div class="loginWrapper">
     <img class="loginLogo" src="/static/logo@3x.png"/>
+    <img v-show="loading" src="/static/loading.gif"/>
     <div class="inputItem">
       <img src="./mobile@3x.png"/>
-      <input type="text" placeholder="手机号" v-model="phoneNum"/>
+      <input name="phoneNum" type="text" placeholder="手机号" v-model="phoneNum" v-validate="'required|mobilePhone'"/>
+      <div v-show="errors.has('phoneNum')" class="validateNotice is-danger">{{ errors.first('phoneNum') }}</div>
     </div>
     <div class="inputItem">
       <img src="./lock@3x.png"/>
-      <input type="password" placeholder="密码" v-model="psw"/>
+      <input name="password" v-validate="'required'" type="password" placeholder="密码" v-model="psw"/>
+      <div v-show="errors.has('password')" class="validateNotice is-danger">{{ errors.first('password') }}</div>
     </div>
-    <div @click="login" class="loginBtn">登录<div class="findPsw" @click.stop="findPsw">找回密码</div></div>
+    <div @click="login" class="loginBtn">登录
+      <div class="findPsw" @click.stop="findPsw">找回密码</div>
+    </div>
     <div class="wxLoginBtn"><img class="wxLogo" src="./wechat@3x.png"/>微信登录</div>
     <footer class="signUpWrapper">
       <p>还没行峡网的账号？</p>
@@ -19,43 +24,75 @@
 </template>
 
 <script type="text/ecmascript-6">
+  import {saveResDataToSession} from '@/common/utils/utils.js'
+  import {Validator} from 'vee-validate';
+
   export default {
-    name:'login',
-    data(){
-      return{
-        phoneNum:'',// 电话号码
-        psw:'',// 密码
+    name: 'login',
+    data() {
+      return {
+        phoneNum: '',// 电话号码
+        psw: '',// 密码
+        loading: true,
       }
     },
-    methods:{
-      login(){
+    computed: {
+      globalDOMAIN() {
+        return this.$store.state.globalDOMAIN
+      }
+    },
+    methods: {
+      login() {
         // 登录
         let data = {
           'phone': this.phoneNum.toString(),
-          'password':this.psw.toString()
+          'password': this.psw.toString()
         }
-        this.$http.post(`${this.globalDOMAIN}Employ/Public/login`,data,{emulateJSON: true}).then((response)=>{
-          if (!response.body.status){
-            alert(response.body.msg)
+        this.$validator.validateAll().then((result) => {
+          // 前端校验
+          if (result) {
+            this.sendLoginRequest(data)
+          } else {
             return false
-          }else{
-            // alert('登录成功')
-            this.$store.commit('setUserId',{userId:response.body.data.userid})
-            console.log(this.$store.state.userId)
-            this.$router.push({path:'/home'})
           }
         })
+        this.$http.interceptors.push((request, next) => {
+          this.loading = true
+          console.log(this)
+          next(function (response) {
+            console.log(this)
+            this.loading = false;  //此处的this是正确的
+          })
+        })
       },
-      findPsw(){
-        // 找回密码
-        this.$router.push({path:'/signUpPhone?type=2'})
-      }
+
+      findPsw() {
+        this.$router.push({path: '/signUpPhone?type=2'})
+      },// 找回密码
+
+      sendLoginRequest(data) {
+        this.$http.post(`${this.globalDOMAIN}Employ/Public/login`, data, {emulateJSON: true}).then((response) => {
+          if (!response.body.status) {
+            alert(response.body.msg)
+            return false
+          } else {
+            // alert('登录成功')
+            let token = response.body.data.token
+            this.$http.get(`${this.globalDOMAIN}Employ/User/getUserInfo`, {headers: {'token': token}}).then((response) => {
+              console.log('获取用户信息：', response)
+              if (response.body.status) {
+                let data = response.body.data
+                saveResDataToSession(data) // 保存用户信息到sessionStorage，方便在其他页面使用
+              } else {
+                alert('获取用户信息失败')
+              }
+            })
+            this.$router.push({path: '/home'})
+          }
+        })
+      },// 发送请求
     },
-    computed:{
-      globalDOMAIN(){
-        return this.$store.state.globalDOMAIN
-      }
-    }
+
   }
 </script>
 
@@ -74,12 +111,13 @@
     background-size: px2-2-rem(750)
     background-repeat: no-repeat
     .loginLogo
-      margin-top :px2-2-rem(176)
+      margin-top: px2-2-rem(176)
       width: px2-2-rem(144)
       height: px2-2-rem(144)
       border-radius: px2-2-rem(16)
       margin-bottom: px2-2-rem(90)
     .inputItem
+      position: relative
       display: flex
       flex-direction: row
       align-items: center
@@ -88,6 +126,12 @@
       background-color: #ffffff
       border-radius: px2-2-rem(16)
       margin-bottom: px2-2-rem(32)
+      .validateNotice
+        position: absolute
+        top: px2-2-rem(20)
+        right: px2-2-rem(40)
+        color: #f0724f
+        font-size: px2-2-rem(26)
       img
         width: px2-2-rem(40)
         height: px2-2-rem(40)
@@ -100,7 +144,7 @@
       ::-webkit-input-placeholder /* WebKit, Blink, Edge */
         color: #c9c9c9
     .loginBtn
-      position :relative
+      position: relative
       box-sizing: border-box
       text-align: center
       width: px2-2-rem(688)
@@ -110,10 +154,10 @@
       margin: px2-2-rem(58) 0 px2-2-rem(20) 0
       border-radius: px2-2-rem(16)
       .findPsw
-        position :absolute
-        top:px2-2-rem(-90)
-        right :px2-2-rem(0)
-        font-size :px2-2-rem(26)
+        position: absolute
+        top: px2-2-rem(-90)
+        right: px2-2-rem(0)
+        font-size: px2-2-rem(26)
         color: #ffffff
     .wxLoginBtn
       display: flex
@@ -135,8 +179,8 @@
       flex-direction: column
       justify-content: center
       align-items: center
-      margin-top : px2-2-rem(160)
+      margin-top: px2-2-rem(160)
       .signUp
-        margin-top : px2-2-rem(10)
-        color :#00a0e9
+        margin-top: px2-2-rem(10)
+        color: #00a0e9
 </style>
