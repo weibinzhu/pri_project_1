@@ -17,7 +17,7 @@
       </div>
     </div>
 
-    <div class="signBlock">
+    <div class="signBlock" v-if="contract.isExist">
       <div class="header">签署合同</div>
       <div class="signItemBlock">
         <div class="info">
@@ -82,22 +82,22 @@
       return {
         price: 36000,// 项目总金额
         contract: {
-          isExist: true,
+          isExist: false,
           link: 'www.baidu.com',
           name: 'V 1.6合同...',
           ext: '.doc'
         },
         contractAttach: {
           // 附加合同
-          isExist: true,
+          isExist: false,
           link: 'www.baidu.com',
           name: 'V 1.6附加...',
           ext: '.doc'
         },
-        isFirstPartyConfirmed: true,// 甲方确认
-        isSecondPartyConfirmed: true,// 乙方确认
+        isFirstPartyConfirmed: false,// 甲方确认
+        isSecondPartyConfirmed: false,// 乙方确认
         isFirstPartyConfirmedAttach: false,// 附加合同甲方确认
-        isSecondPartyConfirmedAttach: true,// 附加合同乙方确认
+        isSecondPartyConfirmedAttach: false,// 附加合同乙方确认
       }
     },
     components: {

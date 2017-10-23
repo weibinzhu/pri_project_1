@@ -217,7 +217,7 @@ export default new Router({
     },
     {
       // 评价任务
-      path: '/toRateTask',
+      path: '/toRateTask/:taskId/:bidId',
       name: 'toRateTask',
       component: toRateTask
     },

@@ -1,7 +1,7 @@
 <template>
   <div class="loginWrapper">
     <img class="loginLogo" src="/static/logo@3x.png"/>
-    <img v-show="loading" src="/static/loading.gif"/>
+    <loading v-show="isLoading"></loading>
     <div class="inputItem">
       <img src="./mobile@3x.png"/>
       <input name="phoneNum" type="text" placeholder="手机号" v-model="phoneNum" v-validate="'required|mobilePhone'"/>
@@ -26,14 +26,15 @@
 <script type="text/ecmascript-6">
   import {saveResDataToSession} from '@/common/utils/utils.js'
   import {Validator} from 'vee-validate';
-
+  import Loading from '@/components/loading'
   export default {
+    components: {Loading},
     name: 'login',
     data() {
       return {
         phoneNum: '',// 电话号码
         psw: '',// 密码
-        loading: true,
+        isLoading: false,
       }
     },
     computed: {
@@ -48,6 +49,7 @@
           'phone': this.phoneNum.toString(),
           'password': this.psw.toString()
         }
+
         this.$validator.validateAll().then((result) => {
           // 前端校验
           if (result) {
@@ -56,14 +58,7 @@
             return false
           }
         })
-        this.$http.interceptors.push((request, next) => {
-          this.loading = true
-          console.log(this)
-          next(function (response) {
-            console.log(this)
-            this.loading = false;  //此处的this是正确的
-          })
-        })
+
       },
 
       findPsw() {
@@ -92,6 +87,9 @@
         })
       },// 发送请求
     },
+    component:{
+      Loading
+    }
 
   }
 </script>

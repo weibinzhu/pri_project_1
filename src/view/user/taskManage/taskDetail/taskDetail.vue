@@ -1,5 +1,7 @@
 <template>
   <div class="taskDetailWrapper">
+    <!--loading 图标-->
+    <loading v-show="isLoading"></loading>
     <v-header @share="onShareClick" :title="pageTitle" :shareShow="taskStatus == -1"
               :starShow="taskStatus == -1"></v-header>
     <div class="taskId">任务编号：{{taskId}}
@@ -8,25 +10,25 @@
     </div>
     <div class="taskBasicInfo">
       <div class="taskBasicInfoLeft">
-        <div class="taskTitle">{{title}}</div>
-        <div class="taskPrice">￥{{price}}</div>
+        <div class="taskTitle">{{taskInfo.title}}</div>
+        <div class="taskPrice">￥{{taskInfo.price_min}}-{{taskInfo.price_max}}</div>
       </div>
       <div class="taskBasicInfoRight">
-        <div class="taskDate">{{date}}</div>
+        <div class="taskDate">{{taskInfo.inputtime | formatDate}}</div>
         <div class="knowCompanyBtn">进入主页</div>
       </div>
     </div>
     <div class="taskDetailInfo">
-      <div class="detailInfoHeader"><img class="headerImg" src="./location@3x.png"/>招聘城市：{{city}}</div>
-      <div class="detailInfoHeader"><img class="headerImg" src="./friend_add@3x.png"/>所需人数：{{peopleNum}}</div>
-      <div class="detailInfoHeader"><img class="headerImg" src="./apps@3x.png"/>工作形式：{{taskForm}}</div>
+      <div class="detailInfoHeader"><img class="headerImg" src="./location@3x.png"/>招聘城市：{{taskInfo.city}}</div>
+      <!--<div class="detailInfoHeader"><img class="headerImg" src="./friend_add@3x.png"/>所需人数：{{peopleNum}}</div>-->
+      <div class="detailInfoHeader"><img class="headerImg" src="./apps@3x.png"/>工作形式：{{taskInfo.work_type}}</div>
       <div class="detailInfoHeader"><img class="headerImg" src="./countdown@3x.png"/>项目周期：{{period}}</div>
       <div class="detailInfoHeader"><img class="headerImg" src="./choiceness@3x.png"/>所需技能：</div>
       <div class="skillList">
         <div class="skill" v-for="(item,index) in skills">{{item}}</div>
       </div>
       <div class="detailInfoHeader"><img class="headerImg" src="./write@3x.png"/>任务要求：</div>
-      <p class="requirement">{{requirement}}</p>
+      <p class="requirement">{{taskInfo.desc}}</p>
     </div>
     <div class="sectionHeader">投标人：</div>
     <router-link :to="{name:'xiakeMainPage',params:{type:1}}" tag="div" class="bidderListWrapper">
@@ -54,8 +56,8 @@
         <!--加一层判断，只有在任务管理里面点开才需要这些按钮-->
         <div class="btnWrapper" v-if="taskStatus != -1">
           <div class="bidderBtnNormal" v-if="item.status == 0">
-            <div class="chooseHim">选Ta</div>
-            <div class="eliminate">淘汰</div>
+            <div @click.stop="chooseHim(item.id)" class="chooseHim">选Ta</div>
+            <div @click.stop="eliminate(item.id)" class="eliminate">淘汰</div>
           </div>
           <div class="bidderBtnGiveUp" v-else-if="item.status == 1">
             <div class="chooseHim">选Ta</div>
@@ -100,7 +102,8 @@
     <footer class="taskDetailFooter taskComment" v-if="taskStatus == 4">
       <div class="contact" @click="toggleWxId"><img src="./service@3x.png"/>联系顾问</div>
       <router-link to="/contract" tag="div" class="viewContractBtn">查看合同</router-link>
-      <router-link to="/toRateTask" tag="div" class="comment">评价</router-link>
+      <router-link :to="{name:'toRateTask',params:{taskId:taskId,bidId:bidId}}" tag="div" class="comment">评价
+      </router-link>
     </footer>
     <footer class="taskDetailFooter taskSuccess" v-if="taskStatus == 5">已成功</footer>
     <!--客服-->
@@ -135,10 +138,15 @@
 <script type="text/ecmascript-6">
   import header from "@/components/v-header/v-header"
   import Tag from '@/components/tag'
+  import Loading from '@/components/loading'
+  import {formatDate} from '@/common/utils/utils.js'
+
   export default {
     name: 'taskDetail',
     data() {
       return {
+        isLoading: false,
+        taskInfo: {},// 传回来的任务数据
         files: [
           {
             name: 'V前端..',
@@ -174,8 +182,7 @@
         wxId: 'fwfa21', // 客服微信号
         showGetWxModel: false,// 客服微信号弹框显隐
         showAd: false,// 广告（下载行峡APP）显隐
-        bidder: [ // 投标人列表
-          // status说明： 0-一般，1-对方已放弃（灰色显示），2-中标，3-被我淘汰（某个中标后其他自动变成被淘汰并隐藏起来）
+        bidder: [ // 投标人列表// status说明： 0-一般，1-对方已放弃（灰色显示），2-中标，3-被我淘汰（某个中标后其他自动变成被淘汰并隐藏起来）
           {
             name: '郑某某',
             isCertificated: true,
@@ -184,7 +191,8 @@
             desc: ['市场推广', '风险投资', '大赛获奖', '3年经验'],
             gongli: 760, // 功力值
             times: 6, // 交易量
-            status: 0
+            status: 0,
+            id: 11,
           },
           {
             name: '卢某某',
@@ -196,6 +204,7 @@
             gongli: 760, // 功力值
             times: 6, // 交易量
             status: 1,
+            id: 2123,
           },
           {
             name: '某某某',
@@ -206,20 +215,17 @@
             desc: ['市场推广', '3年经验'],
             gongli: 760, // 功力值
             times: 6, // 交易量
-            status: 2
+            status: 2,
+            id: 998
           },
         ],
         taskId: 0, // 任务id
+        bidId: 10,// 投标者id，如果已经选择的话就只有一个bidId，否则应该为空
         taskStatus: 0, // 任务类型，解释：-1-任务页用 0-已选择，1-已放弃，2-托管资金，3-已支付，4-评价，5-交易成功，6-未选择，7-暂无竞标
-        title: '公众号推广核心商户扶持计划数据全面支持', // 任务名称
-        price: '15000-30000', // 任务价格范围
         date: '2017-08-05', // 任务日期
-        city: '广州', // 招聘城市
-        peopleNum: 1, // 所需人数
-        taskForm: '按需出行（时间相对灵活）', // 工作形式
+//        peopleNum: 1, // 所需人数
         period: '1周', // 项目周期
         skills: ['SEM', '市场策划', 'SEO'], // 所需技能
-        requirement: '任务要求巴拉巴拉巴拉任务要求巴拉巴拉巴拉任务要求巴拉巴拉巴拉任务要求巴拉巴拉巴拉任务要求巴拉巴拉巴拉任务要求巴拉巴拉巴拉任务要求巴拉巴拉巴拉任务要求巴拉巴拉巴拉'
       }
     },
     computed: {
@@ -237,11 +243,19 @@
           case 2:
             return '我预约的'
         }
+      },
+      globalDOMAIN() {
+        return this.$store.state.globalDOMAIN
+      },
+      token() {
+        return sessionStorage.getItem('token')
       }
     },
     created() {
       this.taskId = this.$route.params.id
       this.taskStatus = this.$route.params.status
+      this.getTaskDetail()
+//      console.log(formatDate(this.taskInfo.inputtime, 'yyyy-MM-dd'))
     },
     methods: {
       toggleWxId() { // 弹出或隐藏【点击复制客服微信】框
@@ -250,15 +264,55 @@
         model.style.top = y + 'px'
         this.showGetWxModel = !this.showGetWxModel
       },
+
       checkIphone() { // 优雅降级。（暂时不需要用）
         if (navigator.userAgent.match(/ipad|ipod|iphone/i)) {
           alert('如果复制失败请手动复制')
         }
       },
+
+      eliminate(bidId) {
+        this.sentBiderRelatedRequest('weedOut', bidId.toString())
+      },// 淘汰某投标者
+
+      chooseHim(bidId) {
+        this.sentBiderRelatedRequest('win', bidId.toString())
+      },// 选择某投标者
+
+      sentBiderRelatedRequest(action, id) {
+        this.$http.post(`${this.globalDOMAIN}Employ/Task/${action}`, {'bid_id': id}, {
+          emulateJSON: true,
+          headers: {'token': this.token}
+        }).then((res) => {
+          if (res.body.status) {
+            this.$vux.toast.text(`${res.body.msg}`)
+          } else {
+            this.$vux.toast.text(`${res.body.msg}`)
+          }
+        })
+      },
+
+      getTaskDetail() {
+        let id = this.taskId
+        this.$http.get(`${this.globalDOMAIN}Employ/Task/getById`, {
+          params: {'task_id': id},
+          emulateJSON: true,
+          headers: {'token': this.token}
+        }).then((response) => {
+          if (response.body.status) {
+            let data = response.body.data
+            this.taskInfo = data
+            console.log(this.taskInfo)
+          } else {
+            this.$vux.toast.text('获取任务失败')
+          }
+        })
+      },// 发送请求获取数据
       onCloseBtnClick() {
         // 点击广告的关闭按钮
         this.showAd = false
       },
+
       hideWxModel() {
         // 点击遮罩隐藏客服微信号
         if (this.showGetWxModel) {
@@ -267,6 +321,7 @@
           return false
         }
       },
+
       onShareClick() {
         // header组件触发share这个自定义事件之后用到的事件处理函数
         if (!this.showAd) {
@@ -276,8 +331,15 @@
         }
       }
     },
+    filters: {
+      formatDate(time) {
+        let date = new Date(time * 1000)// Unix时间戳是1970年一来的【秒】，js中的时间戳的【毫秒】
+        return formatDate(date, 'yyyy-MM-dd')
+      }
+    },
     components: {
       Tag,
+      Loading,
       'v-header': header
     }
   }
@@ -309,7 +371,6 @@
     .taskBasicInfo
       display: flex
       flex-direction: row
-      align-items: baseline
       box-sizing: border-box
       height: px2-2-rem(232)
       padding: px2-2-rem(26) px2-2-rem(32)
@@ -322,6 +383,8 @@
         flex-direction: column
         justify-content: space-between
         height: 100%
+      .taskBasicInfoLeft
+        flex: 1
       .taskBasicInfoRight
         align-items: center
         width: px2-2-rem(225)

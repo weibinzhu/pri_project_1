@@ -53,6 +53,7 @@
       }// 响应signInDays发生的变化
     },
     mounted() {
+      this.signInDays = sessionStorage.getItem('sign_num')
       this.setDayBar()
     },
     methods: {
@@ -62,6 +63,7 @@
           if (res.body.status) {
             let num = res.body.data.num, point = res.body.data.point
             this.signInDays = num
+            sessionStorage.setItem('sign_num',this.signInDays)
             alert(`成功签到，积分已加${point}`)
           } else {
             alert('今天已签到')
