@@ -38,7 +38,7 @@
     <!--投标人-->
     <div class="sectionHeader" v-if="type!=0">投标人：</div>
     <router-link v-if="type!=0" :to="{name:'xiakeMainPage',params:{type:1}}" tag="div" class="bidderListWrapper">
-      <div class="noBidder" v-if="hasValidBidder">
+      <div class="noBidder" v-if="!hasValidBidder">
         <img src="./noBid@3x.png"/>
         暂无投标记录
       </div>
@@ -360,11 +360,12 @@
           let valid = 0
           for (let bid of this.taskInfo.bids) {
             if (bid.status != '0') {
-              this.hasValidBidder = false
+              this.hasValidBidder = true
+              return false
             }
           }
-          return true
         }
+        this.hasValidBidder = false
       },// 是否有未被雇主淘汰的投标者
       bidIdMethod() {
         if(this.taskInfo.bids){

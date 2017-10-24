@@ -13,7 +13,8 @@
         <!--<div class="contractIcon">{{contract.ext}}</div>-->
         <!--<div class="contractText">{{contract.name}}</div>-->
         <!--</div>-->
-        <div class="contractImgWrapper" v-for="(item,index) in contractImgs" :style="{backgroundImage: 'url(' + item + ')'}">
+        <div class="contractImgWrapper" v-for="(item,index) in contractImgs"
+             :style="{backgroundImage: 'url(' + item + ')'}">
           <img @click="deleteContractImg(index)" src="/static/Close@3x.png"/>
         </div>
         <input style="display: none" id="contractUpload" name="contractUpload" type="file" @change="uploadContract"/>
@@ -23,10 +24,12 @@
       </div>
     </div>
 
-    <div @click="createContract">提交合同</div>
-    <div @click="getContract">查看合同</div>
+    <div style="font-size: 16px;position: fixed;top: 0;right:10px">
+      <div @click="createContract">提交合同</div>
+      <div @click="getContract">查看合同</div>
+    </div>
 
-    <div class="signBlock" v-if="contract.isExist">
+    <div class="signBlock" v-if="contractId">
       <div class="header">签署合同</div>
       <div class="signItemBlock">
         <div class="info">
@@ -96,8 +99,9 @@
 //          name: 'V 1.6合同...',
 //          ext: '.doc'
 //        },
-        contract: [],
+        contract: [], // 发送给后端的数据
         contractImgs: [], // 前端预览用
+        contractId: '8',// 发起合同成功后，后端返回的id
         contractAttach: {
           // 附加合同
           isExist: false,
@@ -154,7 +158,7 @@
         })
       },// 发送请求获取任务数据
       getContract() {
-        let contractId = '8'
+        let contractId = this.contractId
         if (contractId) {
           this.$http.get(`${this.globalDOMAIN}Employ/Task/getContract`, {
             params: {'contract_id': contractId},
@@ -165,6 +169,12 @@
             console.log(res)
             if (body.status) {
               this.$vux.toast.text(body.msg)
+              if (body.data.status == 1){
+                this.isFirstPartyConfirmed = true
+              }else if (body.data.status == 99){
+                this.isFirstPartyConfirmed = true
+                this.isSecondPartyConfirmed = true
+              }
             } else {
               this.$vux.toast.text(body.msg)
             }
@@ -173,6 +183,7 @@
           return console.log('暂无合同')
         }
       },// 获取合同
+
       uploadContract(e) {
         let file = e.target.files[0]
         console.log(file)
@@ -188,7 +199,8 @@
         }).then((res) => {
           this.contract = res.body.data
         })
-      },
+      },// 上传合同图片
+
       createContract() {
         console.log(this.taskId, this.bidId, this.contract)
         this.$http.post(`${this.globalDOMAIN}Employ/Task/contract`, {
@@ -202,16 +214,20 @@
           let body = res.body
           console.log(res)
           if (body.status) {
+            this.contractId = body.contract_id
             this.$vux.toast.text(body.msg)
+            this.getContract()
           } else {
             this.$vux.toast.text(body.msg)
           }
         })
       },// 发起合同
-      deleteContractImg(index){
-        this.contract.splice(index,1)
-        this.contractImgs.splice(index,1)
-      },
+
+      deleteContractImg(index) {
+        this.contract.splice(index, 1)
+        this.contractImgs.splice(index, 1)
+      },// 删除已有合同
+
     },
     components: {
       'v-header': header
@@ -282,17 +298,17 @@
           height: px2-2-rem(142)
           width: px2-2-rem(142)
       .contractImgWrapper
-        position :relative
+        position: relative
         width: px2-2-rem(142)
         height: px2-2-rem(142)
-        margin-right :px2-2-rem(30)
-        background-size :cover
+        margin-right: px2-2-rem(30)
+        background-size: cover
         img
-          position :absolute
+          position: absolute
           top: px2-2-rem(-10)
-          right :px2-2-rem(-10)
-          width :px2-2-rem(40)
-          height :px2-2-rem(40)
+          right: px2-2-rem(-10)
+          width: px2-2-rem(40)
+          height: px2-2-rem(40)
       .signItemBlock
         box-sizing: border-box
         display: flex
