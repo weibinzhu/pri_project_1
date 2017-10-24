@@ -211,7 +211,7 @@ export default new Router({
     },
     {
       // 查看合同。。
-      path: '/contract',
+      path: '/contract/:taskId',
       name: 'contract',
       component: contract
     },

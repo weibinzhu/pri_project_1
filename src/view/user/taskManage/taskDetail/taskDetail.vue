@@ -29,17 +29,25 @@
       </div>
       <div class="detailInfoHeader"><img class="headerImg" src="./write@3x.png"/>任务要求：</div>
       <p class="requirement">{{taskInfo.desc}}</p>
-    </div>
-    <div class="sectionHeader">投标人：</div>
-    <router-link :to="{name:'xiakeMainPage',params:{type:1}}" tag="div" class="bidderListWrapper">
-      <div class="noBidder" v-if="bidder.length === 0">
-        <img src="./logo@2x.png"/>
+      <div class="detailInfoHeader" v-if="type == 0">
+        <img class="headerImg" src="./people.png"/>
+        投标人数：<span class="bidNum">{{bidNum}}</span>人
       </div>
-      <div class="bidder" v-for="(item,index) in bidder" v-if="item.status==2 || taskStatus==6">
+    </div>
+
+    <!--投标人-->
+    <div class="sectionHeader" v-if="type!=0">投标人：</div>
+    <router-link v-if="type!=0" :to="{name:'xiakeMainPage',params:{type:1}}" tag="div" class="bidderListWrapper">
+      <div class="noBidder" v-if="hasValidBidder">
+        <img src="./noBid@3x.png"/>
+        暂无投标记录
+      </div>
+      <div class="bidder" v-for="(item,index) in taskInfo.bids"
+           v-if="(item.status==99 || taskStatus==6)&&item.status!=0">
         <img class="bidderAvatar" src="./avatar.png"/>
         <div class="bidderInfo">
           <div class="name">
-            {{item.name}}
+            {{item.user.username}} status:{{item.status}}
             <tag v-if="item.isCertificated"></tag>
           </div>
           <div class="detail">
@@ -49,37 +57,31 @@
             </div>
           </div>
           <div class="score">
-            <div class="gongli">功力值：<span>{{item.gongli}}</span></div>
+            <div class="gongli">功力值：<span>{{item.user.point}}</span></div>
             <div class="times">交易量：<span>{{item.times}}</span></div>
           </div>
         </div>
         <!--加一层判断，只有在任务管理里面点开才需要这些按钮-->
         <div class="btnWrapper" v-if="taskStatus != -1">
-          <div class="bidderBtnNormal" v-if="item.status == 0">
+          <div class="bidderBtnNormal" v-if="item.status == 1">
             <div @click.stop="chooseHim(item.id)" class="chooseHim">选Ta</div>
             <div @click.stop="eliminate(item.id)" class="eliminate">淘汰</div>
           </div>
-          <div class="bidderBtnGiveUp" v-else-if="item.status == 1">
+          <div class="bidderBtnGiveUp" v-else-if="item.status == 2">
             <div class="chooseHim">选Ta</div>
             <div class="giveUp">已放弃</div>
           </div>
-          <div class="bidderBtnChosen" v-else>
+          <div class="bidderBtnChosen" v-else-if="item.status == 99">
             <div class="chosen">中标</div>
           </div>
         </div>
       </div>
     </router-link>
-    <!--项目文件柜-->
-    <!--<div class="filesBlockWrapper" v-if="taskStatus == 3 || taskStatus == 4 || taskStatus == 5">-->
-    <!--<div class="filesBlockHeader">项目文件柜</div>-->
-    <!--<div class="filesContent">-->
-    <!--<router-link tag="div" :to="item.url" class="file" v-for="(item,index) in files" :key="index">-->
-    <!--<div class="fileImg">{{item.extension}}</div>-->
-    <!--<div class="fileText">{{item.name}}</div>-->
-    <!--</router-link>-->
-    <!--</div>-->
-    <!--</div>-->
     <!--各种底部功能条-->
+    <footer class="taskDetailFooter taskToBid" v-if="type == 0">
+      <div class="contactEmployer">沟通一下</div>
+      <div @click="toBid" class="toBid">竞标</div>
+    </footer>
     <footer class="taskDetailFooter taskSelected" v-if="taskStatus == 0">
       <div class="contact" @click="toggleWxId"><img src="./service@3x.png"/>联系顾问</div>
       <div class="btnWrapperLeft">
@@ -96,12 +98,13 @@
     </footer>
     <footer class="taskDetailFooter taskHasBeenPaid" v-if="taskStatus == 3">
       <div class="contact" @click="toggleWxId"><img src="./service@3x.png"/>联系顾问</div>
-      <router-link to="/contract" tag="div" class="viewContractBtn">查看合同</router-link>
+      <router-link :to="{name:'contract',params:{taskId:taskId}}" tag="div" class="viewContractBtn">查看合同</router-link>
       <router-link to="/applyCheck" tag="div" class="check">验收</router-link>
     </footer>
     <footer class="taskDetailFooter taskComment" v-if="taskStatus == 4">
       <div class="contact" @click="toggleWxId"><img src="./service@3x.png"/>联系顾问</div>
-      <router-link to="/contract" tag="div" class="viewContractBtn">查看合同</router-link>
+      <router-link :to="{name:'contract',params:{taskId:taskId}}" tag="div" class="viewContractBtn">查看合同
+      </router-link>
       <router-link :to="{name:'toRateTask',params:{taskId:taskId,bidId:bidId}}" tag="div" class="comment">评价
       </router-link>
     </footer>
@@ -182,7 +185,8 @@
         wxId: 'fwfa21', // 客服微信号
         showGetWxModel: false,// 客服微信号弹框显隐
         showAd: false,// 广告（下载行峡APP）显隐
-        bidder: [ // 投标人列表// status说明： 0-一般，1-对方已放弃（灰色显示），2-中标，3-被我淘汰（某个中标后其他自动变成被淘汰并隐藏起来）
+        bidder: [
+          // 投标人列表// status说明： 0-一般，1-对方已放弃（灰色显示），2-中标，3-被我淘汰（某个中标后其他自动变成被淘汰并隐藏起来）
           {
             name: '郑某某',
             isCertificated: true,
@@ -194,44 +198,47 @@
             status: 0,
             id: 11,
           },
-          {
-            name: '卢某某',
-            isCertificated: true,
-            avatar: './avatar.png',
-            desc: ['市场推广', '3年经验'],
-            location: '广州',
-            desc: ['市场推广', '3年经验'],
-            gongli: 760, // 功力值
-            times: 6, // 交易量
-            status: 1,
-            id: 2123,
-          },
-          {
-            name: '某某某',
-            isCertificated: false,
-            avatar: './avatar.png',
-            desc: ['市场推广', '3年经验'],
-            location: '广州',
-            desc: ['市场推广', '3年经验'],
-            gongli: 760, // 功力值
-            times: 6, // 交易量
-            status: 2,
-            id: 998
-          },
+//          {
+//            name: '卢某某',
+//            isCertificated: true,
+//            avatar: './avatar.png',
+//            desc: ['市场推广', '3年经验'],
+//            location: '广州',
+//            desc: ['市场推广', '3年经验'],
+//            gongli: 760, // 功力值
+//            times: 6, // 交易量
+//            status: 1,
+//            id: 2123,
+//          },
+//          {
+//            name: '某某某',
+//            isCertificated: false,
+//            avatar: './avatar.png',
+//            desc: ['市场推广', '3年经验'],
+//            location: '广州',
+//            desc: ['市场推广', '3年经验'],
+//            gongli: 760, // 功力值
+//            times: 6, // 交易量
+//            status: 2,
+//            id: 998
+//          },
         ],
+        // bidId: 10,// 投标者id，如果已经选择的话就只有一个bidId，否则应该为空
         taskId: 0, // 任务id
-        bidId: 10,// 投标者id，如果已经选择的话就只有一个bidId，否则应该为空
         taskStatus: 0, // 任务类型，解释：-1-任务页用 0-已选择，1-已放弃，2-托管资金，3-已支付，4-评价，5-交易成功，6-未选择，7-暂无竞标
+        type: -1,
         date: '2017-08-05', // 任务日期
-//        peopleNum: 1, // 所需人数
         period: '1周', // 项目周期
         skills: ['SEM', '市场策划', 'SEO'], // 所需技能
+        bidNum: 16,// 投标人数
+        hasValidBidder:true,
+        bidId:-1,
       }
     },
     computed: {
       pageTitle() {
         // 根据是从哪里进来的来控制导航条文字
-        let type = this.$route.params.type
+        let type = this.type
         switch (type) {
           case '0':
           case 0:
@@ -254,6 +261,7 @@
     created() {
       this.taskId = this.$route.params.id
       this.taskStatus = this.$route.params.status
+      this.type = this.$route.params.type
       this.getTaskDetail()
 //      console.log(formatDate(this.taskInfo.inputtime, 'yyyy-MM-dd'))
     },
@@ -272,11 +280,12 @@
       },
 
       eliminate(bidId) {
-        this.sentBiderRelatedRequest('weedOut', bidId.toString())
+        this.sentBiderRelatedRequest('weedOut', bidId)
       },// 淘汰某投标者
 
       chooseHim(bidId) {
-        this.sentBiderRelatedRequest('win', bidId.toString())
+//        console.log(this.taskInfo,this.taskInfo.bids)
+        this.sentBiderRelatedRequest('win', bidId)
       },// 选择某投标者
 
       sentBiderRelatedRequest(action, id) {
@@ -302,12 +311,15 @@
           if (response.body.status) {
             let data = response.body.data
             this.taskInfo = data
+            this.hasValidBidderMethod()
+            this.bidIdMethod()
             console.log(this.taskInfo)
           } else {
             this.$vux.toast.text('获取任务失败')
           }
         })
       },// 发送请求获取数据
+
       onCloseBtnClick() {
         // 点击广告的关闭按钮
         this.showAd = false
@@ -329,7 +341,40 @@
         } else {
           return false
         }
-      }
+      },
+      toBid() {
+        this.$http.post(`${this.globalDOMAIN}Employ/Task/bid`, {'task_id': this.taskId}, {
+          emulateJSON: true,
+          headers: {'token': this.token}
+        }).then((res) => {
+          let body = res.body
+          if (body.status) {
+            this.$vux.toast.text(body.msg)
+          } else {
+            this.$vux.toast.text(body.msg)
+          }
+        })
+      },// 投标、竞标
+      hasValidBidderMethod() {
+        if(this.taskInfo.bids){
+          let valid = 0
+          for (let bid of this.taskInfo.bids) {
+            if (bid.status != '0') {
+              this.hasValidBidder = false
+            }
+          }
+          return true
+        }
+      },// 是否有未被雇主淘汰的投标者
+      bidIdMethod() {
+        if(this.taskInfo.bids){
+          for (let bid of this.taskInfo.bids) {
+            if (bid.status == 99) {
+              this.bidId = bid.id
+            }
+          }
+        }
+      },// 中标的投标者的bid id，
     },
     filters: {
       formatDate(time) {
@@ -410,9 +455,15 @@
         display: flex
         align-items: center
         height: px2-2-rem(64)
+        .bidNum
+          color: #00a0e9
+          font-size: px2-2-rem(36)
+          margin-right: px2-2-rem(8)
         .headerImg
           width: px2-2-rem(30)
           margin-right: px2-2-rem(20)
+      .detailInfoHeader:last-child
+        margin-top: px2-2-rem(40)
       .skillList, .requirement
         padding: 0 px2-2-rem(60)
         color: #888888
@@ -435,12 +486,14 @@
       background-color: #ffffff
       .noBidder
         display: flex
+        flex-direction: column
         justify-content: center
         align-items: center
+        font-size: px2-2-rem(26)
         height: px2-2-rem(394)
         img
-          height: px2-2-rem(250)
-          width: px2-2-rem(250)
+          width: px2-2-rem(227)
+          margin-bottom: px2-2-rem(30)
       .bidder
         display: flex
         flex-direction: row
@@ -525,8 +578,20 @@
     .taskGiveUp
       background-color: #dfdfdf
     .taskSuccess
-      color: #ff
+      color: #fff
       background-color: #00a0e9
+    .contactEmployer, .toBid
+      display: flex
+      flex: 1
+      align-items: center
+      justify-content: center
+      height: 100%
+    .contactEmployer
+      background-color: #ffffff
+      color: #00a0e9
+    .toBid
+      background-color: #00a0e9
+      color: #ffffff
     .taskSelected, .taskManageMoney, .taskHasBeenPaid, .taskComment
       .contact
         display: flex

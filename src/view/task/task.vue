@@ -40,7 +40,7 @@
     </div>
     <div class="tasksItems" @click="onTaskItemClick">
       <taskitem v-for="(item,index) in taskItems" :key="index" :item="item"
-                v-show="(item.location==selectedChoiceIndex[0]||selectedChoiceIndex[0]==0)
+                v-show="(item.location==selectedChoiceIndex[0]||selectedChoiceIndex[0]==0||item.location==0)
                   &&(item.type==selectedChoiceIndex[1]||selectedChoiceIndex[1]==0)"></taskitem>
     </div>
     <transition name="getWxFade">
@@ -103,78 +103,18 @@
         taskItems: [
           // location: 1-北京，2-上海，3-广州，4-深圳。
           // type: 1-设计，2-技术，3-运营，4-市场，5-产品
-          {
-            taskTitle: '社区活动营销方案-北京-设计',
-            taskPrice: '15000-30000',
-            taskDetail: ['一个月内', '按需出勤'],
-            clientName: '主题邦科技',
-            clientTag: '已认证',
-            logo: 'static/icon@3x.png',
-            isCertificated: true,
-            location: 1,
-            id: 1211,// 任务id
-            type: 1,
-          },
-          {
-            taskTitle: '营销方案-广州-技术',
-            taskPrice: '20590-30000',
-            taskDetail: ['三个月内', '按需出勤'],
-            clientName: '主题邦',
-            clientTag: '已认证',
-            logo: 'static/icon@3x.png',
-            isCertificated: true,
-            location: 3,
-            id: 121,// 任务id
-            type: 2,
-          },
-          {
-            taskTitle: '营销方案-上海-市场',
-            taskPrice: '100-30000',
-            taskDetail: ['三个月内', '按需出勤'],
-            clientName: '主题邦',
-            clientTag: '已认证',
-            logo: 'static/icon@3x.png',
-            isCertificated: true,
-            location: 2,
-            id: 12111,// 任务id
-            type: 4,
-          },
-          {
-            taskTitle: '营销方案-深圳-运营',
-            taskPrice: '2000-30000',
-            taskDetail: ['三个月内', '按需出勤'],
-            clientName: '主题邦',
-            clientTag: '已认证',
-            logo: 'static/icon@3x.png',
-            isCertificated: false,
-            location: 4,
-            id: 124311,// 任务id
-            type: 3,
-          },
-          {
-            taskTitle: '社区活动营销方案-深圳-产品',
-            taskPrice: '25000-30000',
-            taskDetail: ['一个月内', '按需出勤'],
-            clientName: '主题邦科技',
-            clientTag: '已认证',
-            logo: 'static/icon@3x.png',
-            isCertificated: true,
-            location: 4,
-            id: 122121,// 任务id
-            type: 5,
-          },
-          {
-            taskTitle: '社区活动营销方案-深圳-技术',
-            taskPrice: '15000-30000',
-            taskDetail: ['一个月内', '按需出勤'],
-            clientName: '主题邦科技',
-            clientTag: '已认证',
-            logo: 'static/icon@3x.png',
-            isCertificated: false,
-            location: 4,
-            id: 4331,// 任务id
-            type: 2,
-          },
+//          {
+//            taskTitle: '社区活动营销方案-北京-设计',
+//            taskPrice: '15000-30000',
+//            taskDetail: ['一个月内', '按需出勤'],
+//            clientName: '主题邦科技',
+//            clientTag: '已认证',
+//            logo: 'static/icon@3x.png',
+//            isCertificated: true,
+//            location: 1,
+//            id: 1211,// 任务id
+//            type: 1,
+//          },
         ],
         original: [], // 初始值跟taskItems一样，用于恢复原排序
         cityList: ['全部', '北京', '上海', '广州', '深圳'],
@@ -188,12 +128,15 @@
         searchPh: '搜索旅游业者发布的任务', // 搜索框placeholder
       }
     },
-    created() {
-      this.deepCopy(this.taskItems, this.original) // 将数组保存（复制一份）到this.original
+    mounted() {
+      this.getTaskList()
     },
     computed: {
-      count() {
-        return this.$store.state.count
+      globalDOMAIN() {
+        return this.$store.state.globalDOMAIN
+      },
+      token() {
+        return sessionStorage.getItem('token')
       },
       taskFilterPanelShow() {
         return this.$store.state.taskFilterPanelShow
@@ -273,15 +216,15 @@
             break
           case '3': // 按价格的降序排列
             _compare = function (value1, value2) {
-              let valueMinPrice1 = value1.taskPrice.split('-')[0]
-              let valueMinPrice2 = value2.taskPrice.split('-')[0]
+              let valueMinPrice1 = value1.minPrice
+              let valueMinPrice2 = value2.minPrice
               return valueMinPrice2 - valueMinPrice1
             }
             break
           case '4': // 按价格的升序排列
             _compare = function (value1, value2) {
-              let valueMinPrice1 = value1.taskPrice.split('-')[0]
-              let valueMinPrice2 = value2.taskPrice.split('-')[0]
+              let valueMinPrice1 = value1.minPrice
+              let valueMinPrice2 = value2.minPrice
               return valueMinPrice1 - valueMinPrice2
             }
             break
@@ -305,6 +248,46 @@
 
         }
       },
+      getTaskList() {
+        let token = sessionStorage.getItem('token')
+        this.$http.get(`${this.globalDOMAIN}Employ/Task/getList`, {
+          emulateJSON: true,
+          headers: {'token': token}
+        }).then((response) => {
+          if (response.body.status) {
+            let data = response.body.data
+            console.log(data.lists)
+            // 处理传回来的数组并赋值
+            this.taskItems = this.dataProcess(data.lists)
+            this.deepCopy(this.taskItems, this.original) // 将数组保存（复制一份）到this.original
+          } else {
+            this.$vux.toast.text('获取任务列表失败')
+          }
+        })
+      },// 发送请求获取数据
+      dataProcess(taskList) {
+        let tempList = []
+        for (let task of taskList) {
+
+          // 构造数据
+          let tempItem = {
+            taskTitle: task.title,
+            minPrice: task.price_min,
+            maxPrice: task.price_max,
+            taskId: task.id,
+            cycle: task.cycle,
+            workType: task.work_type.split('（')[0],// 必须用中文括号
+            clientName: '主题邦科技',
+            logo: 'static/icon@3x.png',
+            isCertificated: Math.random() > 0.5 ? true : false,
+            location: this.cityList.indexOf(task.city),
+            type: Math.floor(Math.random() * 4) + 1,
+            // status: Math.floor(Math.random() * 7),
+          }
+          tempList.push(tempItem)
+        }
+        return tempList
+      },// 处理数据并返回
     },
     components: {
       Swiper,

@@ -1,10 +1,10 @@
 <template>
-  <div class="taskItemWrapper" :data-id="item.id">
+  <div class="taskItemWrapper" :data-id="item.taskId">
     <div class="taskContent">
-      <p class="taskTitle">{{item.taskTitle}}</p>
-      <p class="taskPrice">￥<span>{{item.taskPrice}}</span></p>
+      <p class="taskTitle">{{item.taskTitle}}-{{item.location}}</p>
+      <p class="taskPrice">￥<span>{{item.minPrice}}-{{item.maxPrice}}</span></p>
       <p class="taskDetail">
-        <span>任务周期：{{item.taskDetail[0]}}</span><span class="dot">·</span><span>协作方式：{{item.taskDetail[1]}}</span>
+        <span>任务周期：{{item.cycle}}</span><span class="dot">·</span><span>协作方式：{{item.workType}}</span>
       </p>
     </div>
     <div class="clientInfo">

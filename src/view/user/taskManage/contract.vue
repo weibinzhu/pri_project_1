@@ -9,13 +9,22 @@
     <div class="contractBlock">
       <div class="header">项目合同</div>
       <div class="contractItemWrapper">
-        <div class="contractItem" v-if="contract.isExist">
-          <div class="contractIcon">{{contract.ext}}</div>
-          <div class="contractText">{{contract.name}}</div>
+        <!--<div class="contractItem" v-if="contract.isExist">-->
+        <!--<div class="contractIcon">{{contract.ext}}</div>-->
+        <!--<div class="contractText">{{contract.name}}</div>-->
+        <!--</div>-->
+        <div class="contractImgWrapper" v-for="(item,index) in contractImgs" :style="{backgroundImage: 'url(' + item + ')'}">
+          <img @click="deleteContractImg(index)" src="/static/Close@3x.png"/>
         </div>
-        <img v-if="!contract.isExist" class="addContract" src="./add@3x.png"/>
+        <input style="display: none" id="contractUpload" name="contractUpload" type="file" @change="uploadContract"/>
+        <label for="contractUpload">
+          <img class="addContract" src="./add@3x.png"/>
+        </label>
       </div>
     </div>
+
+    <div @click="createContract">提交合同</div>
+    <div @click="getContract">查看合同</div>
 
     <div class="signBlock" v-if="contract.isExist">
       <div class="header">签署合同</div>
@@ -81,12 +90,14 @@
     data() {
       return {
         price: 36000,// 项目总金额
-        contract: {
-          isExist: false,
-          link: 'www.baidu.com',
-          name: 'V 1.6合同...',
-          ext: '.doc'
-        },
+//        contract: {
+//          isExist: false,
+//          link: 'www.baidu.com',
+//          name: 'V 1.6合同...',
+//          ext: '.doc'
+//        },
+        contract: [],
+        contractImgs: [], // 前端预览用
         contractAttach: {
           // 附加合同
           isExist: false,
@@ -98,7 +109,109 @@
         isSecondPartyConfirmed: false,// 乙方确认
         isFirstPartyConfirmedAttach: false,// 附加合同甲方确认
         isSecondPartyConfirmedAttach: false,// 附加合同乙方确认
+
+
+        contract: '',
       }
+    },
+    computed: {
+      token() {
+        return sessionStorage.getItem('token')
+      },
+      globalDOMAIN() {
+        return this.$store.state.globalDOMAIN
+      },
+      bidId() {
+        for (let bid of this.taskInfo.bids) {
+          console.log(bid)
+          if (bid.status == 99) {
+            return bid.id
+          }
+        }
+      },
+    },
+    created() {
+      this.formData = new FormData()
+      this.taskId = this.$route.params.taskId
+      this.getTaskDetail()
+      // this.getContract()
+    },
+    methods: {
+      getTaskDetail() {
+        let id = this.taskId
+        this.$http.get(`${this.globalDOMAIN}Employ/Task/getById`, {
+          params: {'task_id': id},
+          emulateJSON: true,
+          headers: {'token': this.token}
+        }).then((response) => {
+          if (response.body.status) {
+            let data = response.body.data
+            this.taskInfo = data
+            console.log(this.taskInfo)
+          } else {
+            this.$vux.toast.text('获取任务失败')
+          }
+        })
+      },// 发送请求获取任务数据
+      getContract() {
+        let contractId = '8'
+        if (contractId) {
+          this.$http.get(`${this.globalDOMAIN}Employ/Task/getContract`, {
+            params: {'contract_id': contractId},
+            emulateJSON: true,
+            headers: {'token': this.token}
+          }).then((res) => {
+            let body = res.body
+            console.log(res)
+            if (body.status) {
+              this.$vux.toast.text(body.msg)
+            } else {
+              this.$vux.toast.text(body.msg)
+            }
+          })
+        } else {
+          return console.log('暂无合同')
+        }
+      },// 获取合同
+      uploadContract(e) {
+        let file = e.target.files[0]
+        console.log(file)
+        let reader = new FileReader();
+        reader.onload = (e) => {
+          this.contractImgs.push(e.target.result)
+        }
+        reader.readAsDataURL(file);
+        this.formData.append(Math.random(), file)
+        this.$http.post(`${this.globalDOMAIN}Api/File/picUploader`, this.formData, {
+          emulateJSON: true,
+          headers: {'token': this.token}
+        }).then((res) => {
+          this.contract = res.body.data
+        })
+      },
+      createContract() {
+        console.log(this.taskId, this.bidId, this.contract)
+        this.$http.post(`${this.globalDOMAIN}Employ/Task/contract`, {
+          'task_id': this.taskId,
+          'bid_id': this.bidId,
+          'contract': this.contract,
+        }, {
+          emulateJSON: true,
+          headers: {'token': this.token}
+        }).then((res) => {
+          let body = res.body
+          console.log(res)
+          if (body.status) {
+            this.$vux.toast.text(body.msg)
+          } else {
+            this.$vux.toast.text(body.msg)
+          }
+        })
+      },// 发起合同
+      deleteContractImg(index){
+        this.contract.splice(index,1)
+        this.contractImgs.splice(index,1)
+      },
     },
     components: {
       'v-header': header
@@ -168,6 +281,18 @@
         .addContract
           height: px2-2-rem(142)
           width: px2-2-rem(142)
+      .contractImgWrapper
+        position :relative
+        width: px2-2-rem(142)
+        height: px2-2-rem(142)
+        margin-right :px2-2-rem(30)
+        background-size :cover
+        img
+          position :absolute
+          top: px2-2-rem(-10)
+          right :px2-2-rem(-10)
+          width :px2-2-rem(40)
+          height :px2-2-rem(40)
       .signItemBlock
         box-sizing: border-box
         display: flex

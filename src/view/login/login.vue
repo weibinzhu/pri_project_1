@@ -27,6 +27,7 @@
   import {saveResDataToSession} from '@/common/utils/utils.js'
   import {Validator} from 'vee-validate';
   import Loading from '@/components/loading'
+
   export default {
     components: {Loading},
     name: 'login',
@@ -78,16 +79,17 @@
               if (response.body.status) {
                 let data = response.body.data
                 saveResDataToSession(data) // 保存用户信息到sessionStorage，方便在其他页面使用
+                this.$router.push({path: '/home'})
               } else {
                 alert('获取用户信息失败')
               }
             })
-            this.$router.push({path: '/home'})
+
           }
         })
       },// 发送请求
     },
-    component:{
+    component: {
       Loading
     }
 
