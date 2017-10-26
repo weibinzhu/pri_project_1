@@ -9,8 +9,28 @@ import vueResource from 'vue-resource' // 引入vue-resource插件，用于Ajax
 import {ToastPlugin} from 'vux'
 
 Vue.use(ToastPlugin) // 全局使用vux的toast组件
+Vue.use(vueResource);// 使用vue-resource
 
-// 表单验证配置start
+
+// 创建一个全局自定义指令，用于给输入的金额加上人民币符号
+Vue.directive('addMoneyIcon', {
+  bind: function (el) {
+    let flag = false // 弃用这个flag
+    let handler = function () {
+      if (flag) {
+        el.value = `￥${el.value}`
+        flag = false
+      } else {
+        el.value = `￥${el.value.slice(1)}`
+      }
+    }
+    el.addEventListener('input', handler);
+  },
+});
+
+
+// ----------------------表单验证配置start---------------
+
 Validator.addLocale(zh);
 const config = {
   locale: 'zh_CN'
@@ -41,29 +61,20 @@ const dictionary = {
   }
 };
 Validator.updateDictionary(dictionary);
-// 表单验证配置end
+// -----------------表单验证配置end-----------------------
 
-
-Vue.use(vueResource);// 使用vue-resource
 
 Vue.http.interceptors.push(function (request, next) {
-
 // seems that we can only setup a global interceptor in vue-resource
 // currently the interceptor is used to control a loading effect in all pages
-
-
   // while requesting
   this.isLoading = true // 'this' referring to the vue instance of current component
-
   // continue to next interceptor
   next(function (response) {
-
     // after responsed
     this.isLoading = false
-
   });
 });
-
 
 Vue.config.productionTip = false
 

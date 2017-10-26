@@ -63,6 +63,7 @@
   import Loading from '@/components/loading'
 
   export default {
+    name:'taskManageMainPage',
     data() {
       return {
         isLoading: false,

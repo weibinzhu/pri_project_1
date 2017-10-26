@@ -57,6 +57,7 @@ import unionDetail from '@/view/user/myUnion/unionDetail' // 联盟列表
 import xiakeMainPage from '@/view/user/xiakeMainPage/xiakeMainPage' // 峡客主页首页
 import myService from '@/view/user/xiakeMainPage/myService/myService' // 峡客-我的服务列表
 import serviceDetail2 from '@/view/user/xiakeMainPage/myService/serviceDetail2' // 峡客-服务详情
+import releaseService from '@/view/user/xiakeMainPage/myService/releaseService/releaseService' // 发布服务
 import editXiake from '@/view/user/xiakeMainPage/editXiake/editXiake' // 峡客主页编辑页
 import editCase from '@/view/user/xiakeMainPage/editXiake/editCase/editCase' // 峡客案例编辑页
 import whoReservedMe from '@/view/user/whoReservedMe/whoReservedMe' // 峡客-谁预约我
@@ -136,6 +137,12 @@ export default new Router({
       path: '/myService',
       name: 'myService',
       component: myService
+    },
+    {
+      // 发布服务
+      path: '/releaseService',
+      name: 'releaseService',
+      component: releaseService
     },
     {
       // 峡客-服务详情2

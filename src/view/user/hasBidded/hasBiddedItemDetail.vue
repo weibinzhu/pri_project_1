@@ -1,6 +1,6 @@
 <template>
   <div class="hasBiddedItemDetailWrapper">
-    <v-header title="预约订单详情"></v-header>
+    <v-header title="任务详情"></v-header>
     <div class="taskId">任务编号：{{taskId}}</div>
     <div class="taskBasicInfo">
       <div class="taskBasicInfoLeft">
@@ -14,32 +14,32 @@
     </div>
     <div class="taskDetailInfo">
       <div class="detailInfoHeader"><img class="headerImg" src="./location@3x.png"/>招聘城市：{{city}}</div>
-      <div class="detailInfoHeader"><img class="headerImg" src="./friend_add@3x.png"/>所需人数：{{peopleNum}}</div>
+      <!--<div class="detailInfoHeader"><img class="headerImg" src="./friend_add@3x.png"/>所需人数：{{peopleNum}}</div>-->
       <div class="detailInfoHeader"><img class="headerImg" src="./apps@3x.png"/>工作形式：{{taskForm}}</div>
       <div class="detailInfoHeader"><img class="headerImg" src="./countdown@3x.png"/>项目周期：{{period}}</div>
-      <div class="detailInfoHeader"><img class="headerImg" src="./choiceness@3x.png"/>所需技能：</div>
-      <div class="skillList">
-      <div class="skill" v-for="(item,index) in skills">{{item}}</div>
-      </div>
-      <div class="detailInfoHeader"><img class="headerImg" src="./write@3x.png"/>服务要求：</div>
+      <div class="detailInfoHeader"><img class="headerImg" src="./choiceness@3x.png"/>所属类别：{{taskType}}</div>
+      <!--<div class="skillList">-->
+      <!--<div class="skill" v-for="(item,index) in skills">{{item}}</div>-->
+      <!--</div>-->
+      <div class="detailInfoHeader"><img class="headerImg" src="./write@3x.png"/>任务要求：</div>
       <p class="requirement">{{requirement}}</p>
     </div>
     <!--各种底部功能条-->
-    <footer class="taskDetailFooter taskSelected" v-if="taskStatus == 0">
+    <footer class="taskDetailFooter taskSelected" v-if="taskStatus == 1">
       <div class="contact" @click="toggleWxId"><img src="./service@3x.png"/>联系顾问</div>
       <div class="btnWrapperLeft">
         <div class="giveUp" @click="toggleGiveUpModel">放弃</div>
         <div class="contactXiake">沟通一下</div>
       </div>
-      <router-link to="/contract" tag="div" class="viewContractBtn">发起合同</router-link>
+      <router-link :to="{name:'contract',params:{taskId:taskId}}" tag="div" class="viewContractBtn">发起合同</router-link>
     </footer>
-    <footer class="taskDetailFooter taskComment" v-if="taskStatus == 1">
+    <footer class="taskDetailFooter taskComment" v-if="taskStatus == 0">
       <div class="contact" @click="toggleWxId"><img src="./service@3x.png"/>联系顾问</div>
-      <router-link to="/contract" tag="div" class="viewContractBtn">查看合同</router-link>
+      <router-link :to="{name:'contract',params:{taskId:taskId}}" tag="div" class="viewContractBtn">查看合同</router-link>
       <router-link to="/toRateTask" tag="div" class="comment">评价</router-link>
     </footer>
-    <footer class="taskDetailFooter taskSuccess" v-if="taskStatus == 2">已成功</footer>
-
+    <footer class="taskDetailFooter taskSuccess" v-if="taskStatus == 3">已成功</footer>
+    <footer class="taskDetailFooter taskSuccess" v-if="taskStatus == 2">已删除</footer>
     <!--客服-->
     <transition name="getWxFade">
       <div class="getWxModel" v-show="showGetWxModel">
@@ -83,16 +83,17 @@
         showGetWxModel: false,// 客服微信号弹框显隐
         showGiveUpModel: false,
         taskId: 0, // 任务id
-        taskStatus: 0, // 任务类型，解释：['0-已中标', '1-待评价', '2-交易成功'],
+        taskStatus: 0, // 任务类型，解释：['0-待评价', '1-已中标', '2-已删除', '3-交易成功'],
         title: '公众号推广核心商户扶持计划数据全面支持', // 任务名称
         price: '15000-30000', // 任务价格范围
         date: '2017-08-05', // 任务日期
         city: '广州', // 招聘城市
-        peopleNum: 1, // 所需人数
+//        peopleNum: 1, // 所需人数
         taskForm: '按需出行（时间相对灵活）', // 工作形式
+        taskType: '市场推广-社区推广',// 所属类别
         period: '1周', // 项目周期
-        skills: ['SEM', '市场策划', 'SEO'], // 所需技能
-        requirement: "服务要求服务要求服务要求服务要求服务要求服务要求服务要求服务要求服务要求服务要求服务要求服务要求服务要求服务要求服务要求服务要求服务要求服务要求服务要求",
+//        skills: ['SEM', '市场策划', 'SEO'], // 所需技能
+        requirement: "任务要求任务要求任务要求任务要求任务要求任务要求",
 
       }
     },
@@ -306,7 +307,7 @@
       background-color: rgba(0, 0, 0, .8);
 
   //    【点击复制客服微信弹框】
-  .getWxModel,.giveUpModel
+  .getWxModel, .giveUpModel
     position: absolute
     z-index: 10000
     left: calc(50vw - 3.7333rem)
@@ -360,9 +361,10 @@
       .cancelBtn
         color: #00a0e9
         border-left: 1px solid #cccccc
-  .getWxFade-leave-active, .getWxFade-enter-active, .giveUpModelFade-leave-active, .giveUpModelFade-enter-active,.overlayFade-leave-active, .overlayFade-enter-active
+
+  .getWxFade-leave-active, .getWxFade-enter-active, .giveUpModelFade-leave-active, .giveUpModelFade-enter-active, .overlayFade-leave-active, .overlayFade-enter-active
     transition: all .5s
 
-  .getWxFade-enter, .getWxFade-leave-to,.giveUpModelFade-enter, .giveUpModelFade-leave-to,  .overlayFade-enter, .overlayFade-leave-to
+  .getWxFade-enter, .getWxFade-leave-to, .giveUpModelFade-enter, .giveUpModelFade-leave-to, .overlayFade-enter, .overlayFade-leave-to
     opacity: 0
 </style>

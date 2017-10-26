@@ -88,7 +88,7 @@
         <div class="giveUp">放弃</div>
         <div class="contactXiake">沟通一下</div>
       </div>
-      <router-link to="/contract" tag="div" class="viewContractBtn">发起合同</router-link>
+      <router-link :to="{name:'contract',params:{taskId:taskId}}" tag="div" class="viewContractBtn">发起合同</router-link>
     </footer>
     <footer class="taskDetailFooter taskGiveUp" v-if="taskStatus == 1">已放弃</footer>
     <footer class="taskDetailFooter taskManageMoney" v-if="taskStatus == 2">

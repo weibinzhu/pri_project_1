@@ -11,6 +11,7 @@
         发布服务
       </div>
     </header>
+    <loading v-show="isLoading"></loading>
     <!--分割线-->
     <div class="headDividerWrapper">
       <divider>
@@ -96,9 +97,12 @@
   import Divider from 'vux/src/components/divider/index.vue'
   import Filter from '@/components/filter/filter.vue';
   import Tag from '@/components/tag'
+  import loading from '@/components/loading'
+
   export default {
     data() {
       return {
+        isLoading: false,
         proList: [
           {
             img: '/static/xiake/pro.png',
@@ -129,68 +133,21 @@
             isCertificated: true
           },
         ],
-        serviceList: [
-          {
-            avatar: '/static/xiake/head@2x.png',
-            serviceName: '微信开发',
-            name: '郑某某',
-            tags: [true, true, true], // 按顺序分别是专家、峡客、芝麻
-            descList: ['市场推广', '3年经验'],
-            gongli: 780, // 功力值
-            times: 6, // 交易量
-            rate: 4.6,// 好评度
-            isCertificated: true,
-            id: 1213312,// 服务id
-          },
-          {
-            avatar: '/static/xiake/head@2x.png',
-            serviceName: '微信开发',
-            name: '郑某某',
-            tags: [true, false, true], // 按顺序分别是专家、峡客、芝麻
-            descList: ['市场推广', '3年经验'],
-            gongli: 780, // 功力值
-            times: 6, // 交易量
-            rate: 4.6,// 好评度
-            isCertificated: true,
-            id: 12,// 服务id
-          },
-          {
-            avatar: '/static/xiake/head@2x.png',
-            serviceName: '微信开发',
-            name: '郑某某',
-            tags: [true, false, false], // 按顺序分别是专家、峡客、芝麻
-            descList: ['市场推广', '3年经验'],
-            gongli: 780, // 功力值
-            times: 6, // 交易量
-            rate: 4.6,// 好评度
-            isCertificated: true,
-            id: 1212353312,// 服务id
-          },
-          {
-            avatar: '/static/xiake/head@2x.png',
-            serviceName: '微信开发',
-            name: '郑某某',
-            tags: [true, true, false], // 按顺序分别是专家、峡客、芝麻
-            descList: ['市场推广', '3年经验'],
-            gongli: 780, // 功力值
-            times: 6, // 交易量
-            rate: 4.6,// 好评度
-            isCertificated: false,
-            id: 12597812,// 服务id
-          },
-          {
-            avatar: '/static/xiake/head@2x.png',
-            serviceName: '微信开发',
-            name: '郑某某',
-            tags: [true, false, false], // 按顺序分别是专家、峡客、芝麻
-            descList: ['市场推广', '3年经验'],
-            gongli: 780, // 功力值
-            times: 6, // 交易量
-            rate: 4.6,// 好评度
-            isCertificated: true,
-            id: 78912,// 服务id
-          },
-        ],
+        serviceList:[],
+//        serviceList: [
+//          {
+//            avatar: '/static/xiake/head@2x.png',
+//            serviceName: '微信开发',
+//            name: '郑某某',
+//            tags: [true, true, true], // 按顺序分别是专家、峡客、芝麻
+//            descList: ['市场推广', '3年经验'],
+//            gongli: 780, // 功力值
+//            times: 6, // 交易量
+//            rate: 4.6,// 好评度
+//            isCertificated: true,
+//            id: 1213312,// 服务id
+//          },
+//        ],
         filterItems: ['城市', '类别', '级别', '排序'],
         cityList: ['全部', '北京', '上海', '广州', '深圳'],
         typeList: ['全部', '设计', '技术', '运营', '市场', '产品'],
@@ -229,7 +186,13 @@
       },
       showNotice() {
         return this.$store.state.taskFilterActiveIndex_xiake == 0 ? true : false
-      }
+      },
+      globalDOMAIN() {
+        return this.$store.state.globalDOMAIN
+      },
+      token() {
+        return sessionStorage.getItem('token')
+      },
     },
     mounted() {
       // 推荐的专家的图片加载
@@ -242,6 +205,7 @@
           proImg[i].appendChild(img);
         }
       }
+      this.getServiceList()
     },
     methods: {
       selectChoice(event) {
@@ -253,8 +217,38 @@
           //}
         }
       },
+      getServiceList(){
+        this.$http.get(`${this.globalDOMAIN}Employ/Service/getList`,{
+          emulateJSON: true,
+          headers: {'token': this.token}}).then((res)=>{
+            if(res.body.status){
+              console.log(res)
+              this.processServiceData(res.body.data.lists)
+            }else{
+              this.$vux.toast.text(res.body.msg)
+            }
+        })
+      },// 获取服务列表
+      processServiceData(data){
+//        serviceList: [
+//          {
+//            avatar: '/static/xiake/head@2x.png',
+//            serviceName: '微信开发',
+//            name: '郑某某',
+//            tags: [true, true, true], // 按顺序分别是专家、峡客、芝麻
+//            descList: ['市场推广', '3年经验'],
+//            gongli: 780, // 功力值
+//            times: 6, // 交易量
+//            rate: 4.6,// 好评度
+//            isCertificated: true,
+//            id: 1213312,// 服务id
+//          },
+//        ],
+
+      },// 处理服务列表数据
     },
     components: {
+      loading,
       Tag,
       Divider,
       'v-filter': Filter
@@ -316,6 +310,7 @@
     color: #00a0e9;
     border: 1px solid #00a0e9;
   }
+
   // 动画设置
   .fade2-enter-active, .fade2-leave-active {
     top: 1.11rem;
@@ -329,6 +324,10 @@
     top: 0;
   }
 
+  .customSticky {
+    position: sticky
+    top: 1.2rem
+  }
 
   .xiakeWrapper
     min-height: 100vh

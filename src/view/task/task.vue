@@ -71,6 +71,7 @@
   import Filter from '@/components/filter/filter.vue';
   import TaskItem from '@/view/task/taskItem/taskItem.vue';
   import Clipboard from 'clipboard'
+  import loading from '@/components/loading'
   // 放在这里是为了避免多次绑定事件
   var clipboard = new Clipboard('.getWxIdBtn') // 绑定到【点击复制客服微信号】按钮
   clipboard.on('success', (e) => {
@@ -85,6 +86,7 @@
   export default {
     data() {
       return {
+        isLoading:false,
         demo01_list: [
           {
             url: 'javascript:',
@@ -290,6 +292,7 @@
       },// 处理数据并返回
     },
     components: {
+      loading,
       Swiper,
       Divider,
       Sticky,

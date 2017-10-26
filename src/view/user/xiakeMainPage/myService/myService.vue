@@ -27,7 +27,7 @@
       </div>
     </router-link>
     <footer class="myServiceFooter" @click="myServiceRelease">
-      <router-link to="/taskRelease2" tag="div" class="myServiceRelease">发布服务</router-link>
+      <router-link to="/releaseService" tag="div" class="myServiceRelease">发布服务</router-link>
     </footer>
     <transition name="deleteModelFade">
       <div class="deleteModel" v-show="showDeleteModel">

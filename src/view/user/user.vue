@@ -18,10 +18,10 @@
         <!--发布服务与切换雇主版、峡客版-->
         <div class="userTools">
           <div class="userPost" @click="release">
-            <img src="./post@2x.png">发布服务
+            <img src="./post@2x.png">{{currentUserType === 0?'发布任务':'发布服务'}}
           </div>
           <div class="userChange" @click="userChange">
-            <img src="./paixu@2x.png">{{userChangeText}}
+            <img src="./paixu@2x.png">{{currentUserType === 0?'切换到峡客版':'切换到雇主版'}}
           </div>
         </div>
         <!--子页面导航：任务管理、主页、谁预约我等-->
@@ -107,7 +107,6 @@
         nickName: '',// 用户昵称
 
         // 当前状态、样式相关
-        userChangeText: '切换到创客版',// 用户切换提示
         currentUserType: 0,// 当且版本，0为雇主版，1为创客版
         userHeaderBgUrl: '/static/user/bg@3x.png',// 头图地址
         userPointUrl: '/static/user/hot_fill@3x.png',// 功力值背景
@@ -206,12 +205,10 @@
 
         // 切换显示文字与样式
         if (this.currentUserType === 0) {
-          this.userChangeText = '切换到雇主版'
           this.userHeaderBgUrl = '/static/user/xiake/bg@2x.png'
           this.userPointUrl = '/static/user/xiake/hot_fill@2x.png'
           this.currentUserType = 1
         } else if (this.currentUserType === 1) {
-          this.userChangeText = '切换到创客版'
           this.userHeaderBgUrl = '/static/user/bg@3x.png'
           this.userPointUrl = '/static/user/hot_fill@3x.png'
           this.currentUserType = 0
@@ -227,7 +224,7 @@
           this.$router.push({path: '/taskRelease2'})
         } else if (this.currentUserType === 1) {
           // 发布服务
-          this.$router.push({path: '/taskRelease2'})
+          this.$router.push({path: '/releaseService'})
         } else {
           return false
         }
