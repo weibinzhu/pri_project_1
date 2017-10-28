@@ -29,7 +29,7 @@
       return {
         isLoading: false,
         taskId: -1,
-        bidId: -1,
+        bidId: -1,// 如果bidId == -2，则表明这是一个服务的评价，不是任务评价。
         starLength: 5,// 星星长度
         score: 1,// 评价星数
         comment: '',// 评价内容
@@ -44,7 +44,7 @@
       globalDOMAIN() {
         return this.$store.state.globalDOMAIN
       },
-      token(){
+      token() {
         return sessionStorage.getItem('token')
       }
     },
@@ -59,13 +59,25 @@
         }
       },
       sendComment(task_id, bid_id, score, comment) {
-        let data = {
-          task_id,
-          bid_id,
-          score,
-          comment,
+        if (bid_id == -2) {
+          // 服务评价情况
+          var data = {
+            'order_id': task_id,// 其实这里是order_id
+            score,
+            comment,
+          }
+          var url = `${this.globalDOMAIN}Employ/Service/comment`
+        } else {
+          // 任务评价情况
+          var data = {
+            task_id,
+            bid_id,
+            score,
+            comment,
+          }
+          var url = `${this.globalDOMAIN}Employ/Task/comment`
         }
-        this.$http.post(`${this.globalDOMAIN}Employ/Task/comment`, data, {
+        this.$http.post(url, data, {
           emulateJSON: true,
           headers: {'token': this.token}
         }).then((res) => {

@@ -1,14 +1,15 @@
 <template>
   <div class="serviceDetailWrapper">
     <v-header @share="onShareClick" title="服务详情" :starShow="true" :shareShow="true"></v-header>
+    <loading v-show="isLoading"></loading>
     <!--内容区块Wrapper-->
     <div class="serviceInfoWrapper">
       <!--内容块-->
       <div class="serviceInfoBlock">
-        <div class="serviceName">海报设计、平面设计、美女写手
-          <div class="location">广州</div>
+        <div class="serviceName">{{serviceName}}
+          <div class="location">{{serviceLocation}}</div>
         </div>
-        <div class="serviceDesc">大量创意h5设计经验，根据您的需求，订制h5活动页</div>
+        <div class="serviceDesc">{{serviceDesc}}</div>
       </div>
       <!--内容块-->
       <div class="serviceInfoBlock">
@@ -16,7 +17,7 @@
           <img class="serviceInfoIcon" src="./reward@3x.png"/>我的成就
         </div>
         <div class="serviceInfoContent">
-          市场推广市场推广市场推广市场推广市场推广市场推广市场推广市场推广市场推广市场推广市场推广市场推广市场推广市场推广市场推广
+          {{achievement}}
         </div>
       </div>
       <!--内容块-->
@@ -25,10 +26,7 @@
           <img class="serviceInfoIcon" src="./reward@3x.png"/>作品图片
         </div>
         <div class="picBlock">
-          <img src="./picture@3x.png"/>
-          <img src="./picture@3x.png"/>
-          <img src="./picture@3x.png"/>
-          <img src="./picture@3x.png"/>
+          <div class="pic" v-for="(item,index) in imgList" :style="{backgroundImage: 'url(' + item + ')'}"></div>
         </div>
       </div>
       <!--内容块，峡客信息块-->
@@ -38,17 +36,15 @@
         </div>
         <div class="xiakeInfo">
           <div class="name">
-            郑某某
+            {{userName}}
             <tag v-if="isCertificated"></tag>
           </div>
           <div class="tagsWrapper">
-            <div class="tag">广州</div>
-            <div class="tag">市场推广</div>
-            <div class="tag">三年经验</div>
+            <div class="tag" v-for="(item,index) in tagList">{{item}}</div>
           </div>
           <div class="xiakeStatistic">
-            <div class="data">功力值 : <span>780</span></div>
-            <div class="data">交易量 : <span>2</span></div>
+            <div class="data">功力值 : <span>{{gongli}}</span></div>
+            <div class="data">交易量 : <span>{{times}}</span></div>
           </div>
         </div>
         <!--客服按钮-->
@@ -57,7 +53,7 @@
     </div>
     <!--底部按钮-->
     <footer class="footerBtn">
-      <div class="price">￥1000/次</div>
+      <div class="price">￥{{price}}/次</div>
       <router-link tag="div" :to="{name:'makeReservation',params:{id:id}}" class="reserBtn">立即预约</router-link>
     </footer>
     <!--客服-->
@@ -92,18 +88,73 @@
 <script type="text/ecmascript-6">
   import header from '../../components/v-header/v-header.vue'
   import Tag from '@/components/tag'
+  import loading from '@/components/loading'
   export default {
     name: 'serviceDetail',
     data() {
       return {
-        id: undefined,
-        isCertificated:true, // 峡客是否已认证
+        isLoading:false,
         showAd: false,// 广告（下载行峡APP）显隐
-        showGetWxModel:false,// 客服显隐
+        showGetWxModel: false,// 客服显隐
         wxId: 'fwfa21', // 客服微信号
+
+
+        // 服务信息
+        id: undefined,
+        isCertificated: true, // 峡客是否已认证
+        serviceName: '未查询到',
+        serviceLocation: '未查询到',
+        serviceDesc: '未查询到，根据您的需求，订制h5活动页',
+        achievement: '未查询到',
+        userName: '未查询到',
+        tagList: ['未查询到'],
+        gongli: '未查询到',
+        times: '未查询到',// 交易量
+        price:'未查询到',
+        imgList:['/static/pl_image.jpg'],// 作品图片
       }
     },
+    computed: {
+      globalDOMAIN() {
+        return this.$store.state.globalDOMAIN
+      },
+      token() {
+        return sessionStorage.getItem('token')
+      },
+    },
+    created() {
+      this.id = this.$route.params.id
+      this.getServiceInfo()
+    },
     methods: {
+      getServiceInfo() {
+        this.$http.get(`${this.globalDOMAIN}Employ/Service/getById`, {
+          params: {'service_id': this.id},
+          emulateJSON: true,
+          headers: {'token': this.token}
+        }).then((res) => {
+          this.processServiceInfoData(res.body.data)
+        })
+      },
+      processServiceInfoData(data) {
+        this.isCertificated = true // 峡客是否已认证
+        this.serviceName = data.title
+        this.serviceLocation = '广州'
+        this.serviceDesc = data.desc
+        this.achievement = data.achievement
+        this.userName = data.user.username
+        this.tagList = ['广州', '三年经验', '市场推广']
+        this.gongli = data.user.point
+        this.times = 6// 交易量
+        this.price = data.price
+        if(data.imgs){
+          this.imgList = []
+          for (let img of data.imgs){
+            let url = `${this.globalDOMAIN.slice(0,-11)}${img}`
+            this.imgList.push(url)
+          }
+        }
+      },
       onCloseBtnClick() {
         if (this.showAd) {
           this.showAd = false
@@ -120,11 +171,11 @@
         model.style.top = y + 'px'
         this.showGetWxModel = !this.showGetWxModel
       },
-      hideWxModel(){
+      hideWxModel() {
         // 点击遮罩隐藏客服微信号
-        if (this.showGetWxModel){
-          this.showGetWxModel=false
-        }else{
+        if (this.showGetWxModel) {
+          this.showGetWxModel = false
+        } else {
           return false
         }
       },
@@ -134,10 +185,8 @@
         }
       },
     },
-    created() {
-      this.id = this.$route.params.id
-    },
     components: {
+      loading,
       Tag,
       'v-header': header
     }
@@ -197,12 +246,14 @@
         display: flex
         flex-direction: row
         padding: px2-2-rem(48) px2-2-rem(36) px2-2-rem(40)
-        img
+        .pic
           width: px2-2-rem(145)
           height: px2-2-rem(145)
           margin-right: px2-2-rem(18)
+          background-size :cover
+          background-position :center
     .xiakeInfoBlock
-      position :relative
+      position: relative
       box-sizing: border-box
       display: flex
       flex-direction: row
@@ -230,18 +281,19 @@
           flex-direction: row
           align-items: center
           flex-wrap: wrap
-        .tag
-          height: px2-2-rem(28)
-          line-height: px2-2-rem(28)
-          padding-right: px2-2-rem(10)
-          margin-left: px2-2-rem(10)
-          font-size: px2-2-rem(28)
-          border-right: 1px solid #999999
-          color: #999999
-        .tag:first-child
-          margin: 0
-        .tag:last-child
-          border: none
+        .tagsWrapper
+          .tag
+            height: px2-2-rem(28)
+            line-height: px2-2-rem(28)
+            padding-right: px2-2-rem(10)
+            margin-left: px2-2-rem(10)
+            font-size: px2-2-rem(28)
+            border-right: 1px solid #999999
+            color: #999999
+          .tag:first-child
+            margin: 0
+          .tag:last-child
+            border: none
         .data
           margin-right: px2-2-rem(50)
           font-size: px2-2-rem(28)
@@ -249,11 +301,11 @@
           span
             color: #e4790f
       .kefuBtn
-        position :absolute
-        right :px2-2-rem(30)
-        bottom :px2-2-rem(-30)
-        width :px2-2-rem(70)
-        height :px2-2-rem(70)
+        position: absolute
+        right: px2-2-rem(30)
+        bottom: px2-2-rem(-30)
+        width: px2-2-rem(70)
+        height: px2-2-rem(70)
     .footerBtn
       box-sizing: border-box
       position: fixed

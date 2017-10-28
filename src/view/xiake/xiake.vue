@@ -133,7 +133,7 @@
             isCertificated: true
           },
         ],
-        serviceList:[],
+        serviceList: [],
 //        serviceList: [
 //          {
 //            avatar: '/static/xiake/head@2x.png',
@@ -217,19 +217,20 @@
           //}
         }
       },
-      getServiceList(){
-        this.$http.get(`${this.globalDOMAIN}Employ/Service/getList`,{
+      getServiceList() {
+        this.$http.get(`${this.globalDOMAIN}Employ/Service/getList`, {
           emulateJSON: true,
-          headers: {'token': this.token}}).then((res)=>{
-            if(res.body.status){
-              console.log(res)
-              this.processServiceData(res.body.data.lists)
-            }else{
-              this.$vux.toast.text(res.body.msg)
-            }
+          headers: {'token': this.token}
+        }).then((res) => {
+          if (res.body.status) {
+            console.log(res)
+            this.processServiceData(res.body.data.lists)
+          } else {
+            this.$vux.toast.text(res.body.msg)
+          }
         })
       },// 获取服务列表
-      processServiceData(data){
+      processServiceData(data) {
 //        serviceList: [
 //          {
 //            avatar: '/static/xiake/head@2x.png',
@@ -244,6 +245,23 @@
 //            id: 1213312,// 服务id
 //          },
 //        ],
+        if (data) {
+          for (let item of data) {
+            let tempItem = {
+              avatar: '/static/xiake/head@2x.png',
+              serviceName: item.title,
+              name: item.user.username,
+              tags: [true, true, true], // 按顺序分别是专家、峡客、芝麻
+              descList: ['市场推广', '3年经验'],
+              gongli: 780, // 功力值
+              times: 6, // 交易量
+              rate: 4.6,// 好评度
+              isCertificated: true,
+              id: item.id,// 服务id
+            }
+            this.serviceList.push(tempItem)
+          }
+        }
 
       },// 处理服务列表数据
     },
@@ -460,14 +478,16 @@
           flex-direction: row
           flex-wrap: wrap
           align-items: center
+        .descWrapper
+          font-size :0.3rem // 字太大的话会分两行
         .name
           height: px2-2-rem(28)
           line-height: px2-2-rem(28)
         .desc
           height: px2-2-rem(28)
           line-height: px2-2-rem(28)
-          padding-right: px2-2-rem(20)
-          margin-left: px2-2-rem(20)
+          padding-right: px2-2-rem(10)
+          margin-left: px2-2-rem(10)
           border-right: 1px solid #999999
         .desc:last-child
           border: none

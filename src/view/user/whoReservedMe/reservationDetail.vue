@@ -1,7 +1,8 @@
 <template>
   <div class="reservationDetailWrapper">
     <v-header title="预约订单详情"></v-header>
-    <div class="taskId">任务编号：{{taskId}}</div>
+    <loading v-show="isLoading"></loading>
+    <div class="taskId">任务编号：{{id}}</div>
     <div class="taskBasicInfo">
       <div class="taskBasicInfoLeft">
         <div class="taskTitle">{{title}}</div>
@@ -17,20 +18,22 @@
       <p class="requirement">{{requirement}}</p>
     </div>
     <!--各种底部功能条-->
-    <footer class="taskDetailFooter taskSelected" v-if="taskStatus == 0">
+    <footer class="taskDetailFooter taskSelected" v-if="serviceStatus == 0">
       <div class="contact" @click="toggleWxId"><img src="./service@3x.png"/>联系顾问</div>
       <div class="btnWrapperLeft">
         <div class="giveUp">放弃</div>
         <div class="contactXiake">沟通一下</div>
       </div>
-      <router-link to="/contract" tag="div" class="viewContractBtn">发起合同</router-link>
+      <router-link :to="{name:'serviceContract',params:{serviceId:id}}" tag="div" class="viewContractBtn">发起合同
+      </router-link>
     </footer>
-    <footer class="taskDetailFooter taskComment" v-if="taskStatus == 1">
+    <footer class="taskDetailFooter taskComment" v-if="serviceStatus == 1">
       <div class="contact" @click="toggleWxId"><img src="./service@3x.png"/>联系顾问</div>
       <router-link to="/contract" tag="div" class="viewContractBtn">查看合同</router-link>
-      <router-link to="/toRateTask" tag="div" class="comment">评价</router-link>
+      <router-link :to="{name:'toRateTask', params:{taskId:id,bidId:-2}}" tag="div" class="comment">评价</router-link>
+      <!--taskId这个名字就不改了，bid_id==-2表明这是一个服务发起的评价-->
     </footer>
-    <footer class="taskDetailFooter taskSuccess" v-if="taskStatus == 2">已成功</footer>
+    <footer class="taskDetailFooter taskSuccess" v-if="serviceStatus == 2">已成功</footer>
 
     <!--客服-->
     <transition name="getWxFade">
@@ -53,48 +56,80 @@
 
 <script type="text/ecmascript-6">
   import header from "@/components/v-header/v-header"
+  import loading from '@/components/loading'
+  import {formatDate} from '@/common/utils/utils.js'
 
   export default {
     name: 'taskDetail',
     data() {
       return {
+        isLoading: false,
         wxId: 'fwfa21', // 客服微信号
         showGetWxModel: false,// 客服微信号弹框显隐
-        taskId: 0, // 任务id
-        taskStatus: 0, // 任务类型，解释：'0-初始', '1-待评价', '2-已成功'
-        title: '公众号推广核心商户扶持计划数据全面支持', // 任务名称
-        price: '15000-30000', // 任务价格范围
-        date: '2017-08-05', // 任务日期
-        requirement: "服务要求服务要求服务要求服务要求服务要求服务要求服务要求服务要求服务要求服务要求服务要求服务要求服务要求服务要求服务要求服务要求服务要求服务要求服务要求",
+
+
+        // 预约服务、订单信息
+        id: 0, // 订单id
+        serviceStatus: 0, // 任务类型，解释：'0-初始', '1-待评价', '2-已成功'
+        title: '未查询到', // 服务名称
+        price: '未查询到', // 任务价格范围
+        date: '未查询到', // 任务日期
+        requirement: "未查询到",
 
       }
     },
+    computed: {
+      globalDOMAIN() {
+        return this.$store.state.globalDOMAIN
+      },
+      token() {
+        return sessionStorage.getItem('token')
+      },
+    },
     created() {
-      this.taskId = this.$route.params.id
-      this.taskStatus = this.$route.params.status
+//      this.id = this.$route.params.id
+      this.id = 5// 测试用
+      this.serviceStatus = this.$route.params.status
+      this.getBookInfo()// 错了，这里应该是根据
     },
     methods: {
-      toggleWxId() { // 弹出或隐藏【点击复制客服微信】框
+      getBookInfo() {
+        this.$http.get(`${this.globalDOMAIN}Employ/Service/getBookInfo`, {
+          params: {'order_id': this.id},
+          emulateJSON: true,
+          headers: {'token': this.token}
+        }).then((res) => {
+          this.processBookInfoData(res.body.data)
+        })
+      },
+      processBookInfoData(data) {
+        let date = new Date(data.inputtime * 1000)
+        this.title = data.service.title
+        this.price = data.service.price
+        this.requirement = data.remark
+        this.date = formatDate(date, 'yyyy-MM-dd')
+      },
+      toggleWxId() {
         let y = window.scrollY + 200;
         let model = document.querySelector(".getWxModel")
         model.style.top = y + 'px'
         this.showGetWxModel = !this.showGetWxModel
-      },
-      checkIphone() { // 优雅降级。（暂时不需要用）
+      },// 弹出或隐藏【点击复制客服微信】框
+      checkIphone() {
         if (navigator.userAgent.match(/ipad|ipod|iphone/i)) {
           alert('如果复制失败请手动复制')
         }
-      },
+      },// 优雅降级。（暂时不需要用）
       hideWxModel() {
-        // 点击遮罩隐藏客服微信号
         if (this.showGetWxModel) {
           this.showGetWxModel = false
         } else {
           return false
         }
-      }
+      },// 点击遮罩隐藏客服微信号
     },
     components: {
+      loading,
       'v-header': header
     }
   }

@@ -74,7 +74,7 @@
         taskAchievePlaceholder: '请详细描述你的成就', // 【我的成就】提示词
         taskAchieveValue: '',// 保存输入的值
         file: null,
-        price:'',// 服务价格
+        price: '',// 服务价格
         wordLimit: 500, // 最大字数
         imagesPreview: [],// 用于预览
         imagesSent: [],// 用于发送
@@ -110,21 +110,21 @@
     methods: {
       releaseTask() {
         let data = {
-          'title':this.taskNameValue,
-          'price':this.price,
-          'desc':this.taskIntroValue,
-          'achievement':this.taskAchieveValue,
-          'imgs':this.imagesSent,
+          'title': this.taskNameValue,
+          'price': this.price,
+          'desc': this.taskIntroValue,
+          'achievement': this.taskAchieveValue,
+          'imgs': this.imagesSent,
         }
         this.$http.post(`${this.globalDOMAIN}Employ/Service/create`, data, {
           emulateJSON: true,
           headers: {'token': this.token}
-        }).then((res)=>{
-          if(res.body.status){
+        }).then((res) => {
+          if (res.body.status) {
             // 如果成功
             this.$vux.toast.text(res.body.msg)
             this.$router.go(-1)
-          }else{
+          } else {
             // 如果失败
             this.$vux.toast.text(res.body.msg)
           }

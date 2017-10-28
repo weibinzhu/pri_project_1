@@ -315,7 +315,7 @@
             this.bidIdMethod()
             console.log(this.taskInfo)
           } else {
-            this.$vux.toast.text('获取任务失败')
+            this.$vux.toast.text(response.body.msg)
           }
         })
       },// 发送请求获取数据

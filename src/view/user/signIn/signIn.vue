@@ -64,9 +64,13 @@
             let num = res.body.data.num, point = res.body.data.point
             this.signInDays = num
             sessionStorage.setItem('sign_num',this.signInDays)
-            alert(`成功签到，积分已加${point}`)
+            this.$vux.toast.text(`成功签到，积分已加${point}`)
           } else {
-            alert('今天已签到')
+            if (res.body.msg){
+              this.$vux.toast.text(res.body.msg)
+            }else{
+              this.$vux.toast.text('请登录')
+            }
           }
         })
       },// 签到

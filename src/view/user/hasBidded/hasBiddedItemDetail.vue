@@ -1,6 +1,7 @@
 <template>
   <div class="hasBiddedItemDetailWrapper">
     <v-header title="任务详情"></v-header>
+    <loading v-show="isLoading"></loading>
     <div class="taskId">任务编号：{{taskId}}</div>
     <div class="taskBasicInfo">
       <div class="taskBasicInfoLeft">
@@ -73,12 +74,13 @@
 
 <script type="text/ecmascript-6">
   import header from "@/components/v-header/v-header"
-
+  import loading from '@/components/loading'
+  import Loading from "../../../../node_modules/vux/src/components/loading/index.vue";
   export default {
     name: 'taskDetail',
     data() {
       return {
-
+        isLoading:false,
         wxId: 'fwfa21', // 客服微信号
         showGetWxModel: false,// 客服微信号弹框显隐
         showGiveUpModel: false,
@@ -97,11 +99,31 @@
 
       }
     },
+    computed:{
+      globalDOMAIN(){
+        return this.$store.state.globalDOMAIN
+      },
+      token(){
+        return sessionStorage.getItem('token')
+      }
+    },
     created() {
       this.taskId = this.$route.params.id
       this.taskStatus = this.$route.params.status
+      this.getTaskInfo()
     },
     methods: {
+      getTaskInfo(){
+        this.$http.get(`${this.globalDOMAIN}Employ/Task/getById`,{
+          params:{'task_id':this.taskId},
+          headers:{'token':this.token}
+        }).then(res=>{
+          console.log(res)
+        })
+      },
+      processInfoData(data){
+
+      },
       toggleWxId() { // 弹出或隐藏【点击复制客服微信】框
         let y = window.scrollY + 200;
         let model = document.querySelector(".getWxModel")
@@ -134,6 +156,7 @@
       }
     },
     components: {
+      Loading,
       'v-header': header
     }
   }

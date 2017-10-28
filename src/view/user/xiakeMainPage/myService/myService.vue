@@ -1,6 +1,7 @@
 <template>
   <div class="myServiceWrapper">
     <v-header title="我的服务"></v-header>
+    <loading v-show="isLoading"></loading>
     <router-link tag="div" :to="{name:'serviceDetail2', params:{id:item.taskId}}"
                  class="myServiceItem"
                  v-for="(item,index) in service" :key="index">
@@ -17,7 +18,8 @@
         </div>
       </div>
       <div class="myServiceItemBtn">
-        <div @click.stop="toggleModel('.reasonModel','showReasonModel')" class="refuseBtn" v-if="item.type == 1 ">拒绝原因</div>
+        <div @click.stop="toggleModel('.reasonModel','showReasonModel')" class="refuseBtn" v-if="item.type == 1 ">拒绝原因
+        </div>
         <div @click.stop="toggleModel('.deleteModel','showDeleteModel')" class="deleteBtn"
              v-if="item.type == 1">删除
         </div>
@@ -72,58 +74,83 @@
 
 <script type="text/ecmascript-6">
   import header from '@/components/v-header/v-header'
+  import loading from '@/components/loading'
 
   export default {
+    name:'myService',
     data() {
       return {
+        isLoading: false,
         typeList: ['审核中', '审核不通过', '普通'],
         //statusList: ['0-已选择', '1-已放弃', '2-托管资金', '3-已支付', '4-评价', '5-交易成功', '6-未选择', '7-暂无竞标'],
-        service: [
-          // type解释：0-审核中，1-审核不通过，2-普通，3-已完成(列表显示时用)
-          // status解释：0-已选择，1-已放弃，2-托管资金，3-已支付，4-评价，5-交易成功，6-未选择，7-暂无竞标（进去详情后用）
-          {
-            name: '公众号推广核心商户扶持计划数据全面支持',
-            price: '15000-59500',
-            taskId: 1,
-            num: 2,// 交易笔数
-            type: 0,
-            status: 0,
-          },
-          {
-            name: '公众号推广核心商户扶持计划数据全面支持',
-            price: '15000-59500',
-            taskId: 2,
-            num: 2,// 交易笔数
-            type: 1,
-            status: 1,
-          },
-          {
-            name: '公众号推广核心商户扶持计划数据全面支持',
-            price: '15000-59500',
-            taskId: 3,
-            num: 2,// 交易笔数
-            type: 2,
-            status: 2,
-          },
-          {
-            name: '英语主持持服持服服务',
-            price: '15000-59500',
-            taskId: 4,
-            num: 2,// 交易笔数
-            type: 2,
-            status: 3,
-          },
-        ],
+        service: [],
         showDeleteModel: false,
         showRemoveModel: false,
         showReasonModel: false,
       }
     },
+    computed: {
+      globalDOMAIN() {
+        return this.$store.state.globalDOMAIN
+      },
+      token() {
+        return sessionStorage.getItem('token')
+      }
+    },
+    created() {
+      this.getServiceList()
+    },
     methods: {
       myServiceRelease() {
         return;
       },
-      toggleModel(selector,flag){
+
+      getServiceList() {
+        this.$http.get(`${this.globalDOMAIN}Employ/Service/getList`, {
+          params: {'user_id': sessionStorage.getItem('userid')},
+          emulateJSON: true,
+          headers: {'token': this.token}
+        }).then((res) => {
+          if (res.body.status) {
+            this.processServiceData(res.body.data.lists)
+          } else {
+            this.$vux.toast.text(res.body.msg)
+          }
+        })
+      },// 获取服务列表
+      processServiceData(data) {
+//        typeList: ['审核中', '审核不通过', '普通'],
+//        statusList: ['0-已选择', '1-已放弃', '2-托管资金', '3-已支付', '4-评价', '5-交易成功', '6-未选择', '7-暂无竞标'],
+//        service: [
+//           type解释：0-审核中，1-审核不通过，2-普通，3-已完成(列表显示时用)
+//           status解释：0-已选择，1-已放弃，2-托管资金，3-已支付，4-评价，5-交易成功，6-未选择，7-暂无竞标（进去详情后用）
+//          {
+//            name: '公众号推广核心商户扶持计划数据全面支持',
+//            price: '15000-59500',
+//            taskId: 1,
+//            num: 2,// 交易笔数
+//            type: 0,
+//            status: 0,
+//          },
+//        ],
+        if (data) {
+          for (let item of data) {
+            let tempItem = {
+              name: item.title,
+              price: item.price,
+              taskId: item.id,// 服务id
+              num: 6, // 交易量
+              type: 0,
+              status: 0,
+            }
+            this.service.push(tempItem)
+          }
+        }
+
+      },// 处理服务列表数据
+
+
+      toggleModel(selector, flag) {
         // 弹出或隐藏某个框
         // selector: String, 用于传给querySelector
         // flag: String, 用于确定是哪一个框
@@ -144,6 +171,7 @@
       }
     },
     components: {
+      loading,
       'v-header': header
     }
   }
@@ -154,7 +182,6 @@
   .myServiceWrapper
     display: flex
     flex-direction: column
-    justify-content: center
     align-items: center
     min-height: 100vh
     font-size: px2-2-rem(32)

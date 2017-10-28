@@ -51,6 +51,15 @@
         let token = sessionStorage.getItem('token')
         this.$http.post(`${this.globalDOMAIN}Employ/User/logout`,{},{headers:{'token':token}}).then((res)=>{
           console.log(res)
+          if(res.body){
+            if(!res.body.status){
+              this.$vux.toast.text(res.body.msg)
+            }
+          }else{
+            sessionStorage.clear()
+            this.$vux.toast.text('已退出')
+            this.$router.push('/login')
+          }
         })
       }
     },

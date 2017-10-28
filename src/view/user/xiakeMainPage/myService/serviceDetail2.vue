@@ -1,14 +1,15 @@
 <template>
   <div class="serviceDetailWrapper">
     <v-header @share="onShareClick" title="服务详情" :shareShow="true"></v-header>
+    <loading v-show="isLoading"></loading>
     <!--内容区块Wrapper-->
     <div class="serviceInfoWrapper">
       <!--内容块-->
       <div class="serviceInfoBlock">
         <div class="subBlock">
-          <div class="serviceInfoHeader">UI设计</div>
+          <div class="serviceInfoHeader">{{title}}</div>
           <div class="serviceInfoContent">
-            服务内容服务内容服务内容服务内容服务内容服务内容服务内容服务内容服务内容服务内容服务内容服务内容服务内容服务内容
+            {{content}}
           </div>
         </div>
         <div class="price">
@@ -21,7 +22,7 @@
           我的成就
         </div>
         <div class="serviceInfoContent">
-          市场推广市场推广市场推广市场推广市场推广市场推广市场推广市场推广市场推广市场推广市场推广市场推广市场推广市场推广市场推广
+          {{achievement}}
         </div>
       </div>
       <!--内容块-->
@@ -30,15 +31,13 @@
           作品图片
         </div>
         <div class="picBlock">
-          <img src="./picture@3x.png"/>
-          <img src="./picture@3x.png"/>
-          <img src="./picture@3x.png"/>
-          <img src="./picture@3x.png"/>
+          <div class="pic" v-for="(item,index) in imgList" :style="{backgroundImage: 'url(' + item + ')'}"></div>
         </div>
       </div>
     </div>
     <!--底部按钮-->
-    <footer class="toEdit">编辑</footer>
+    这里的type表明是从哪里来的，-1表明是峡客主页的我的服务的编辑进去的
+    <router-link :to="{path:'/releaseService' , query: { type: '-1' }}" tag="footer" class="toEdit">编辑</router-link>
     <!--广告-->
     <transition name="adFade">
       <div class="adWrapper" v-show="showAd">
@@ -58,17 +57,60 @@
 
 <script type="text/ecmascript-6">
   import header from '../../../../components/v-header/v-header.vue'
+  import loading from '@/components/loading'
 
   export default {
     name: 'serviceDetail',
     data() {
       return {
+        isLoading: false,
         id: undefined,
-        price: 3000,//价格
+        title: '未查询到', // 服务标题
+        price: '未查询到', //价格
+        content: '未查询到', // 服务内容
+        achievement: '未查询到', // 我的成就
+        imgList: ['/static/pl_image.jpg'],// 作品图片
         showAd: false,// 广告（下载行峡APP）显隐
       }
     },
+    created() {
+      this.id = this.$route.params.id
+      this.getServiceInfoById()
+    },
+    computed: {
+      globalDOMAIN() {
+        return this.$store.state.globalDOMAIN
+      },
+      token() {
+        return sessionStorage.getItem('token')
+      }
+    },
     methods: {
+      getServiceInfoById() {
+        this.$http.get(`${this.globalDOMAIN}Employ/Service/getById`, {
+          params: {'service_id': this.id},
+          emulateJSON: true,
+          headers: {'token': this.token},
+        }).then(res => {
+          let body = res.body
+          this.$vux.toast.text(body.msg)
+          this.processServiceInfoData(body.data)
+        })
+      },
+      processServiceInfoData(data) {
+        console.log(data)
+        this.title = data.title
+        this.price = data.price
+        this.content = data.desc
+        this.achievement = data.achievement
+        if(data.imgs){
+          this.imgList = []
+          for (let img of data.imgs){
+            let url = `${this.globalDOMAIN.slice(0,-11)}${img}`
+            this.imgList.push(url)
+          }
+        }
+      },
       onCloseBtnClick() {
         if (this.showAd) {
           this.showAd = false
@@ -80,10 +122,9 @@
         }
       },
     },
-    created() {
-      this.id = this.$route.params.id
-    },
+
     components: {
+      loading,
       'v-header': header
     }
   }
@@ -135,17 +176,19 @@
         align-items: center
         height: px2-2-rem(82)
       .serviceInfoContent
-        padding :px2-2-rem(20) 0
+        padding: px2-2-rem(20) 0
         font-size: px2-2-rem(28)
         color: #999999
       .picBlock
         display: flex
         flex-direction: row
         padding: px2-2-rem(10) 0 px2-2-rem(40)
-        img
+        .pic
           width: px2-2-rem(145)
           height: px2-2-rem(145)
           margin-right: px2-2-rem(18)
+          background-size :cover
+          background-position :center
     .overlay
       position: fixed;
       top: 0;
