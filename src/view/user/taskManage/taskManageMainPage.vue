@@ -174,7 +174,7 @@
             maxPrice: task.price_max,
             taskId: task.id,
             type: Math.floor(Math.random() * 6),
-            status:3
+            status:4
           }
           tempList.push(tempItem)
         }

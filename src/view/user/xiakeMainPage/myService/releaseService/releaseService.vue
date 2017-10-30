@@ -89,7 +89,7 @@
       }
     },
     mounted() {
-
+      // 预加载图
       var placeholder = document.querySelector('.headImgPlaceholder'),
         small = placeholder.querySelector('.headImgSm')
       // 1: load small image and show it
@@ -106,17 +106,37 @@
         imgLarge.classList.add('loaded');
       };
       placeholder.appendChild(imgLarge);
+
+
+      // 获取type
+      this.type = this.$route.query.type
+      this.id = this.$route.query.id
     },
     methods: {
       releaseTask() {
-        let data = {
-          'title': this.taskNameValue,
-          'price': this.price,
-          'desc': this.taskIntroValue,
-          'achievement': this.taskAchieveValue,
-          'imgs': this.imagesSent,
+        if (this.type == -1) {
+          var data = {
+            'id': this.id,
+            'title': this.taskNameValue,
+            'price': this.price,
+            'desc': this.taskIntroValue,
+            'achievement': this.taskAchieveValue,
+            'imgs': this.imagesSent,
+          }
+          var url = `${this.globalDOMAIN}Employ/Service/edit`
+          console.log('edit')
+        } else {
+          var data = {
+            'title': this.taskNameValue,
+            'price': this.price,
+            'desc': this.taskIntroValue,
+            'achievement': this.taskAchieveValue,
+            'imgs': this.imagesSent,
+          }
+          var url = `${this.globalDOMAIN}Employ/Service/create`
+          console.log('release')
         }
-        this.$http.post(`${this.globalDOMAIN}Employ/Service/create`, data, {
+        this.$http.post(url, data, {
           emulateJSON: true,
           headers: {'token': this.token}
         }).then((res) => {

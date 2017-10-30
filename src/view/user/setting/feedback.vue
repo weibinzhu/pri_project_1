@@ -2,9 +2,9 @@
   <div class="feedbackWrapper">
     <v-header title="意见反馈"></v-header>
     <div class="feedbackInputWrapper">
-      <textarea :placeholder="feedbackPlaceholder" class="feedbackInput"></textarea>
+      <textarea v-model="feedbackValue" :placeholder="feedbackPlaceholder" class="feedbackInput"></textarea>
     </div>
-    <div class="feedbackSubmit">提交反馈</div>
+    <div @click="submitFeedback" class="feedbackSubmit">提交反馈</div>
   </div>
 </template>
 
@@ -14,7 +14,32 @@
   export default {
     data() {
       return {
+        feedbackValue: '',
         feedbackPlaceholder: '感谢您的使用，我们将会认真对待每一份宝贵的意见，继续努力优化体验'
+      }
+    },
+    computed: {
+      globalDOMAIN() {
+        return this.$store.state.globalDOMAIN
+      },
+      token() {
+        return sessionStorage.getItem('token')
+      }
+    },
+    methods: {
+      submitFeedback() {
+        this.$http.post(`${this.globalDOMAIN}Employ/Feedback/apply`, {
+          'content': this.feedbackValue
+        }, {
+          emulateJSON: true,
+          headers: {'token': this.token}
+        }).then(res => {
+          if (res.body.status) {
+            this.$vux.toast.text('提交成功')
+          } else {
+            this.$vux.toast.text(res.body.msg)
+          }
+        })
       }
     },
     components: {
@@ -31,8 +56,8 @@
     align-items: center
     background-color: #f8f8f8
     .feedbackInputWrapper
-      box-sizing :border-box
-      width :100%
+      box-sizing: border-box
+      width: 100%
       margin-bottom: px2-2-rem(60)
       margin-top: px2-2-rem(20)
       padding: px2-2-rem(32) px2-2-rem(50)

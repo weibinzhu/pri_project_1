@@ -11,7 +11,8 @@
     <div class="taskBasicInfo">
       <div class="taskBasicInfoLeft">
         <div class="taskTitle">{{taskInfo.title}}</div>
-        <div class="taskPrice">￥{{taskInfo.price_min}}-{{taskInfo.price_max}}</div>
+        <div class="taskPrice" v-if="type != 2">￥{{taskInfo.price_min}}-{{taskInfo.price_max}}</div>
+        <div class="taskPrice" v-if="type == 2">￥{{taskInfo.price}}</div>
       </div>
       <div class="taskBasicInfoRight">
         <div class="taskDate">{{taskInfo.inputtime | formatDate}}</div>
@@ -88,7 +89,7 @@
         <div class="giveUp">放弃</div>
         <div class="contactXiake">沟通一下</div>
       </div>
-      <router-link :to="{name:'contract',params:{taskId:taskId}}" tag="div" class="viewContractBtn">发起合同</router-link>
+      <div @click="goToContract" class="viewContractBtn">发起合同</div>
     </footer>
     <footer class="taskDetailFooter taskGiveUp" v-if="taskStatus == 1">已放弃</footer>
     <footer class="taskDetailFooter taskManageMoney" v-if="taskStatus == 2">
@@ -225,14 +226,15 @@
         ],
         // bidId: 10,// 投标者id，如果已经选择的话就只有一个bidId，否则应该为空
         taskId: 0, // 任务id
+        orderId: 0, // 预约服务的时候的订单id
         taskStatus: 0, // 任务类型，解释：-1-任务页用 0-已选择，1-已放弃，2-托管资金，3-已支付，4-评价，5-交易成功，6-未选择，7-暂无竞标
         type: -1,
         date: '2017-08-05', // 任务日期
         period: '1周', // 项目周期
         skills: ['SEM', '市场策划', 'SEO'], // 所需技能
         bidNum: 16,// 投标人数
-        hasValidBidder:true,
-        bidId:-1,
+        hasValidBidder: true,
+        bidId: -1,
       }
     },
     computed: {
@@ -259,11 +261,10 @@
       }
     },
     created() {
-      this.taskId = this.$route.params.id
       this.taskStatus = this.$route.params.status
       this.type = this.$route.params.type
+      this.type == 2 ? this.orderId = this.$route.params.id : this.taskId = this.$route.params.id
       this.getTaskDetail()
-//      console.log(formatDate(this.taskInfo.inputtime, 'yyyy-MM-dd'))
     },
     methods: {
       toggleWxId() { // 弹出或隐藏【点击复制客服微信】框
@@ -284,7 +285,6 @@
       },// 淘汰某投标者
 
       chooseHim(bidId) {
-//        console.log(this.taskInfo,this.taskInfo.bids)
         this.sentBiderRelatedRequest('win', bidId)
       },// 选择某投标者
 
@@ -302,24 +302,57 @@
       },
 
       getTaskDetail() {
-        let id = this.taskId
-        this.$http.get(`${this.globalDOMAIN}Employ/Task/getById`, {
-          params: {'task_id': id},
-          emulateJSON: true,
-          headers: {'token': this.token}
-        }).then((response) => {
-          if (response.body.status) {
-            let data = response.body.data
-            this.taskInfo = data
-            this.hasValidBidderMethod()
-            this.bidIdMethod()
-            console.log(this.taskInfo)
-          } else {
-            this.$vux.toast.text(response.body.msg)
-          }
-        })
+        if (this.type == 2) {
+          let id = this.orderId
+          this.$http.get(`${this.globalDOMAIN}Employ/Service/getBookInfo`, {
+            params: {'order_id': id},
+            emulateJSON: true,
+            headers: {'token': this.token}
+          }).then(res => {
+            if (res.body.status) {
+              let data = res.body.data
+              this.taskId = data.service.id
+              this.period = '查询不到'
+              this.taskInfo = {
+                title: data.service.title,
+                price: data.service.price,
+                inputtime: data.service.inputtime,
+                city: data.service.city || '查询不到',
+                work_type: '查询不到',
+                desc: data.remark,
+              }
+              // this.hasValidBidderMethod()
+              // this.bidIdMethod()
+            } else {
+              this.$vux.toast.text(response.body.msg)
+            }
+          })
+        } else {
+          let id = this.taskId
+          this.$http.get(`${this.globalDOMAIN}Employ/Task/getById`, {
+            params: {'task_id': id},
+            emulateJSON: true,
+            headers: {'token': this.token}
+          }).then((response) => {
+            if (response.body.status) {
+              let data = response.body.data
+              this.taskInfo = data
+              this.hasValidBidderMethod()
+              this.bidIdMethod()
+              console.log(this.taskInfo)
+            } else {
+              this.$vux.toast.text(response.body.msg)
+            }
+          })
+        }
       },// 发送请求获取数据
-
+      goToContract() {
+        if(this.type==2){
+          this.$router.push({name: 'serviceContract', params: {orderId: this.orderId}})
+        }else{
+          this.$router.push({name: 'contract', params: {taskId: this.taskId}})
+        }
+      },// 点击发起合同
       onCloseBtnClick() {
         // 点击广告的关闭按钮
         this.showAd = false
@@ -356,7 +389,7 @@
         })
       },// 投标、竞标
       hasValidBidderMethod() {
-        if(this.taskInfo.bids){
+        if (this.taskInfo.bids) {
           let valid = 0
           for (let bid of this.taskInfo.bids) {
             if (bid.status != '0') {
@@ -368,7 +401,7 @@
         this.hasValidBidder = false
       },// 是否有未被雇主淘汰的投标者
       bidIdMethod() {
-        if(this.taskInfo.bids){
+        if (this.taskInfo.bids) {
           for (let bid of this.taskInfo.bids) {
             if (bid.status == 99) {
               this.bidId = bid.id

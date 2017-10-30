@@ -24,7 +24,7 @@
         <div class="giveUp">放弃</div>
         <div class="contactXiake">沟通一下</div>
       </div>
-      <router-link :to="{name:'serviceContract',params:{serviceId:id}}" tag="div" class="viewContractBtn">发起合同
+      <router-link :to="{name:'serviceContract',params:{orderId:id}}" tag="div" class="viewContractBtn">发起合同
       </router-link>
     </footer>
     <footer class="taskDetailFooter taskComment" v-if="serviceStatus == 1">
@@ -87,8 +87,7 @@
       },
     },
     created() {
-//      this.id = this.$route.params.id
-      this.id = 5// 测试用
+      this.id = this.$route.params.id
       this.serviceStatus = this.$route.params.status
       this.getBookInfo()// 错了，这里应该是根据
     },

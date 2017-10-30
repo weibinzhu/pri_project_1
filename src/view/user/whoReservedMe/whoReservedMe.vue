@@ -18,7 +18,7 @@
         </div>
         <div class="whoReservedMeItemBtn">
           <div @click.stop="toggleModel('.giveUpModel','showGiveUpModel')" class="giveUpBtn" v-if="item.status == 1">放弃</div>
-          <router-link tag="div" :to="{name:'reservationDetail', params:{id:item.taskId,status:item.status,type:2}}"
+          <router-link tag="div" :to="{name:'reservationDetail', params:{id:item.orderId,status:item.status,type:2}}"
                        class="moreBtn">查看详情</router-link>
         </div>
       </div>
@@ -53,80 +53,81 @@
           // type解释：'0未接受', '1洽谈中', '2服务中', '3待评价', '4已完成'
           // status解释：'0-初始', '1-待评价', '2-已成功'
           {
-            name: '英语主持服务',
-            price: '15000-59500',
-            company: '主题邦科技',
+            name: '加载中',
+            price: '加载中',
+            company: '加载中',
             companyLogo: '/static/icon@3x.png',
-            isCertificated: true,
+            isCertificated: false,
             taskId: 1,
             type: 0,
             status: 0,
           },
-          {
-            name: '英语主持务',
-            price: '15000-59500',
-            company: '闻喜科技',
-            companyLogo: '/static/icon@3x.png',
-            isCertificated: true,
-            taskId: 2,
-            type: 1,
-            status: 1,
-          },
-          {
-            name: '英语主持服',
-            price: '15000-59500',
-            company: '闻喜科技',
-            companyLogo: '/static/icon@3x.png',
-            isCertificated: true,
-            taskId: 3,
-            type: 3,
-            status: 2,
-          },
-          {
-            name: '英语主持持服持服服务',
-            price: '15000-59500',
-            company: '主题邦科技',
-            companyLogo: '/static/icon@3x.png',
-            isCertificated: false,
-            taskId: 4,
-            type: 2,
-            status: 1,
-          },
-          {
-            name: '英语服务',
-            price: '15000-59500',
-            company: '主题邦科技',
-            companyLogo: '/static/icon@3x.png',
-            isCertificated: true,
-            taskId: 5,
-            type: 4,
-            status: 2,
-          },
-          {
-            name: '英务',
-            price: '15000-59500',
-            company: '主题邦科技',
-            companyLogo: '/static/icon@3x.png',
-            isCertificated: false,
-            taskId: 6,
-            type: 4,
-            status: 1,
-          },
-          {
-            name: '英务da',
-            price: '15000-59500',
-            company: '主题邦科技',
-            companyLogo: '/static/icon@3x.png',
-            isCertificated: true,
-            taskId: 7,
-            type: 2,
-            status: 0,
-          }
         ],
         showGiveUpModel: false,
       }
     },
+    computed: {
+      globalDOMAIN() {
+        return this.$store.state.globalDOMAIN
+      },
+      token() {
+        return sessionStorage.getItem('token')
+      }
+    },
+    created(){
+      this.getOrderList()
+    },
     methods: {
+      getOrderList() {
+        this.$http.get(`${this.globalDOMAIN}Employ/Service/getOrderList`, {
+          emulateJSON: true,
+          headers: {'token': this.token},
+        }).then(res => {
+          if(res.body.status){
+            this.processOrderData(res.body.data)
+          }else{
+            this.$vux.toast.text(res.body.msg)
+          }
+        })
+      },// 获取预约我的列表
+      processOrderData(data) {
+//        tasks: [
+        // type解释：'0未接受', '1洽谈中', '2服务中', '3待评价', '4已完成'
+        // status解释：'0-初始', '1-待评价', '2-已成功'
+//        {
+//          name: '英语主持服务',
+//          price: '15000-59500',
+//          company: '主题邦科技',
+//          companyLogo: '/static/icon@3x.png',
+//          isCertificated: true,
+//          taskId: 1,
+//          type: 0,
+//          status: 0,
+//        },
+//      ],
+        this.tasks = []
+        if(data){
+          for (let item of data) {
+            let tempItem = {
+              name: item.service.title,
+              price: item.service.price,
+              company:item.employ.username,
+              taskId: item.service_id,
+              orderId:item.id,
+              // 以下是暂无数据，空着的
+              isCertificated: true,
+              companyLogo: '/static/icon@3x.png',
+              type: 0,
+              status: 0,
+            }
+            this.tasks.push(tempItem)
+          }
+        }else{
+          this.$vux.toast.text('暂无数据')
+        }
+      },// 处理列表数据
+
+
       toggleModel(selector,flag){
         // 弹出或隐藏某个框
         // selector: String, 用于传给querySelector
@@ -154,7 +155,6 @@
   .whoReservedMeWrapper
     display: flex
     flex-direction: column
-    justify-content: center
     align-items: center
     min-height: 100vh
     font-size: px2-2-rem(32)

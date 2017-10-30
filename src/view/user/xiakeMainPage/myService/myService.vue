@@ -2,7 +2,7 @@
   <div class="myServiceWrapper">
     <v-header title="我的服务"></v-header>
     <loading v-show="isLoading"></loading>
-    <router-link tag="div" :to="{name:'serviceDetail2', params:{id:item.taskId}}"
+    <router-link tag="div" :to="{name:'serviceDetail2', params:{id:item.serviceId}}"
                  class="myServiceItem"
                  v-for="(item,index) in service" :key="index">
       <div class="myServiceItemInfo">
@@ -18,14 +18,17 @@
         </div>
       </div>
       <div class="myServiceItemBtn">
-        <div @click.stop="toggleModel('.reasonModel','showReasonModel')" class="refuseBtn" v-if="item.type == 1 ">拒绝原因
+        <div @click.stop="toggleModel('.reasonModel','showReasonModel',item.serviceId)" class="refuseBtn"
+             v-if="item.type == 1 ">拒绝原因
         </div>
-        <div @click.stop="toggleModel('.deleteModel','showDeleteModel')" class="deleteBtn"
+        <div @click.stop="toggleModel('.deleteModel','showDeleteModel',item.serviceId)" class="deleteBtn"
              v-if="item.type == 1">删除
         </div>
         <div class="modifyBtn" v-if="item.type == 1 || item.type == 2">修改</div>
-        <div @click.stop="toggleModel('.removeModel','showRemoveModel')" class="remove" v-if="item.type == 2">下架</div>
-        <div class="add" v-if="item.type == 1">上架</div>
+        <div @click.stop="toggleModel('.removeModel','showRemoveModel',item.serviceId)" class="remove"
+             v-if="item.type == 2">下架
+        </div>
+        <div @click.stop="addService(item.serviceId)" class="add" v-if="item.type == 1">上架</div>
       </div>
     </router-link>
     <footer class="myServiceFooter" @click="myServiceRelease">
@@ -77,7 +80,7 @@
   import loading from '@/components/loading'
 
   export default {
-    name:'myService',
+    name: 'myService',
     data() {
       return {
         isLoading: false,
@@ -133,42 +136,63 @@
 //            status: 0,
 //          },
 //        ],
-        if (data) {
+        if (data.length != 0) {
           for (let item of data) {
             let tempItem = {
               name: item.title,
               price: item.price,
-              taskId: item.id,// 服务id
+              serviceId: item.id,// 服务id
               num: 6, // 交易量
-              type: 0,
+              type: 1,
               status: 0,
             }
             this.service.push(tempItem)
           }
+        } else {
+          this.$vux.toast.text('暂无服务')
         }
 
       },// 处理服务列表数据
 
 
-      toggleModel(selector, flag) {
+      toggleModel(selector, flag, serviceId) {
         // 弹出或隐藏某个框
         // selector: String, 用于传给querySelector
         // flag: String, 用于确定是哪一个框
         let y = window.scrollY + 200;
         let model = document.querySelector(selector)
+        model.dataset.toBeProcessedId = serviceId// 修改特定框的绑定参数
         model.style.top = y + 'px'
         this[flag] = !this[flag]
       },
       deleteItem() {
         // 删除某项
-        console.log('deleted!')
+        let serviceId = document.querySelector('.deleteModel').dataset.toBeProcessedId
+        this.sentServiceReleatedRequest('del', serviceId)
         this.showDeleteModel = !this.showDeleteModel
       },
       removeItem() {
         // 下架某项
-        console.log('removed!')
+        let serviceId = document.querySelector('.removeModel').dataset.toBeProcessedId
+        this.sentServiceReleatedRequest('off', serviceId)
         this.showRemoveModel = !this.showRemoveModel
-      }
+      },
+      addService(serviceId) {
+        this.sentServiceReleatedRequest('on', serviceId)
+      },// 上架某项
+      sentServiceReleatedRequest(action, serviceId) {
+        serviceId = serviceId.toString()
+        this.$http.post(`${this.globalDOMAIN}Employ/Service/${action}`, {'service_id': serviceId}, {
+          emulateJSON: true,
+          headers: {'token': this.token}
+        }).then((res) => {
+          if (res.body.status) {
+            this.$vux.toast.text(`${res.body.msg}`)
+          } else {
+            this.$vux.toast.text(`${res.body.msg}`)
+          }
+        })
+      },// 发送服务相关请求，如上架、下架、删除
     },
     components: {
       loading,

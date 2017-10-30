@@ -36,8 +36,9 @@
       </div>
     </div>
     <!--底部按钮-->
-    这里的type表明是从哪里来的，-1表明是峡客主页的我的服务的编辑进去的
-    <router-link :to="{path:'/releaseService' , query: { type: '-1' }}" tag="footer" class="toEdit">编辑</router-link>
+    <!--这里的type表明是从哪里来的，-1表明是峡客主页的我的服务的编辑进去的-->
+    <router-link :to="{path:'/releaseService' , query: { type: '-1',id:id }}" tag="footer" class="toEdit">编辑
+    </router-link>
     <!--广告-->
     <transition name="adFade">
       <div class="adWrapper" v-show="showAd">
@@ -93,8 +94,11 @@
           headers: {'token': this.token},
         }).then(res => {
           let body = res.body
-          this.$vux.toast.text(body.msg)
-          this.processServiceInfoData(body.data)
+          if (body.status) {
+            this.processServiceInfoData(body.data)
+          } else {
+            this.$vux.toast.text(body.msg)
+          }
         })
       },
       processServiceInfoData(data) {
@@ -103,10 +107,10 @@
         this.price = data.price
         this.content = data.desc
         this.achievement = data.achievement
-        if(data.imgs){
+        if (data.imgs) {
           this.imgList = []
-          for (let img of data.imgs){
-            let url = `${this.globalDOMAIN.slice(0,-11)}${img}`
+          for (let img of data.imgs) {
+            let url = `${this.globalDOMAIN.slice(0, -11)}${img}`
             this.imgList.push(url)
           }
         }
@@ -187,8 +191,8 @@
           width: px2-2-rem(145)
           height: px2-2-rem(145)
           margin-right: px2-2-rem(18)
-          background-size :cover
-          background-position :center
+          background-size: cover
+          background-position: center
     .overlay
       position: fixed;
       top: 0;

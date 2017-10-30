@@ -153,7 +153,7 @@ export default new Router({
     },
     {
       // 服务用合同
-      path: '/serviceContract/:serviceId',
+      path: '/serviceContract/:orderId',
       name: 'serviceContract',
       component: serviceContract
     },

@@ -13,6 +13,7 @@
         </div>
       </header>
     </sticky>
+    <loading v-show="isLoading"></loading>
     <swiper :list="demo01_list" dots-position="center" height="3.335rem" :show-desc-mask="false"></swiper>
     <ul class="selectWrapper">
       <router-link to="/releaseTask" tag="li" class="selectItem">

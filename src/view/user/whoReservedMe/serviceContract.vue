@@ -153,7 +153,7 @@
       },
     },
     created() {
-      this.taskId = this.$route.params.taskId
+      this.orderId = this.$route.params.orderId
       this.init()
     },
     methods: {
@@ -163,28 +163,28 @@
       },
 
       init() {
-        this.getTaskDetail()
-      },// 初始化页面，获取任务信息 --> 如果存在contract_id --> 获取合同信息 --> 展示合同图片，确认情况等
+        this.getBookInfo()
+      },// 初始化页面，获取预约信息 --> 如果存在contract_id --> 获取合同信息 --> 展示合同图片，确认情况等
 
-      getTaskDetail() {
-        let id = this.taskId
-        this.$http.get(`${this.globalDOMAIN}Employ/Task/getById`, {
-          params: {'task_id': id},
+      getBookInfo() {
+        let id = this.orderId
+        this.$http.get(`${this.globalDOMAIN}Employ/Service/getBookInfo`, {
+          params: {'order_id': id},
           emulateJSON: true,
           headers: {'token': this.token}
         }).then((response) => {
           if (response.body.status) {
             let data = response.body.data
-            this.taskInfo = data // 将获取的data存入taskInfo
-            console.log(this.taskInfo)
-            this.processTaskInfoData(this.taskInfo) // 处理taskInfo的信息
+            this.bookInfo = data // 将获取的data存入taskInfo
+            console.log(this.bookInfo)
+            this.processBookInfoData(this.bookInfo) // 处理taskInfo的信息
           } else {
             this.$vux.toast.text('获取任务失败')
           }
         })
       },// 发送请求获取任务数据
 
-      processTaskInfoData(taskInfo) {
+      processBookInfoData(taskInfo) {
         if (taskInfo.contract.id) {
           let contract = taskInfo.contract
           this.contractId = contract.id
