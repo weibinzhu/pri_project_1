@@ -249,8 +249,8 @@ export default new Router({
     },
     {
       // 任务详情页
-      path: '/taskDetail/:id/:status/:type',
-      // 传递参数：id-任务id，status-任务状态（待评价，待支付等），type-入口类型（任务页，任务管理页，我的预约页）
+      path: '/taskDetail/:id/:type',
+      // 传递参数：id-任务id，type-入口类型（任务页，任务管理页，我的预约页）
       // type：0-任务，1-任务管理，2-我的预约
       name: 'taskDetail',
       component: taskDetail

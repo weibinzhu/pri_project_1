@@ -2,11 +2,11 @@
   <div class="taskDetailWrapper">
     <!--loading 图标-->
     <loading v-show="isLoading"></loading>
-    <v-header @share="onShareClick" :title="pageTitle" :shareShow="taskStatus == -1"
-              :starShow="taskStatus == -1"></v-header>
+    <v-header @share="onShareClick" :title="pageTitle" :shareShow="type == 0"
+              :starShow="type == 0"></v-header>
     <div class="taskId">任务编号：{{taskId}}
-      <span v-if="taskStatus==3">托管赏金</span>
-      <span v-else-if="taskStatus==2">增加赏金</span>
+      <span v-if="taskInfo.status == 99 && taskInfo.on == 1 && taskInfo.order_status == 3">托管赏金</span>
+      <span v-else-if="taskInfo.status == 99 && taskInfo.on == 1 && taskInfo.order_status == 4">增加赏金</span>
     </div>
     <div class="taskBasicInfo">
       <div class="taskBasicInfoLeft">
@@ -44,11 +44,11 @@
         暂无投标记录
       </div>
       <div class="bidder" v-for="(item,index) in taskInfo.bids"
-           v-if="(item.status==99 || taskStatus==6)&&item.status!=0">
+           v-if="(item.status==99 || (taskInfo.status==99&&taskInfo.on==1&&taskInfo.order_status==1))&&item.status!=0">
         <img class="bidderAvatar" src="./avatar.png"/>
         <div class="bidderInfo">
           <div class="name">
-            {{item.user.username}} status:{{item.status}}
+            {{item.user.username}}
             <tag v-if="item.isCertificated"></tag>
           </div>
           <div class="detail">
@@ -83,33 +83,43 @@
       <div class="contactEmployer">沟通一下</div>
       <div @click="toBid" class="toBid">竞标</div>
     </footer>
-    <footer class="taskDetailFooter taskSelected" v-if="taskStatus == 0">
-      <div class="contact" @click="toggleWxId"><img src="./service@3x.png"/>联系顾问</div>
-      <div class="btnWrapperLeft">
-        <div class="giveUp">放弃</div>
-        <div class="contactXiake">沟通一下</div>
-      </div>
-      <div @click="goToContract" class="viewContractBtn">发起合同</div>
-    </footer>
-    <footer class="taskDetailFooter taskGiveUp" v-if="taskStatus == 1">已放弃</footer>
-    <footer class="taskDetailFooter taskManageMoney" v-if="taskStatus == 2">
-      <div class="contact" @click="toggleWxId"><img src="./service@3x.png"/>联系顾问</div>
-      <router-link to="/applyCheck" tag="div" class="check">验收</router-link>
-      <router-link to="/takeCareMoney" tag="div" class="manageMoneyBtn">托管赏金</router-link>
-    </footer>
-    <footer class="taskDetailFooter taskHasBeenPaid" v-if="taskStatus == 3">
-      <div class="contact" @click="toggleWxId"><img src="./service@3x.png"/>联系顾问</div>
-      <router-link :to="{name:'contract',params:{taskId:taskId}}" tag="div" class="viewContractBtn">查看合同</router-link>
-      <router-link to="/applyCheck" tag="div" class="check">验收</router-link>
-    </footer>
-    <footer class="taskDetailFooter taskComment" v-if="taskStatus == 4">
-      <div class="contact" @click="toggleWxId"><img src="./service@3x.png"/>联系顾问</div>
-      <router-link :to="{name:'contract',params:{taskId:taskId}}" tag="div" class="viewContractBtn">查看合同
-      </router-link>
-      <router-link :to="{name:'toRateTask',params:{taskId:taskId,bidId:bidId}}" tag="div" class="comment">评价
-      </router-link>
-    </footer>
-    <footer class="taskDetailFooter taskSuccess" v-if="taskStatus == 5">已成功</footer>
+
+    <!--任务管理里面的详情用-->
+    <div v-if="type != 0">
+      <footer class="taskDetailFooter taskSelected"
+              v-if="taskInfo.order_status == 2 && taskInfo.status == 99 && taskInfo.on == 1">
+        <div class="contact" @click="toggleWxId"><img src="./service@3x.png"/>联系顾问</div>
+        <div class="btnWrapperLeft">
+          <div @click="toggleGiveUpModel" class="giveUp">放弃</div>
+          <div class="contactXiake">沟通一下</div>
+        </div>
+        <div @click="goToContract" class="viewContractBtn">发起合同</div>
+      </footer>
+      <footer class="taskDetailFooter taskGiveUp" v-if="taskInfo.status == 3">已放弃</footer>
+      <footer class="taskDetailFooter taskManageMoney"
+              v-if="taskInfo.order_status == 3 && taskInfo.status == 99 && taskInfo.on == 1">
+        <div class="contact" @click="toggleWxId"><img src="./service@3x.png"/>联系顾问</div>
+        <router-link to="/applyCheck" tag="div" class="check">验收</router-link>
+        <router-link to="/takeCareMoney" tag="div" class="manageMoneyBtn">托管赏金</router-link>
+      </footer>
+      <footer class="taskDetailFooter taskHasBeenPaid"
+              v-if="taskInfo.order_status == 4 && taskInfo.status == 99 && taskInfo.on == 1">
+        <div class="contact" @click="toggleWxId"><img src="./service@3x.png"/>联系顾问</div>
+        <router-link :to="{name:'contract',params:{taskId:taskId}}" tag="div" class="viewContractBtn">查看合同</router-link>
+        <router-link to="/applyCheck" tag="div" class="check">验收</router-link>
+      </footer>
+      <footer class="taskDetailFooter taskComment"
+              v-if="taskInfo.order_status == 5 && taskInfo.status == 99 && taskInfo.on == 1">
+        <div class="contact" @click="toggleWxId"><img src="./service@3x.png"/>联系顾问</div>
+        <router-link :to="{name:'contract',params:{taskId:taskId}}" tag="div" class="viewContractBtn">查看合同
+        </router-link>
+        <router-link :to="{name:'toRateTask',params:{taskId:taskId,bidId:bidId}}" tag="div" class="comment">评价
+        </router-link>
+      </footer>
+      <footer class="taskDetailFooter taskSuccess"
+              v-if="taskInfo.order_status == 99 && taskInfo.status == 99 && taskInfo.on == 1">已成功
+      </footer>
+    </div>
     <!--客服-->
     <transition name="getWxFade">
       <div class="getWxModel" v-show="showGetWxModel">
@@ -132,9 +142,22 @@
         </div>
       </div>
     </transition>
+    <!--放弃-->
+    <transition name="giveUpModelFade">
+      <div class="giveUpModel" v-show="showGiveUpModel">
+        <div class="showText">
+          <div class="title">是否确认放弃</div>
+          <div class="desc">告知当前状态，信息和解决办法</div>
+        </div>
+        <div class="actionBtnWrapper">
+          <div @click.stop="giveUpItem" class="confirmBtn">是</div>
+          <div @click.stop="toggleGiveUpModel" class="cancelBtn">否</div>
+        </div>
+      </div>
+    </transition>
     <!--遮罩-->
     <transition name="overlayFade">
-      <div class="overlay" v-show="showGetWxModel||showAd" @click="hideWxModel"></div>
+      <div class="overlay" v-show="showGetWxModel||showAd||showGiveUpModel" @click="hideWxModel"></div>
     </transition>
   </div>
 </template>
@@ -185,6 +208,7 @@
         ], //项目文件柜
         wxId: 'fwfa21', // 客服微信号
         showGetWxModel: false,// 客服微信号弹框显隐
+        showGiveUpModel: false,// 放弃提示框
         showAd: false,// 广告（下载行峡APP）显隐
         bidder: [
           // 投标人列表// status说明： 0-一般，1-对方已放弃（灰色显示），2-中标，3-被我淘汰（某个中标后其他自动变成被淘汰并隐藏起来）
@@ -199,30 +223,6 @@
             status: 0,
             id: 11,
           },
-//          {
-//            name: '卢某某',
-//            isCertificated: true,
-//            avatar: './avatar.png',
-//            desc: ['市场推广', '3年经验'],
-//            location: '广州',
-//            desc: ['市场推广', '3年经验'],
-//            gongli: 760, // 功力值
-//            times: 6, // 交易量
-//            status: 1,
-//            id: 2123,
-//          },
-//          {
-//            name: '某某某',
-//            isCertificated: false,
-//            avatar: './avatar.png',
-//            desc: ['市场推广', '3年经验'],
-//            location: '广州',
-//            desc: ['市场推广', '3年经验'],
-//            gongli: 760, // 功力值
-//            times: 6, // 交易量
-//            status: 2,
-//            id: 998
-//          },
         ],
         // bidId: 10,// 投标者id，如果已经选择的话就只有一个bidId，否则应该为空
         taskId: 0, // 任务id
@@ -234,7 +234,7 @@
         skills: ['SEM', '市场策划', 'SEO'], // 所需技能
         bidNum: 16,// 投标人数
         hasValidBidder: true,
-        bidId: -1,
+        bidId: -2,
       }
     },
     computed: {
@@ -261,7 +261,6 @@
       }
     },
     created() {
-      this.taskStatus = this.$route.params.status
       this.type = this.$route.params.type
       this.type == 2 ? this.orderId = this.$route.params.id : this.taskId = this.$route.params.id
       this.getTaskDetail()
@@ -320,6 +319,19 @@
                 city: data.service.city || '查询不到',
                 work_type: '查询不到',
                 desc: data.remark,
+                bids: [
+                  {
+                    status: 99,
+                    user: {
+                      username: data.employ.username,
+                      point: data.employ.point,
+                    },
+                    isCertificated: true,// 假数据
+                    location: '广州', // 假数据
+                    desc: ['市场推广', '广告行业'], // 假数据
+                    times: 6, // 假数据
+                  }
+                ]
               }
               // this.hasValidBidderMethod()
               // this.bidIdMethod()
@@ -347,17 +359,44 @@
         }
       },// 发送请求获取数据
       goToContract() {
-        if(this.type==2){
+        if (this.type == 2) { // 服务
           this.$router.push({name: 'serviceContract', params: {orderId: this.orderId}})
-        }else{
+        } else { // 任务
           this.$router.push({name: 'contract', params: {taskId: this.taskId}})
         }
       },// 点击发起合同
+      giveUpItem() {
+        let url, data
+        if (this.type == 2) { // 服务
+          url = `${this.globalDOMAIN}Employ/Service/giveUp`
+          data = {
+            'order_id': this.orderId
+          }
+        } else { // 任务
+          url = `${this.globalDOMAIN}Employ/Task/giveUp`
+          data = {
+            'bid_id': this.bidId
+          }
+        }
+        this.$http.post(url, data, {
+          emulateJSON: true,
+          headers: {'token': this.token}
+        }).then(res => {
+          this.$vux.toast.text(res.body.msg)
+        })
+        this.showGiveUpModel = !this.showGiveUpModel
+      },// 放弃某项
+
       onCloseBtnClick() {
         // 点击广告的关闭按钮
         this.showAd = false
       },
-
+      toggleGiveUpModel() { // 弹出或隐藏【删除】框
+        let y = window.scrollY + 200;
+        let model = document.querySelector(".giveUpModel")
+        model.style.top = y + 'px'
+        this.showGiveUpModel = !this.showGiveUpModel
+      },
       hideWxModel() {
         // 点击遮罩隐藏客服微信号
         if (this.showGetWxModel) {
@@ -725,7 +764,7 @@
       background-color: rgba(0, 0, 0, .8);
 
   //    【点击复制客服微信弹框】
-  .getWxModel
+  .getWxModel, .giveUpModel
     position: absolute
     z-index: 10000
     left: calc(50vw - 3.7333rem)
@@ -751,6 +790,10 @@
         font-size: 0.42666rem
         color: #d2d3d5
         text-align: center
+      .desc
+        font-size: 0.42666rem
+        color: #d2d3d5
+        text-align: center
     .getWxIdBtn
       width: 100%
       height: 1.3333rem
@@ -758,6 +801,23 @@
       text-align: center
       border-top: 1px solid #d2d3d5
       color: #00a0e9
+    .actionBtnWrapper
+      display: flex
+      flex-direction: row
+      align-items: center
+      justify-content: center
+      width: 100%
+      height: 1.3333rem
+      border-top: 1px solid #d2d3d5
+      .confirmBtn, .cancelBtn
+        box-sizing: border-box
+        flex: 1
+        height: 1.3333rem
+        line-height: 1.3333rem
+        text-align: center
+      .cancelBtn
+        color: #00a0e9
+        border-left: 1px solid #cccccc
 
   .adWrapper
     position: absolute

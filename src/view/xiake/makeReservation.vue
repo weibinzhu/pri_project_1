@@ -29,6 +29,7 @@
     name:'makeReservation',
     data() {
       return {
+        isLoading:false,
         id: '',// 服务id
         serviceName: '未查询到',
         price: '未查询到',

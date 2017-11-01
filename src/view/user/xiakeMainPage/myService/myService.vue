@@ -7,28 +7,28 @@
                  v-for="(item,index) in service" :key="index">
       <div class="myServiceItemInfo">
         <div class="itemName">
-          {{item.name}}-type:{{typeList[item.type]}}
+          {{item.name}}
         </div>
         <div class="itemPrice">
           <div class="priceText">
             ￥{{item.price}}
             <div class="tradeNumber">交易：{{item.num}}笔</div>
           </div>
-          <span v-if="item.type==0||item.type==1" :class="item.type==1?'special':''">{{typeList[item.type]}}</span>
+          <span :class="item.status==0?'special':''">{{serviceStatusText(item)}}</span>
         </div>
       </div>
       <div class="myServiceItemBtn">
-        <div @click.stop="toggleModel('.reasonModel','showReasonModel',item.serviceId)" class="refuseBtn"
-             v-if="item.type == 1 ">拒绝原因
+        <div @click.stop="toggleModel('.reasonModel','showReasonModel',item)" class="refuseBtn"
+             v-if="item.status == 0 ">拒绝原因
         </div>
-        <div @click.stop="toggleModel('.deleteModel','showDeleteModel',item.serviceId)" class="deleteBtn"
-             v-if="item.type == 1">删除
+        <div @click.stop="toggleModel('.deleteModel','showDeleteModel',item)" class="deleteBtn"
+             v-if="(item.status == 99 && item.on == 0) || ( item.status == 0)">删除
         </div>
-        <div class="modifyBtn" v-if="item.type == 1 || item.type == 2">修改</div>
-        <div @click.stop="toggleModel('.removeModel','showRemoveModel',item.serviceId)" class="remove"
-             v-if="item.type == 2">下架
+        <div class="modifyBtn" v-if="(item.status == 99 || item.status == 0)">修改</div>
+        <div @click.stop="toggleModel('.removeModel','showRemoveModel',item)" class="remove"
+             v-if="item.status == 99 && item.on == 1">下架
         </div>
-        <div @click.stop="addService(item.serviceId)" class="add" v-if="item.type == 1">上架</div>
+        <div @click.stop="addService(item.serviceId)" class="add" v-if="(item.status == 99 && item.on == 0) || item.status == 0">上架</div>
       </div>
     </router-link>
     <footer class="myServiceFooter" @click="myServiceRelease">
@@ -50,7 +50,7 @@
       <div class="reasonModel" v-show="showReasonModel">
         <div class="showText">
           <div class="title">拒绝原因</div>
-          <div class="desc">告知原因及解决办法</div>
+          <div class="desc">{{handle_remark}}</div>
         </div>
         <div class="actionBtnWrapper">
           <div @click.stop="toggleModel('.reasonModel','showReasonModel')" class="cancelBtn">确定</div>
@@ -84,6 +84,7 @@
     data() {
       return {
         isLoading: false,
+        handle_remark:'',// 拒绝原因
         typeList: ['审核中', '审核不通过', '普通'],
         //statusList: ['0-已选择', '1-已放弃', '2-托管资金', '3-已支付', '4-评价', '5-交易成功', '6-未选择', '7-暂无竞标'],
         service: [],
@@ -104,6 +105,15 @@
       this.getServiceList()
     },
     methods: {
+      serviceStatusText(item) {
+        switch (item.status) {
+          case '0':
+            return '审核不通过'
+          case '1':
+            return '审核中'
+        }
+        console.log(item)
+      },// 服务状态文字显示
       myServiceRelease() {
         return;
       },
@@ -143,8 +153,10 @@
               price: item.price,
               serviceId: item.id,// 服务id
               num: 6, // 交易量
-              type: 1,
-              status: 0,
+              status: item.status,
+              on: item.on,
+              order_status: item.order_status,
+              handle_remark: item.handle_remark,
             }
             this.service.push(tempItem)
           }
@@ -155,15 +167,18 @@
       },// 处理服务列表数据
 
 
-      toggleModel(selector, flag, serviceId) {
+      toggleModel(selector, flag, item) {
         // 弹出或隐藏某个框
         // selector: String, 用于传给querySelector
         // flag: String, 用于确定是哪一个框
         let y = window.scrollY + 200;
         let model = document.querySelector(selector)
-        model.dataset.toBeProcessedId = serviceId// 修改特定框的绑定参数
         model.style.top = y + 'px'
         this[flag] = !this[flag]
+        if(item){
+          model.dataset.toBeProcessedId = item.serviceId// 修改特定框的绑定参数
+          this.handle_remark = item.handle_remark// 拒绝原因
+        }
       },
       deleteItem() {
         // 删除某项

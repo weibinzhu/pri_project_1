@@ -17,9 +17,12 @@
           <tag v-if="item.isCertificated"></tag>
         </div>
         <div class="whoReservedMeItemBtn">
-          <div @click.stop="toggleModel('.giveUpModel','showGiveUpModel')" class="giveUpBtn" v-if="item.status == 1">放弃</div>
+          <div @click.stop="toggleModel('.giveUpModel','showGiveUpModel',item.orderId)" class="giveUpBtn"
+               v-if="item.status == 1">放弃
+          </div>
           <router-link tag="div" :to="{name:'reservationDetail', params:{id:item.orderId,status:item.status,type:2}}"
-                       class="moreBtn">查看详情</router-link>
+                       class="moreBtn">查看详情
+          </router-link>
         </div>
       </div>
     </div>
@@ -44,6 +47,7 @@
 <script type="text/ecmascript-6">
   import header from '@/components/v-header/v-header'
   import Tag from '@/components/tag'
+
   export default {
     data() {
       return {
@@ -59,6 +63,7 @@
             companyLogo: '/static/icon@3x.png',
             isCertificated: false,
             taskId: 1,
+            orderId: -1,
             type: 0,
             status: 0,
           },
@@ -74,7 +79,7 @@
         return sessionStorage.getItem('token')
       }
     },
-    created(){
+    created() {
       this.getOrderList()
     },
     methods: {
@@ -83,9 +88,9 @@
           emulateJSON: true,
           headers: {'token': this.token},
         }).then(res => {
-          if(res.body.status){
+          if (res.body.status) {
             this.processOrderData(res.body.data)
-          }else{
+          } else {
             this.$vux.toast.text(res.body.msg)
           }
         })
@@ -106,14 +111,14 @@
 //        },
 //      ],
         this.tasks = []
-        if(data){
+        if (data) {
           for (let item of data) {
             let tempItem = {
               name: item.service.title,
               price: item.service.price,
-              company:item.employ.username,
+              company: item.employ.username,
               taskId: item.service_id,
-              orderId:item.id,
+              orderId: item.id,
               // 以下是暂无数据，空着的
               isCertificated: true,
               companyLogo: '/static/icon@3x.png',
@@ -122,24 +127,33 @@
             }
             this.tasks.push(tempItem)
           }
-        }else{
+        } else {
           this.$vux.toast.text('暂无数据')
         }
       },// 处理列表数据
 
 
-      toggleModel(selector,flag){
+      toggleModel(selector, flag, orderId) {
         // 弹出或隐藏某个框
         // selector: String, 用于传给querySelector
         // flag: String, 用于确定是哪一个框
         let y = window.scrollY + 200;
         let model = document.querySelector(selector)
         model.style.top = y + 'px'
+        model.dataset.toBeProcessedId = orderId// 修改特定框的绑定参数
         this[flag] = !this[flag]
       },
       giveUpItem() {
         // 放弃某项
-        console.log('gived up!')
+        let orderId = document.querySelector('.giveUpModel').dataset.toBeProcessedId
+        this.$http.post(`${this.globalDOMAIN}Employ/Service/weedOut`, {
+          'order_id': orderId
+        }, {
+          emulateJSON: true,
+          headers: {'token': this.token},
+        }).then(res => {
+          this.$vux.toast.text(res.body.msg)
+        })
         this.showGiveUpModel = !this.showGiveUpModel
       }
     },
@@ -203,8 +217,6 @@
           img
             width: px2-2-rem(50)
             height: px2-2-rem(50)
-            margin-right: px2-2-rem(20)
-
       .whoReservedMeItemBtn
         display: flex
         flex-wrap: wrap

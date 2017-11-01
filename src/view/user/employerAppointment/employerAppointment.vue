@@ -4,18 +4,20 @@
     <div class="employerAppointmentItem" v-for="(item,index) in tasks" :key="index">
       <div class="employerAppointmentItemInfo">
         <div class="itemName">
-          {{item.name}} status：{{statusList[item.status]}}
+          {{item.name}}
         </div>
         <div class="itemPrice">
-          ￥{{item.price}}<span>{{typeList[item.status]}}</span>
+          ￥{{item.price}}<span>{{statusText(item)}}</span>
         </div>
       </div>
       <div class="employerAppointmentItemBtn">
-        <div @click.stop="toggleModel('.deleteModel','showDeleteModel')" class="deleteBtn"
-             v-if="item.status == 0 || item.status == 1">删除
+        <div @click.stop="toggleModel('.deleteModel','showDeleteModel',item.orderId)" class="deleteBtn"
+             v-if="item.status == 3 || item.order_status == 1">删除
         </div>
-        <router-link tag="div" :to="{name:'taskDetail', params:{id:item.orderId,status:item.status,type:2}}" class="modifyBtn">查看详情</router-link>
-        <router-link to="/toRateTask" tag="div" class="rateBtn" v-if="item.status == 4">评价</router-link>
+        <router-link tag="div" :to="{name:'taskDetail', params:{id:item.orderId,status:item.status,type:2}}"
+                     class="modifyBtn">查看详情
+        </router-link>
+        <router-link :to="{name:'toRateTask',params:{taskId:orderId}}" tag="div" class="rateBtn" v-if="item.order_status == 5">评价</router-link>
       </div>
     </div>
     <transition name="deleteModelFade">
@@ -51,7 +53,7 @@
             name: '加载中',
             price: '加载中',
             taskId: 1,
-            orderId:1,
+            orderId: 1,
             type: 0,
             status: 7,
           },
@@ -71,6 +73,26 @@
       this.getBookList()
     },
     methods: {
+      statusText(item) {
+        switch (item.status) {
+          case '2':
+            return '已删除'
+          case '3':
+            return '被回拒'
+        }
+        switch (item.order_status) {
+          case '1':
+            return '待确认'
+          case '3':
+            return '待支付'
+          case '4':
+            return '服务中'
+          case '5':
+            return '待评价'
+          case '99':
+            return '服务已完成'
+        }
+      },// 状态显示文字
       getBookList() {
         this.$http.get(`${this.globalDOMAIN}Employ/Service/getBookList`, {
           emulateJSON: true,
@@ -93,24 +115,26 @@
 //          },
 //        ],
         this.tasks = []
-        if(data){
+        if (data) {
           for (let item of data) {
             let tempItem = {
               name: item.service.title,
               price: item.service.price,
               taskId: item.service_id,
-              orderId:item.id,
-              type: 0,
-              status: 0,
+              orderId: item.id,
+              status: item.status,
+              order_status: item.order_status,
+//              type: 0,
+//              status: 0,
             }
             this.tasks.push(tempItem)
           }
-        }else{
+        } else {
           this.$vux.toast.text('暂无数据')
         }
       },// 处理列表数据
 
-      toggleModel(selector, flag) {
+      toggleModel(selector, flag, id) {
         // 弹出或隐藏某个框
         // selector: String, 用于传给querySelector
         // flag: String, 用于确定是哪一个框
@@ -118,10 +142,21 @@
         let model = document.querySelector(selector)
         model.style.top = y + 'px'
         this[flag] = !this[flag]
+        model.dataset.toBeProcessedId = id// 修改特定框的绑定参数
       },
       deleteItem() {
         // 删除某项
-        console.log('deleted!')
+        let id = document.querySelector('.deleteModel').dataset.toBeProcessedId
+        this.$http.post(`${this.globalDOMAIN}Employ/Service/giveUp`,{
+          'order_id':id
+        },{
+          emulateJSON: true,
+          headers: {'token': this.token},
+        }).then(res=>{
+          if(res.body.msg){
+            this.$vux.toast.text(res.body.msg)
+          }
+        })
         this.showDeleteModel = !this.showDeleteModel
       }
     },

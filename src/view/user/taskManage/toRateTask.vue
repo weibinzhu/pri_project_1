@@ -29,7 +29,7 @@
       return {
         isLoading: false,
         taskId: -1,
-        bidId: -1,// 如果bidId == -2，则表明这是一个服务的评价，不是任务评价。
+        bidId: -2,// 如果bidId == -2，则表明这是一个服务的评价，不是任务评价。
         starLength: 5,// 星星长度
         score: 1,// 评价星数
         comment: '',// 评价内容

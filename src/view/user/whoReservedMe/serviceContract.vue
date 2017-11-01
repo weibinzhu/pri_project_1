@@ -175,18 +175,18 @@
         }).then((response) => {
           if (response.body.status) {
             let data = response.body.data
-            this.bookInfo = data // 将获取的data存入taskInfo
+            this.bookInfo = data // 将获取的data存入bookInfo
             console.log(this.bookInfo)
-            this.processBookInfoData(this.bookInfo) // 处理taskInfo的信息
+            this.processBookInfoData(this.bookInfo) // 处理bookInfo的信息
           } else {
-            this.$vux.toast.text('获取任务失败')
+            this.$vux.toast.text(response.body.msg)
           }
         })
-      },// 发送请求获取任务数据
+      },// 发送请求获取服务预约数据
 
-      processBookInfoData(taskInfo) {
-        if (taskInfo.contract.id) {
-          let contract = taskInfo.contract
+      processBookInfoData(bookInfo) {
+        if (bookInfo.contract.id) {
+          let contract = bookInfo.contract
           this.contractId = contract.id
 
           // 甲乙方信息
@@ -221,10 +221,10 @@
         }
 
         // 附加合同
-        if (taskInfo.additional_contract.id) {
+        if (bookInfo.additional_contract.id) {
 
 
-          let addContract = taskInfo.additional_contract
+          let addContract = bookInfo.additional_contract
           this.additionalContractId = addContract.id
 
 
@@ -258,7 +258,7 @@
 
       getContract(contractId) {
         if (contractId) {
-          this.$http.get(`${this.globalDOMAIN}Employ/Task/getContract`, {
+          this.$http.get(`${this.globalDOMAIN}Employ/Service/getContract`, {
             params: {'contract_id': contractId},
             emulateJSON: true,
             headers: {'token': this.token}
@@ -286,7 +286,7 @@
 
       getAddtionalContract(contractId) {
         if (contractId) {
-          this.$http.get(`${this.globalDOMAIN}Employ/Task/getContract`, {
+          this.$http.get(`${this.globalDOMAIN}Employ/Service/getContract`, {
             params: {'contract_id': contractId},
             emulateJSON: true,
             headers: {'token': this.token}
@@ -323,9 +323,8 @@
 
       createContract() {
         if (this.contract) {
-          this.$http.post(`${this.globalDOMAIN}Employ/Task/contract`, {
-            'task_id': this.taskId,
-            'bid_id': this.bidId,
+          this.$http.post(`${this.globalDOMAIN}Employ/Service/contract`, {
+            'order_id': this.orderId,
             'contract': this.contract,
             'money': this.price.slice(1),
           }, {
@@ -350,9 +349,8 @@
 
       createAdditionalContract() {
         if (this.additionalContract) {
-          this.$http.post(`${this.globalDOMAIN}Employ/Task/additionalContract`, {
-            'task_id': this.taskId,
-            'bid_id': this.bidId,
+          this.$http.post(`${this.globalDOMAIN}Employ/Service/additionalContract`, {
+            'order_id': this.orderId,
             'contract': this.additionalContract
           }, {
             emulateJSON: true,
@@ -384,7 +382,7 @@
       },// 删除已有附加合同图片
 
       toConfirm(contractId) {
-        this.$http.post(`${this.globalDOMAIN}Employ/Task/acceptContract`, {
+        this.$http.post(`${this.globalDOMAIN}Employ/Service/acceptContract`, {
           'contract_id': contractId
         }, {
           emulateJSON: true,
@@ -403,10 +401,9 @@
         // type--是主合同还是附加合同，original 或者 additional
         if (type == 'original') {
           console.log(this.contract)
-          let url = `${this.globalDOMAIN}Employ/Task/editContract`
+          let url = `${this.globalDOMAIN}Employ/Service/editContract`
           let data = {
-            'task_id': this.taskId,
-            'bid_id': this.bidId,
+            'order_id': this.orderId,
             'contract': this.contract,
             'money': this.price.slice(1),
           }
@@ -422,10 +419,9 @@
           })
         } else {
           console.log(this.additionalContract)
-          let url = `${this.globalDOMAIN}Employ/Task/editAdditionalContract`
+          let url = `${this.globalDOMAIN}Employ/Service/editAdditionalContract`
           let data = {
-            'task_id': this.taskId,
-            'bid_id': this.bidId,
+            'order_id': this.orderId,
             'contract': this.additionalContract,
           }
           this.$http.post(url, data, {

@@ -2,27 +2,30 @@
   <div class="taskManageWrapper">
     <v-header title="任务管理"></v-header>
     <loading v-show="isLoading"></loading>
-    <router-link tag="div" :to="{name:'taskDetail', params:{id:item.taskId,status:item.status,type:1}}"
+    <router-link tag="div" :to="{name:'taskDetail', params:{id:item.taskId,type:1}}"
                  class="taskManageItem"
                  v-for="(item,index) in taskList" :key="index">
       <div class="taskManageItemInfo">
         <div class="itemName">
-          {{item.name}} status：{{statusList[item.status]}} id:{{item.taskId}}
+          {{item.name}}
         </div>
         <div class="itemPrice">
-          ￥{{item.minPrice}}-{{item.maxPrice}}<span>{{typeList[item.type]}}</span>
+          ￥{{item.minPrice}}-{{item.maxPrice}}<span>{{statusText(item)}}</span>
         </div>
       </div>
       <div class="taskManageItemBtn">
-        <router-link to="/toRateTask" tag="div" class="toBeRate" v-if="item.type == 5 ">评价</router-link>
+        <router-link to="/toRateTask" tag="div" class="toBeRate" v-if="item.order_status == 5 ">评价</router-link>
         <div @click.stop="toggleModel('.deleteModel','showDeleteModel',item.taskId)" class="deleteBtn"
-             v-if="item.type == 1 || item.type == 2 || item.type == 3 || item.type == 6">删除
+             v-if="item.status == 0 || item.status == 1 || item.on == 0 || item.order_status == 1|| item.order_status == 99">
+          删除
         </div>
-        <div class="modifyBtn" v-if="item.type == 0 || item.type == 1 || item.type == 3 || item.type == 3">修改</div>
+        <div class="modifyBtn" v-if="item.status == 0 || item.status == 1 || item.on == 0 || item.order_status == 1">
+          修改
+        </div>
         <div @click.stop="toggleModel('.removeModel','showRemoveModel',item.taskId)" class="remove"
-             v-if="item.type == 0 || item.type == 2">下架
+             v-if="item.order_status == 1 && item.status == 99 && item.on == 1">下架
         </div>
-        <div @click.stop="addTask(item.taskId)" class="add" v-if="item.type == 3">上架</div>
+        <div @click.stop="addTask(item.taskId)" class="add" v-if="item.on == 0 && item.status == 99">上架</div>
       </div>
     </router-link>
     <footer class="taskManageFooter" @click="taskManageRelease">
@@ -63,7 +66,7 @@
   import Loading from '@/components/loading'
 
   export default {
-    name:'taskManageMainPage',
+    name: 'taskManageMainPage',
     data() {
       return {
         isLoading: false,
@@ -93,14 +96,37 @@
       token() {
         return sessionStorage.getItem('token')
       },
-      userId(){
+      userId() {
         return sessionStorage.getItem('userid')
-      }
+      },
     },
     created() {
       this.getTaskList()
     },
     methods: {
+      statusText(task) {
+        let status = task.status, on = task.on, order_status = task.order_status
+        switch (status) {
+          case '0':
+            return '审核不通过'
+          case '1':
+            return '审核中'
+        }
+        switch (on) {
+          case '0':
+            return '已下架'
+        }
+        switch (order_status) {
+          case '1':
+            return '竞标中'
+          case '4':
+            return '服务中'
+          case '5':
+            return '待评价'
+          case '99':
+            return '服务完成'
+        }
+      },// 显示在列表中，表明当前状态
       taskManageRelease() {
         return;
       },
@@ -173,8 +199,10 @@
             minPrice: task.price_min,
             maxPrice: task.price_max,
             taskId: task.id,
-            type: Math.floor(Math.random() * 6),
-            status:4
+//            type: Math.floor(Math.random() * 6),
+            status: task.status,
+            on: task.on,
+            order_status: task.order_status,
           }
           tempList.push(tempItem)
         }

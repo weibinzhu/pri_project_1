@@ -29,12 +29,33 @@
     </footer>
     <footer class="taskDetailFooter taskComment" v-if="serviceStatus == 1">
       <div class="contact" @click="toggleWxId"><img src="./service@3x.png"/>联系顾问</div>
-      <router-link to="/contract" tag="div" class="viewContractBtn">查看合同</router-link>
+      <router-link :to="{name:'serviceContract',params:{orderId:id}}" tag="div" class="viewContractBtn">查看合同
+      </router-link>
       <router-link :to="{name:'toRateTask', params:{taskId:id,bidId:-2}}" tag="div" class="comment">评价</router-link>
       <!--taskId这个名字就不改了，bid_id==-2表明这是一个服务发起的评价-->
     </footer>
     <footer class="taskDetailFooter taskSuccess" v-if="serviceStatus == 2">已成功</footer>
-
+    <footer class="taskDetailFooter taskSelected" v-if="serviceStatus == 3">
+      <div class="contact" @click="toggleWxId"><img src="./service@3x.png"/>联系顾问</div>
+      <div class="btnWrapperLeft">
+        <div class="giveUp">放弃</div>
+        <div class="contactXiake">沟通一下</div>
+      </div>
+      <div class="viewContractBtn" @click="toggleModel('.acceptModel','showAcceptModel',id)">接受邀请</div>
+    </footer>
+    <!--接受预约确认框-->
+    <transition name="acceptModelFade">
+      <div class="acceptModel" v-show="showAcceptModel">
+        <div class="showText">
+          <div class="title">是否确认接受该服务邀约</div>
+          <div class="desc">告知当前状态，信息和解决办法</div>
+        </div>
+        <div class="actionBtnWrapper">
+          <div @click.stop="acceptItem" class="confirmBtn">是</div>
+          <div @click.stop="toggleModel('.acceptModel','showAcceptModel')" class="cancelBtn">否</div>
+        </div>
+      </div>
+    </transition>
     <!--客服-->
     <transition name="getWxFade">
       <div class="getWxModel" v-show="showGetWxModel">
@@ -49,7 +70,7 @@
     </transition>
     <!--遮罩-->
     <transition name="overlayFade">
-      <div class="overlay" v-show="showGetWxModel" @click="hideWxModel"></div>
+      <div class="overlay" v-show="showGetWxModel||showAcceptModel" @click="hideWxModel"></div>
     </transition>
   </div>
 </template>
@@ -66,7 +87,7 @@
         isLoading: false,
         wxId: 'fwfa21', // 客服微信号
         showGetWxModel: false,// 客服微信号弹框显隐
-
+        showAcceptModel: false,// 接受服务弹框显隐
 
         // 预约服务、订单信息
         id: 0, // 订单id
@@ -108,6 +129,31 @@
         this.requirement = data.remark
         this.date = formatDate(date, 'yyyy-MM-dd')
       },
+      toggleModel(selector, flag, orderId) {
+        // 弹出或隐藏某个框
+        // selector: String, 用于传给querySelector
+        // flag: String, 用于确定是哪一个框
+        let y = window.scrollY + 200;
+        let model = document.querySelector(selector)
+        model.style.top = y + 'px'
+        model.dataset.toBeProcessedId = orderId// 修改特定框的绑定参数
+        this[flag] = !this[flag]
+      },
+
+      acceptItem() {
+        // 接受某项
+        let orderId = document.querySelector('.acceptModel').dataset.toBeProcessedId
+        this.$http.post(`${this.globalDOMAIN}Employ/Service/accept`, {
+          'order_id': orderId
+        }, {
+          emulateJSON: true,
+          headers: {'token': this.token},
+        }).then(res => {
+          this.$vux.toast.text(res.body.msg)
+        })
+        this.showAcceptModel = !this.showAcceptModel
+      },
+
       toggleWxId() {
         let y = window.scrollY + 200;
         let model = document.querySelector(".getWxModel")
@@ -291,7 +337,7 @@
       background-color: rgba(0, 0, 0, .8);
 
   //    【点击复制客服微信弹框】
-  .getWxModel
+  .getWxModel, .acceptModel
     position: absolute
     z-index: 10000
     left: calc(50vw - 3.7333rem)
@@ -317,6 +363,10 @@
         font-size: 0.42666rem
         color: #d2d3d5
         text-align: center
+      .desc
+        font-size: 0.42666rem
+        color: #d2d3d5
+        text-align: center
     .getWxIdBtn
       width: 100%
       height: 1.3333rem
@@ -324,10 +374,27 @@
       text-align: center
       border-top: 1px solid #d2d3d5
       color: #00a0e9
+    .actionBtnWrapper
+      display: flex
+      flex-direction: row
+      align-items: center
+      justify-content: center
+      width: 100%
+      height: 1.3333rem
+      border-top: 1px solid #d2d3d5
+      .confirmBtn, .cancelBtn
+        box-sizing: border-box
+        flex: 1
+        height: 1.3333rem
+        line-height: 1.3333rem
+        text-align: center
+      .cancelBtn
+        color: #00a0e9
+        border-left: 1px solid #cccccc
 
-  .getWxFade-leave-active, .getWxFade-enter-active, .overlayFade-leave-active, .overlayFade-enter-active
+  .getWxFade-leave-active, .getWxFade-enter-active, .acceptModelFade-leave-active, .acceptModel-enter-active .overlayFade-leave-active, .overlayFade-enter-active
     transition: all .5s
 
-  .getWxFade-enter, .getWxFade-leave-to, .overlayFade-enter, .overlayFade-leave-to
+  .getWxFade-enter, .getWxFade-leave-to, .acceptModelFade-enter, .acceptModelFade-leave-to, .overlayFade-enter, .overlayFade-leave-to
     opacity: 0
 </style>

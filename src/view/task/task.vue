@@ -40,7 +40,7 @@
       </ul>
     </div>
     <div class="tasksItems" @click="onTaskItemClick">
-      <taskitem v-for="(item,index) in taskItems" :key="index" :item="item"
+      <taskitem v-for="(item,index) in taskItems" :key="index" :item="item" v-if="item.status==99"
                 v-show="(item.location==selectedChoiceIndex[0]||selectedChoiceIndex[0]==0||item.location==0)
                   &&(item.type==selectedChoiceIndex[1]||selectedChoiceIndex[1]==0)"></taskitem>
     </div>
@@ -87,7 +87,7 @@
   export default {
     data() {
       return {
-        isLoading:false,
+        isLoading: false,
         demo01_list: [
           {
             url: 'javascript:',
@@ -187,7 +187,7 @@
         // id只绑定在最外层，如果点击到内层元素则不断向外层寻找，直到寻找到最外层为止
         function _getId(node) {
           if (node.className == 'taskItemWrapper') {
-            that.$router.push({name: 'taskDetail', params: {id: node.dataset.id, status: -1, type: 0}})
+            that.$router.push({name: 'taskDetail', params: {id: node.dataset.id, type: 0}})
             return
           } else {
             _getId(node.parentElement)
@@ -285,7 +285,9 @@
             isCertificated: Math.random() > 0.5 ? true : false,
             location: this.cityList.indexOf(task.city),
             type: Math.floor(Math.random() * 4) + 1,
-            // status: Math.floor(Math.random() * 7),
+            status: task.status,
+            on: task.on,
+            order_status: task.order_status
           }
           tempList.push(tempItem)
         }
