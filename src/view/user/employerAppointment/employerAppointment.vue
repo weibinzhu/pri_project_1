@@ -12,12 +12,14 @@
       </div>
       <div class="employerAppointmentItemBtn">
         <div @click.stop="toggleModel('.deleteModel','showDeleteModel',item.orderId)" class="deleteBtn"
-             v-if="item.status == 3 || item.order_status == 1">删除
+             v-if="item.status == 0 || item.status == 1 || item.status == 3">删除
         </div>
         <router-link tag="div" :to="{name:'taskDetail', params:{id:item.orderId,status:item.status,type:2}}"
                      class="modifyBtn">查看详情
         </router-link>
-        <router-link :to="{name:'toRateTask',params:{taskId:orderId}}" tag="div" class="rateBtn" v-if="item.order_status == 5">评价</router-link>
+        <router-link :to="{name:'toRateTask',params:{taskId:orderId}}" tag="div" class="rateBtn"
+                     v-if="item.order_status == 5">评价
+        </router-link>
       </div>
     </div>
     <transition name="deleteModelFade">
@@ -75,14 +77,14 @@
     methods: {
       statusText(item) {
         switch (item.status) {
-          case '2':
-            return '已删除'
-          case '3':
+          case '0':
             return '被回拒'
-        }
-        switch (item.order_status) {
           case '1':
             return '待确认'
+          case '3':
+            return '已放弃'
+        }
+        switch (item.order_status) {
           case '3':
             return '待支付'
           case '4':
@@ -92,6 +94,7 @@
           case '99':
             return '服务已完成'
         }
+
       },// 状态显示文字
       getBookList() {
         this.$http.get(`${this.globalDOMAIN}Employ/Service/getBookList`, {
@@ -147,13 +150,13 @@
       deleteItem() {
         // 删除某项
         let id = document.querySelector('.deleteModel').dataset.toBeProcessedId
-        this.$http.post(`${this.globalDOMAIN}Employ/Service/giveUp`,{
-          'order_id':id
-        },{
+        this.$http.post(`${this.globalDOMAIN}Employ/Service/giveUp`, {
+          'order_id': id
+        }, {
           emulateJSON: true,
           headers: {'token': this.token},
-        }).then(res=>{
-          if(res.body.msg){
+        }).then(res => {
+          if (res.body.msg) {
             this.$vux.toast.text(res.body.msg)
           }
         })

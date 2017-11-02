@@ -32,7 +32,7 @@
         <transition name="fade">
           <ul class="filterPanel" v-if=taskFilterPanelShow @click="selectChoice">
             <li v-for="(choice,index) in choices" class="choices" :id="index"
-                :class="[index==currentChoiceIndex?'active':'']">{{choice}}
+                :class="[index==currentChoiceIndex?'active':'']">{{choice.title}}
             </li>
             <p v-if="showNotice">更多城市将逐步开放，敬请期待</p>
           </ul>
@@ -120,7 +120,7 @@
 //          },
         ],
         original: [], // 初始值跟taskItems一样，用于恢复原排序
-        cityList: ['全部', '北京', '上海', '广州', '深圳'],
+        cityList: [{id:-1,title:'全部'}],
         typeList: ['全部', '设计', '技术', '运营', '市场', '产品'],
         sortList: ['全部', '最新', '最热', '价格↓', '价格↑'],
         selectedChoiceIndex: [0, 0, 0], // 保存各个下拉框的选择值
@@ -133,6 +133,7 @@
     },
     mounted() {
       this.getTaskList()
+//      this.cityList = this.$store.state.cityList.unshift({id:-1,title:'全部'})
     },
     computed: {
       globalDOMAIN() {
@@ -144,12 +145,20 @@
       taskFilterPanelShow() {
         return this.$store.state.taskFilterPanelShow
       },
+//      cityList(){
+//        let cityList = [{id:-1,title:'全部'}]
+//        for (let item of this.$store.state.cityList){
+//          console.log(item)
+//          cityList.push(item)
+//        }
+//        return cityList
+//      },
       choices() {
         var activeIndex = this.$store.state.taskFilterActiveIndex
         switch (activeIndex) {
           case 0:
             this.currentChoiceIndex = this.selectedChoiceIndex[0] // 将当前选择修改为当前下拉框的值
-            return this.cityList
+            return this.cityList.concat(this.$store.state.cityList)
             break
           case 1:
             this.currentChoiceIndex = this.selectedChoiceIndex[1]

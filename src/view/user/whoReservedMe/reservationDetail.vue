@@ -18,7 +18,7 @@
       <p class="requirement">{{requirement}}</p>
     </div>
     <!--各种底部功能条-->
-    <footer class="taskDetailFooter taskSelected" v-if="serviceStatus == 0">
+    <footer class="taskDetailFooter taskSelected" v-if="status == 99 && (order_status == 2 || order_status == 3)">
       <div class="contact" @click="toggleWxId"><img src="./service@3x.png"/>联系顾问</div>
       <div class="btnWrapperLeft">
         <div class="giveUp">放弃</div>
@@ -27,15 +27,21 @@
       <router-link :to="{name:'serviceContract',params:{orderId:id}}" tag="div" class="viewContractBtn">发起合同
       </router-link>
     </footer>
-    <footer class="taskDetailFooter taskComment" v-if="serviceStatus == 1">
+    <footer class="taskDetailFooter taskComment" v-if="status == 99 && (order_status == 4)">
+      <div class="contact" @click="toggleWxId"><img src="./service@3x.png"/>联系顾问</div>
+      <router-link :to="{name:'serviceContract',params:{orderId:id}}" tag="div" class="viewContractBtn">查看合同
+      </router-link>
+      <!--taskId这个名字就不改了，bid_id==-2表明这是一个服务发起的评价-->
+    </footer>
+    <footer class="taskDetailFooter taskComment" v-if="status == 99 && (order_status == 5)">
       <div class="contact" @click="toggleWxId"><img src="./service@3x.png"/>联系顾问</div>
       <router-link :to="{name:'serviceContract',params:{orderId:id}}" tag="div" class="viewContractBtn">查看合同
       </router-link>
       <router-link :to="{name:'toRateTask', params:{taskId:id,bidId:-2}}" tag="div" class="comment">评价</router-link>
       <!--taskId这个名字就不改了，bid_id==-2表明这是一个服务发起的评价-->
     </footer>
-    <footer class="taskDetailFooter taskSuccess" v-if="serviceStatus == 2">已成功</footer>
-    <footer class="taskDetailFooter taskSelected" v-if="serviceStatus == 3">
+    <footer class="taskDetailFooter taskSuccess" v-if="status == 99 && order_status == 99">已成功</footer>
+    <footer class="taskDetailFooter taskSelected" v-if="status == 1 || (status == 99 && order_status == 1)">
       <div class="contact" @click="toggleWxId"><img src="./service@3x.png"/>联系顾问</div>
       <div class="btnWrapperLeft">
         <div class="giveUp">放弃</div>
@@ -96,6 +102,8 @@
         price: '未查询到', // 任务价格范围
         date: '未查询到', // 任务日期
         requirement: "未查询到",
+        status: -1,
+        order_status: -1,
 
       }
     },
@@ -109,7 +117,6 @@
     },
     created() {
       this.id = this.$route.params.id
-      this.serviceStatus = this.$route.params.status
       this.getBookInfo()// 错了，这里应该是根据
     },
     methods: {
@@ -128,6 +135,8 @@
         this.price = data.service.price
         this.requirement = data.remark
         this.date = formatDate(date, 'yyyy-MM-dd')
+        this.status = data.status
+        this.order_status = data.order_status
       },
       toggleModel(selector, flag, orderId) {
         // 弹出或隐藏某个框

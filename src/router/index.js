@@ -269,13 +269,13 @@ export default new Router({
     },
     {
       // 我竞标的详情
-      path: '/hasBiddedItemDetail/:id/:status',
+      path: '/hasBiddedItemDetail/:id',
       name: 'hasBiddedItemDetail',
       component: hasBiddedItemDetail
     },
     {
       // 预约服务详情
-      path: '/reservationDetail/:id/:status',
+      path: '/reservationDetail/:id',
       name: 'reservationDetail',
       component: reservationDetail
     },

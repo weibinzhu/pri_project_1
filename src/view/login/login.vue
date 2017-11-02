@@ -66,13 +66,41 @@
         this.$router.push({path: '/signUpPhone?type=2'})
       },// 找回密码
 
+      getList(type){
+        let url
+        switch (type) {
+          case 'city':
+            url = 'Api/Common/getCity'
+            break
+          case 'industry':
+            url = 'Api/Common/getIndustry'
+            break
+          case 'skill':
+            url = 'Api/Common/getSkillType'
+            break
+        }
+        this.$http.get(`${this.globalDOMAIN}${url}`).then(res=>{
+          this.$store.commit('saveBaseData',{baseData: res.body.data.lists, type:type})
+        })
+      },// 获取城市、技能类型或行业列表，并存入vuex
+
       sendLoginRequest(data) {
         this.$http.post(`${this.globalDOMAIN}Employ/Public/login`, data, {emulateJSON: true}).then((response) => {
           if (!response.body.status) {
             alert(response.body.msg)
             return false
           } else {
-            // alert('登录成功')
+            // 获取城市、行业、技能类型列表，并存入vuex
+            this.getList('city')
+            this.getList('industry')
+            this.getList('skill')
+
+            // 获取全国总客服信息，存入sessionStorage
+            this.$http.get(`${this.globalDOMAIN}Api/Common/getCustomerService`).then(res=>{
+              this.$store.commit('saveBaseData',{baseData: res.body.data, type:'customerService'})
+            })
+
+            // 获取用户信息，存入sessionStorage
             let token = response.body.data.token
             this.$http.get(`${this.globalDOMAIN}Employ/User/getUserInfo`, {headers: {'token': token}}).then((response) => {
               console.log('获取用户信息：', response)
@@ -84,7 +112,6 @@
                 alert('获取用户信息失败')
               }
             })
-
           }
         })
       },// 发送请求

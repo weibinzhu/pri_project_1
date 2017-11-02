@@ -4,10 +4,10 @@
     <div class="whoReservedMeItem" v-for="(item,index) in tasks" :key="index">
       <div class="whoReservedMeItemInfo">
         <div class="itemName">
-          {{item.name}} status：{{statusList[item.status]}}
+          {{item.name}}
         </div>
         <div class="itemPrice">
-          ￥{{item.price}}<span :class="item.status==0?'hightlight':''">{{typeList[item.status]}}</span>
+          ￥{{item.price}}<span :class="item.status==0?'hightlight':''">{{statusShowText(item)}}</span>
         </div>
       </div>
       <div class="whoReservedMeItemFooter">
@@ -18,9 +18,9 @@
         </div>
         <div class="whoReservedMeItemBtn">
           <div @click.stop="toggleModel('.giveUpModel','showGiveUpModel',item.orderId)" class="giveUpBtn"
-               v-if="item.status == 1">放弃
+               v-if="item.status == 99 && (item.order_status == 1 || item.order_status == 2)">放弃
           </div>
-          <router-link tag="div" :to="{name:'reservationDetail', params:{id:item.orderId,status:item.status,type:2}}"
+          <router-link tag="div" :to="{name:'reservationDetail', params:{id:item.orderId}}"
                        class="moreBtn">查看详情
           </router-link>
         </div>
@@ -47,15 +47,13 @@
 <script type="text/ecmascript-6">
   import header from '@/components/v-header/v-header'
   import Tag from '@/components/tag'
+  import Loading from '@/components/loading'
 
   export default {
     data() {
       return {
-        typeList: ['未接受', '洽谈中', '服务中', '待评价', '已完成'],
-        statusList: ['0-初始', '1-待评价', '2-已成功'],
+        isLoading: false,
         tasks: [
-          // type解释：'0未接受', '1洽谈中', '2服务中', '3待评价', '4已完成'
-          // status解释：'0-初始', '1-待评价', '2-已成功'
           {
             name: '加载中',
             price: '加载中',
@@ -64,8 +62,6 @@
             isCertificated: false,
             taskId: 1,
             orderId: -1,
-            type: 0,
-            status: 0,
           },
         ],
         showGiveUpModel: false,
@@ -83,6 +79,31 @@
       this.getOrderList()
     },
     methods: {
+      statusShowText(item) {
+        switch (item.status) {
+          case '0':
+            return '未接受'
+          case '1':
+            return '待接受'
+          case '3':
+            return '对方已放弃'
+        }
+        if (item.status == 99) {
+          switch (item.order_status) {
+            case '1':
+            case '2':
+              return '洽谈中'
+            case '3':
+              return '待支付'
+            case '4':
+              return '服务中'
+            case '5':
+              return '待评价'
+            case '99':
+              return '已完成'
+          }
+        }
+      },
       getOrderList() {
         this.$http.get(`${this.globalDOMAIN}Employ/Service/getOrderList`, {
           emulateJSON: true,
@@ -96,20 +117,6 @@
         })
       },// 获取预约我的列表
       processOrderData(data) {
-//        tasks: [
-        // type解释：'0未接受', '1洽谈中', '2服务中', '3待评价', '4已完成'
-        // status解释：'0-初始', '1-待评价', '2-已成功'
-//        {
-//          name: '英语主持服务',
-//          price: '15000-59500',
-//          company: '主题邦科技',
-//          companyLogo: '/static/icon@3x.png',
-//          isCertificated: true,
-//          taskId: 1,
-//          type: 0,
-//          status: 0,
-//        },
-//      ],
         this.tasks = []
         if (data) {
           for (let item of data) {
@@ -119,11 +126,12 @@
               company: item.employ.username,
               taskId: item.service_id,
               orderId: item.id,
+              status: item.status,
+              order_status: item.order_status,
+
               // 以下是暂无数据，空着的
               isCertificated: true,
               companyLogo: '/static/icon@3x.png',
-              type: 0,
-              status: 0,
             }
             this.tasks.push(tempItem)
           }
@@ -158,6 +166,7 @@
       }
     },
     components: {
+      Loading,
       Tag,
       'v-header': header
     }

@@ -6,7 +6,7 @@
     <div class="taskBasicInfo">
       <div class="taskBasicInfoLeft">
         <div class="taskTitle">{{title}}</div>
-        <div class="taskPrice">￥{{price}}</div>
+        <div class="taskPrice">￥{{minPrice}}-{{maxPrice}}</div>
       </div>
       <div class="taskBasicInfoRight">
         <div class="taskDate">{{date}}</div>
@@ -26,7 +26,7 @@
       <p class="requirement">{{requirement}}</p>
     </div>
     <!--各种底部功能条-->
-    <footer class="taskDetailFooter taskSelected" v-if="taskStatus == 1">
+    <footer class="taskDetailFooter taskSelected" v-if="bidStatus == 99 && (order_status == 1 || order_status == 2)">
       <div class="contact" @click="toggleWxId"><img src="./service@3x.png"/>联系顾问</div>
       <div class="btnWrapperLeft">
         <div class="giveUp" @click="toggleGiveUpModel">放弃</div>
@@ -34,13 +34,18 @@
       </div>
       <router-link :to="{name:'contract',params:{taskId:taskId}}" tag="div" class="viewContractBtn">发起合同</router-link>
     </footer>
-    <footer class="taskDetailFooter taskComment" v-if="taskStatus == 0">
+    <footer class="taskDetailFooter taskComment" v-if="bidStatus == 99 && (order_status == 3 || order_status == 4)">
+      <div class="contact" @click="toggleWxId"><img src="./service@3x.png"/>联系顾问</div>
+      <router-link :to="{name:'contract',params:{taskId:taskId}}" tag="div" class="viewContractBtn">查看合同</router-link>
+    </footer>
+    <footer class="taskDetailFooter taskComment" v-if="bidStatus == 99 && (order_status == 5)">
       <div class="contact" @click="toggleWxId"><img src="./service@3x.png"/>联系顾问</div>
       <router-link :to="{name:'contract',params:{taskId:taskId}}" tag="div" class="viewContractBtn">查看合同</router-link>
       <router-link to="/toRateTask" tag="div" class="comment">评价</router-link>
     </footer>
-    <footer class="taskDetailFooter taskSuccess" v-if="taskStatus == 3">已成功</footer>
-    <footer class="taskDetailFooter taskSuccess" v-if="taskStatus == 2">已删除</footer>
+    <footer class="taskDetailFooter taskSuccess" v-if="bidStatus == 99 && (order_status == 99)">已成功</footer>
+    <footer class="taskDetailFooter taskSuccess" v-if="bidStatus == 2">已删除</footer>
+    <footer class="taskDetailFooter taskSuccess" v-if="bidStatus == 3">已放弃</footer>
     <!--客服-->
     <transition name="getWxFade">
       <div class="getWxModel" v-show="showGetWxModel">
@@ -75,54 +80,84 @@
 <script type="text/ecmascript-6">
   import header from "@/components/v-header/v-header"
   import loading from '@/components/loading'
-  import Loading from "../../../../node_modules/vux/src/components/loading/index.vue";
+  import {formatDate} from '@/common/utils/utils.js'
+  //  import Loading from "../../../../node_modules/vux/src/components/loading/index.vue";
   export default {
     name: 'taskDetail',
     data() {
       return {
-        isLoading:false,
+        isLoading: false,
         wxId: 'fwfa21', // 客服微信号
         showGetWxModel: false,// 客服微信号弹框显隐
         showGiveUpModel: false,
+
+        bidStatus:-1,// 我的投标状态
+        myBidId:-1,// 中标的话，我的投标id
         taskId: 0, // 任务id
-        taskStatus: 0, // 任务类型，解释：['0-待评价', '1-已中标', '2-已删除', '3-交易成功'],
-        title: '公众号推广核心商户扶持计划数据全面支持', // 任务名称
-        price: '15000-30000', // 任务价格范围
-        date: '2017-08-05', // 任务日期
-        city: '广州', // 招聘城市
-//        peopleNum: 1, // 所需人数
-        taskForm: '按需出行（时间相对灵活）', // 工作形式
-        taskType: '市场推广-社区推广',// 所属类别
-        period: '1周', // 项目周期
-//        skills: ['SEM', '市场策划', 'SEO'], // 所需技能
-        requirement: "任务要求任务要求任务要求任务要求任务要求任务要求",
+        status: -1,
+        on: -1,
+        order_status: -1,
+//        taskStatus: 0, // 任务类型，解释：['0-待评价', '1-已中标', '2-已删除', '3-交易成功'],
+
+
+        title: '加载中', // 任务名称
+        maxPrice: '加载中',
+        minPrice: '加载中',
+        date: '加载中', // 任务日期
+        city: '加载中', // 招聘城市
+        taskForm: '加载中', // 工作形式
+        taskType: '加载中',// 所属类别
+        period: '加载中', // 项目周期
+        requirement: "加载中",
 
       }
     },
-    computed:{
-      globalDOMAIN(){
+    computed: {
+      globalDOMAIN() {
         return this.$store.state.globalDOMAIN
       },
-      token(){
+      token() {
         return sessionStorage.getItem('token')
       }
     },
     created() {
       this.taskId = this.$route.params.id
-      this.taskStatus = this.$route.params.status
+//      this.taskStatus = this.$route.params.status
       this.getTaskInfo()
     },
     methods: {
-      getTaskInfo(){
-        this.$http.get(`${this.globalDOMAIN}Employ/Task/getById`,{
-          params:{'task_id':this.taskId},
-          headers:{'token':this.token}
-        }).then(res=>{
-          console.log(res)
+      getTaskInfo() {
+        this.$http.get(`${this.globalDOMAIN}Employ/Task/getById`, {
+          params: {'task_id': this.taskId},
+          headers: {'token': this.token}
+        }).then(res => {
+          if (res.body.status) {
+            this.processInfoData(res.body.data)
+          } else {
+            this.$vux.toast.text(res.body.msg)
+          }
         })
       },
-      processInfoData(data){
+      processInfoData(data) {
+        if(data.my_bid){
+          this.myBidId = data.my_bid.id
+        }
+        let time = new Date(data.inputtime * 1000)
+        this.title = data.title
+        this.minPrice = data.price_min
+        this.maxPrice = data.price_max
+        this.city = data.city
+        this.taskForm = data.work_type
+        this.date = formatDate(time, 'yyyy-MM-dd')
+        this.requirement = data.desc
+        this.period = data.cycle
+        this.taskType = data.task_type
 
+
+        this.bidStatus = data.my_bid.status
+        this.status = data.status
+        this.on = data.on
+        this.order_status = data.order_status
       },
       toggleWxId() { // 弹出或隐藏【点击复制客服微信】框
         let y = window.scrollY + 200;
@@ -151,12 +186,19 @@
       },
       giveUpItem() {
         // 放弃某项
-        console.log('gived up!')
+        this.$http.post(`${this.globalDOMAIN}Employ/Task/giveUp`,{
+          'bid_id':this.myBidId
+        },{
+          headers: {'token': this.token},
+          emulateJSON:true
+        }).then(res=>{
+          this.$vux.toast.text(res.body.msg)
+        })
         this.showGiveUpModel = !this.showGiveUpModel
       }
     },
     components: {
-      Loading,
+      loading,
       'v-header': header
     }
   }
@@ -202,6 +244,8 @@
         flex-direction: column
         justify-content: space-between
         height: 100%
+        .taskTitle
+          min-width: px2-2-rem(500)
       .taskBasicInfoRight
         align-items: center
         width: px2-2-rem(225)
