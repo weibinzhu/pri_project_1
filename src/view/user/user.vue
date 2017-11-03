@@ -113,7 +113,6 @@
         showGetWxModel: false,// 客服弹框显隐
 
         // 固定数据
-        wxId: '112dw',// 客服微信号
         linklist: {
           sublist_1: [
             {
@@ -182,6 +181,9 @@
       globalDOMAIN() {
         return this.$store.state.globalDOMAIN
       },// 请求域名
+      wxId(){
+        return this.$store.state.customerService.wechat
+      }, // 客服微信号
     },
     mounted() {
       this.gongli = sessionStorage.getItem('point')

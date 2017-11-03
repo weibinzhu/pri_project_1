@@ -52,8 +52,8 @@
         <v-filter v-for="(item,index) in filterItems" :item="item" :index="index" :key="index" :page=1></v-filter>
         <transition name="fade2">
           <ul class="filterPanel" v-if=taskFilterPanelShow_xiake @click="selectChoice">
-            <li v-for="(choice,index) in choices" class="choices" :id="index"
-                :class="[index==currentChoiceIndex?'active':'']">{{choice}}
+            <li v-for="(choice,index) in choices" class="choices" :data-index="index" :data-id="choice.id"
+                :class="[index==currentChoiceIndex?'active':'']">{{choice.title}}
             </li>
             <p v-if="showNotice">更多城市将逐步开放，敬请期待</p>
           </ul>
@@ -77,7 +77,6 @@
           <div class="nameWrapper">
             <div class="name">{{item.name}}</div>
             <tag v-if="item.isCertificated"></tag>
-            <!--<div class="certificated">已认证</div>-->
           </div>
           <div class="descWrapper">
             <div class="desc" v-for="(desc,index) in item.descList">{{desc}}</div>
@@ -134,27 +133,24 @@
           },
         ],
         serviceList: [],
-//        serviceList: [
-//          {
-//            avatar: '/static/xiake/head@2x.png',
-//            serviceName: '微信开发',
-//            name: '郑某某',
-//            tags: [true, true, true], // 按顺序分别是专家、峡客、芝麻
-//            descList: ['市场推广', '3年经验'],
-//            gongli: 780, // 功力值
-//            times: 6, // 交易量
-//            rate: 4.6,// 好评度
-//            isCertificated: true,
-//            id: 1213312,// 服务id
-//          },
-//        ],
         filterItems: ['城市', '类别', '级别', '排序'],
-        cityList: ['全部', '北京', '上海', '广州', '深圳'],
-        typeList: ['全部', '设计', '技术', '运营', '市场', '产品'],
-        levelList: ['全部', '专家认证', '创客认证', '芝麻认证'],
-        sortList: ['全部', '最新', '最热', '价格↓', '价格↑'],
-        selectedChoiceIndex: [0, 0, 0, 0], // 保存各个下拉框的选择值
-        currentChoiceIndex: 0, // 当前的选择
+        cityList: [{id: -1, title: '全部'}],
+        typeList: [{id: -1, title: '全部'}], // 暂时接行业列表进去
+        sortList: [
+          {id: -1, title: '全部'},
+          {id: 0, title: '创建时间', name: 'inputtime'},
+          {id: 1, title: '价格↑', name: 'price_min'},
+          {id: 2, title: '价格↓', name: 'price_max'}
+        ],
+        levelList: [
+          {id: -1, title: '全部'},
+          {id: 0, title: '专家认证', name:'zhuanjia'},
+          {id: 1, title: '峡客认证', name:'xiake'},
+          {id: 2, title: '芝麻认证', name:'zima'}
+        ],
+        selectedChoiceIndex: [0, 0, 0, 0], // 保存各个下拉框的选择值的index
+        selectedChoiceId: [-1, -1, -1, -1],// 保存各个下拉框的选择值的id
+        currentChoiceIndex: 0, // 当前的选择的index
       }
     },
     computed: {
@@ -195,6 +191,9 @@
       },
     },
     mounted() {
+      this.getList('city')
+      this.getList('industry')
+
       // 推荐的专家的图片加载
       let proImg = document.querySelectorAll('.proImgWrapper')
       for (let i = 0; i < proImg.length; i++) {
@@ -208,23 +207,80 @@
       this.getServiceList()
     },
     methods: {
+      getList(type) {
+        let url
+        switch (type) {
+          case 'city':
+            url = 'Api/Common/getCity'
+            break
+          case 'industry':
+            url = 'Api/Common/getIndustry'
+            break
+        }
+        this.$http.get(`${this.globalDOMAIN}${url}`).then(res => {
+          this.$store.commit('saveBaseData', {baseData: res.body.data.lists, type: type})
+          if (type == 'city') {
+            this.cityList = this.cityList.concat(this.$store.state.cityList)
+          } else {
+            this.typeList = this.typeList.concat(this.$store.state.industryList)
+          }
+        })
+      },// 获取城市、行业列表，并存入vuex
       selectChoice(event) {
-        if (event.target.id != '') {
-          this.selectedChoiceIndex[this.$store.state.taskFilterActiveIndex_xiake] = event.target.id
-          this.currentChoiceIndex = event.target.id
-          //if (this.$store.state.taskFilterActiveIndex == 2) { // 如果当前在【排序】下拉框下
-          //this.sortTaskList(this.selectedChoiceIndex[2]) // 把选择的排序类型传递到排序函数中
-          //}
+        if (event.target.dataset.id != undefined) {
+          this.selectedChoiceId[this.$store.state.taskFilterActiveIndex_xiake] = event.target.dataset.id
+          this.selectedChoiceIndex[this.$store.state.taskFilterActiveIndex_xiake] = event.target.dataset.index
+          this.currentChoiceIndex = event.target.dataset.index
+          this.getServiceList()
         }
       },
       getServiceList() {
+        let city,service_type,grade,order
+
+        if (this.selectedChoiceId[0] == -1) {
+          city = ''
+        } else {
+          city = this.cityList.find(function (item) {
+            return item.id == this.selectedChoiceId[0]
+          }, this).title
+        }
+
+        if (this.selectedChoiceId[1] == -1){
+          service_type: ''
+        } else {
+          service_type = this.typeList.find(function (item) {
+            return item.id == this.selectedChoiceId[1]
+          }, this).title
+        }
+
+        if (this.selectedChoiceId[2] == -1) {
+          grade = ''
+        }  else {
+          grade = this.levelList.find(function(item){
+            return item.id == this.selectedChoiceId[2]
+          },this).name
+        }
+
+        if (this.selectedChoiceId[3] == -1) {
+          order = ''
+        }  else {
+          order = this.sortList.find(function(item){
+            return item.id == this.selectedChoiceId[3]
+          },this).name
+        }
+
         this.$http.get(`${this.globalDOMAIN}Employ/Service/getList`, {
+          params:{
+            'city':city,
+            'service_type':service_type,
+            'grade':grade,
+            'order':order,
+          },
           emulateJSON: true,
           headers: {'token': this.token}
         }).then((res) => {
           if (res.body.status) {
-            console.log(res)
-            this.processServiceData(res.body.data.lists)
+            this.serviceList = this.processServiceData(res.body.data.lists)
           } else {
             this.$vux.toast.text(res.body.msg)
           }
@@ -245,6 +301,7 @@
 //            id: 1213312,// 服务id
 //          },
 //        ],
+        let tempList = []
         if (data) {
           for (let item of data) {
             let tempItem = {
@@ -259,10 +316,10 @@
               isCertificated: true,
               id: item.id,// 服务id
             }
-            this.serviceList.push(tempItem)
+            tempList.push(tempItem)
           }
         }
-
+        return tempList
       },// 处理服务列表数据
     },
     components: {
@@ -479,7 +536,8 @@
           flex-wrap: wrap
           align-items: center
         .descWrapper
-          font-size :0.3rem // 字太大的话会分两行
+        // 字太大的话会分两行
+          font-size: 0.3rem
         .name
           height: px2-2-rem(28)
           line-height: px2-2-rem(28)

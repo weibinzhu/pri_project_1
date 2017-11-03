@@ -206,7 +206,6 @@
             extension: '.doc',
           }
         ], //项目文件柜
-        wxId: 'fwfa21', // 客服微信号
         showGetWxModel: false,// 客服微信号弹框显隐
         showGiveUpModel: false,// 放弃提示框
         showAd: false,// 广告（下载行峡APP）显隐
@@ -258,8 +257,11 @@
       },
       token() {
         return sessionStorage.getItem('token')
-      }
-    },
+      },
+      wxId(){
+        return this.$store.state.customerService.wechat
+      }, // 客服微信号
+  },
     created() {
       this.type = this.$route.params.type
       this.type == 2 ? this.orderId = this.$route.params.id : this.taskId = this.$route.params.id

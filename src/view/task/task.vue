@@ -31,7 +31,7 @@
         <v-filter v-for="(item,index) in filterItems" :item="item" :index="index" :key="index"></v-filter>
         <transition name="fade">
           <ul class="filterPanel" v-if=taskFilterPanelShow @click="selectChoice">
-            <li v-for="(choice,index) in choices" class="choices" :id="index"
+            <li v-for="(choice,index) in choices" class="choices" :data-id="choice.id" :data-index="index"
                 :class="[index==currentChoiceIndex?'active':'']">{{choice.title}}
             </li>
             <p v-if="showNotice">更多城市将逐步开放，敬请期待</p>
@@ -40,9 +40,10 @@
       </ul>
     </div>
     <div class="tasksItems" @click="onTaskItemClick">
-      <taskitem v-for="(item,index) in taskItems" :key="index" :item="item" v-if="item.status==99"
-                v-show="(item.location==selectedChoiceIndex[0]||selectedChoiceIndex[0]==0||item.location==0)
-                  &&(item.type==selectedChoiceIndex[1]||selectedChoiceIndex[1]==0)"></taskitem>
+      <!--<taskitem v-for="(item,index) in taskItems" :key="index" :item="item" v-if="item.status==99"-->
+      <!--v-show="(item.location==selectedChoiceIndex[0]||selectedChoiceIndex[0]==0||item.location==0)-->
+      <!--&&(item.type==selectedChoiceIndex[1]||selectedChoiceIndex[1]==0)"></taskitem>-->
+      <taskitem v-for="(item,index) in taskItems" :key="index" :item="item" v-if="item.status==99"></taskitem>
     </div>
     <transition name="getWxFade">
       <div class="getWxModel" v-show="showGetWxModel">
@@ -119,21 +120,26 @@
 //            type: 1,
 //          },
         ],
-        original: [], // 初始值跟taskItems一样，用于恢复原排序
-        cityList: [{id:-1,title:'全部'}],
-        typeList: ['全部', '设计', '技术', '运营', '市场', '产品'],
-        sortList: ['全部', '最新', '最热', '价格↓', '价格↑'],
-        selectedChoiceIndex: [0, 0, 0], // 保存各个下拉框的选择值
-        currentChoiceIndex: 0, // 当前的选择
-        wxId: 'fwfa21', // 客服微信号
+        cityList: [{id: -1, title: '全部'}],
+        typeList: [{id: -1, title: '全部'}], // 暂时接行业列表进去
+        sortList: [
+          {id: -1, title: '全部'},
+          {id: 0, title: '创建时间', name: 'inputtime'},
+          {id: 1, title: '价格↑', name: 'price_min'},
+          {id: 2, title: '价格↓', name: 'price_max'}
+        ],
+        selectedChoiceIndex: [0, 0, 0], // 保存各个下拉框的选择值的index
+        selectedChoiceId: [-1, -1, -1],// 保存各个下拉框的选择值的id
+        currentChoiceIndex: 0, // 当前的选择的index
         showGetWxModel: false,
-        scrollData: [],
         searchPh: '搜索旅游业者发布的任务', // 搜索框placeholder
       }
     },
     mounted() {
       this.getTaskList()
-//      this.cityList = this.$store.state.cityList.unshift({id:-1,title:'全部'})
+      // 获取城市、行业列表，并存入vuex
+      this.getList('city')
+      this.getList('industry')
     },
     computed: {
       globalDOMAIN() {
@@ -145,20 +151,12 @@
       taskFilterPanelShow() {
         return this.$store.state.taskFilterPanelShow
       },
-//      cityList(){
-//        let cityList = [{id:-1,title:'全部'}]
-//        for (let item of this.$store.state.cityList){
-//          console.log(item)
-//          cityList.push(item)
-//        }
-//        return cityList
-//      },
       choices() {
         var activeIndex = this.$store.state.taskFilterActiveIndex
         switch (activeIndex) {
           case 0:
             this.currentChoiceIndex = this.selectedChoiceIndex[0] // 将当前选择修改为当前下拉框的值
-            return this.cityList.concat(this.$store.state.cityList)
+            return this.cityList
             break
           case 1:
             this.currentChoiceIndex = this.selectedChoiceIndex[1]
@@ -178,19 +176,41 @@
         }
         return false
       },
+      wxId(){
+        return this.$store.state.customerService.wechat
+      }, // 客服微信号
     },
     methods: {
-      selectChoice(event) {
-        if (event.target.id != '') {
-          this.selectedChoiceIndex[this.$store.state.taskFilterActiveIndex] = event.target.id
-          this.currentChoiceIndex = event.target.id
-          if (this.$store.state.taskFilterActiveIndex == 2) { // 如果当前在【排序】下拉框下
-            this.sortTaskList(this.selectedChoiceIndex[2]) // 把选择的排序类型传递到排序函数中
+      getList(type) {
+        let url
+        switch (type) {
+          case 'city':
+            url = 'Api/Common/getCity'
+            break
+          case 'industry':
+            url = 'Api/Common/getIndustry'
+            break
+        }
+        this.$http.get(`${this.globalDOMAIN}${url}`).then(res => {
+          this.$store.commit('saveBaseData', {baseData: res.body.data.lists, type: type})
+          if (type == 'city') {
+            this.cityList = this.cityList.concat(this.$store.state.cityList)
+          } else {
+            this.typeList = this.typeList.concat(this.$store.state.industryList)
           }
+        })
+      },// 获取城市、行业列表，并存入vuex
+      selectChoice(event) {
+        if (event.target.dataset.index != undefined) {
+          // id用于发送请求，index用于显示当前选中的项的蓝色框
+          this.selectedChoiceId[this.$store.state.taskFilterActiveIndex] = event.target.dataset.id
+          this.selectedChoiceIndex[this.$store.state.taskFilterActiveIndex] = event.target.dataset.index
+          this.currentChoiceIndex = event.target.dataset.index
+          this.getTaskList()
         }
       },
       onTaskItemClick(e) {
-        // 点击任务项，编程式导航到任务详情页
+
         let that = this
 
         // id只绑定在最外层，如果点击到内层元素则不断向外层寻找，直到寻找到最外层为止
@@ -204,74 +224,61 @@
         }
 
         _getId(e.target)
-      },
-      toggleWxId() { // 弹出或隐藏【点击复制客服微信】框
+      },// 点击任务项，编程式导航到任务详情页
+      toggleWxId() {
         let y = window.scrollY + 200;
         let model = document.querySelector(".getWxModel")
         model.style.top = y + 'px'
         this.showGetWxModel = !this.showGetWxModel
-      },
-      checkIphone() { // 优雅降级。（暂时不需要用）
+      },// 弹出或隐藏【点击复制客服微信】框
+      checkIphone() {
         if (navigator.userAgent.match(/ipad|ipod|iphone/i)) {
           alert('如果复制失败请手动复制')
         }
-      },
-      sortTaskList(type) { // 排序函数
-        let _compare // 声明比较函数
-        switch (type) { // 根据传进来的排序类型分别定义比较函数的值
-          case 0:
-          case '0': // 默认排序，即原来是怎么排就怎么排
-            _compare = function (value1, value2) {
-              return -1 // 顺序不变
-            }
-            this.deepCopy(this.original, this.taskItems) // 用保存了的原数组替换掉
-            break
-          case '3': // 按价格的降序排列
-            _compare = function (value1, value2) {
-              let valueMinPrice1 = value1.minPrice
-              let valueMinPrice2 = value2.minPrice
-              return valueMinPrice2 - valueMinPrice1
-            }
-            break
-          case '4': // 按价格的升序排列
-            _compare = function (value1, value2) {
-              let valueMinPrice1 = value1.minPrice
-              let valueMinPrice2 = value2.minPrice
-              return valueMinPrice1 - valueMinPrice2
-            }
-            break
-        }
-        this.taskItems.sort(_compare) // 根据定义好的比较函数排序
-      },
-      deepCopy(original, target) { // 用于深度复制一个数组或对象
-        var that = this
-        var target = target
-        for (let i in original) {
-          if (typeof original[i] === 'object') {
-            if (original[i] instanceof Array) {
-              target[i] = []
-            } else {
-              target[i] = {}
-            }
-            that.deepCopy(original[i], target[i])
-          } else {
-            target[i] = original[i]
-          }
-
-        }
-      },
+      },// 优雅降级。（暂时不需要用）
       getTaskList() {
-        let token = sessionStorage.getItem('token')
+        let city, task_type, order, token
+
+        if (this.selectedChoiceId[0] == -1) {
+          city = ''
+        } else {
+          city = this.cityList.find(function (item) {
+            return item.id == this.selectedChoiceId[0]
+          }, this).title
+        }
+
+        if (this.selectedChoiceId[1] == -1){
+          task_type:''
+        } else {
+          task_type = this.typeList.find(function (item) {
+            return item.id == this.selectedChoiceId[1]
+          }, this).title
+        }
+
+        if (this.selectedChoiceId[2] == -1) {
+          order = ''
+        }  else {
+          order = this.sortList.find(function(item){
+            return item.id == this.selectedChoiceId[2]
+          },this).name
+        }
+
+        token = sessionStorage.getItem('token')
         this.$http.get(`${this.globalDOMAIN}Employ/Task/getList`, {
+          params: {
+            'city': city,
+            'task_type':task_type,
+            'order': order
+          },
           emulateJSON: true,
           headers: {'token': token}
         }).then((response) => {
           if (response.body.status) {
             let data = response.body.data
-            console.log(data.lists)
+            // console.log(data.lists)
             // 处理传回来的数组并赋值
             this.taskItems = this.dataProcess(data.lists)
-            this.deepCopy(this.taskItems, this.original) // 将数组保存（复制一份）到this.original
+            // this.deepCopy(this.taskItems, this.original) // 将数组保存（复制一份）到this.original
           } else {
             this.$vux.toast.text('获取任务列表失败')
           }
@@ -279,26 +286,27 @@
       },// 发送请求获取数据
       dataProcess(taskList) {
         let tempList = []
-        for (let task of taskList) {
-
-          // 构造数据
-          let tempItem = {
-            taskTitle: task.title,
-            minPrice: task.price_min,
-            maxPrice: task.price_max,
-            taskId: task.id,
-            cycle: task.cycle,
-            workType: task.work_type.split('（')[0],// 必须用中文括号
-            clientName: '主题邦科技',
-            logo: 'static/icon@3x.png',
-            isCertificated: Math.random() > 0.5 ? true : false,
-            location: this.cityList.indexOf(task.city),
-            type: Math.floor(Math.random() * 4) + 1,
-            status: task.status,
-            on: task.on,
-            order_status: task.order_status
+        if(taskList){
+          for (let task of taskList) {
+            // 构造数据
+            let tempItem = {
+              taskTitle: task.title,
+              minPrice: task.price_min,
+              maxPrice: task.price_max,
+              taskId: task.id,
+              cycle: task.cycle,
+              workType: task.work_type.split('（')[0],// 必须用中文括号
+              clientName: '主题邦科技',
+              logo: 'static/icon@3x.png',
+              isCertificated: Math.random() > 0.5 ? true : false,
+              location: this.cityList.indexOf(task.city),
+              type: Math.floor(Math.random() * 4) + 1,
+              status: task.status,
+              on: task.on,
+              order_status: task.order_status
+            }
+            tempList.push(tempItem)
           }
-          tempList.push(tempItem)
         }
         return tempList
       },// 处理数据并返回

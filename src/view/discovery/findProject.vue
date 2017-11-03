@@ -8,8 +8,8 @@
         </div>
         <transition name="fade">
           <ul class="filterPanel" v-show="currentIndex === 0" @click="onChoiceClick">
-            <li v-for="(item,index) in areaList" :class="[currentSelectedChoice===index?'active':'']"
-                :data-choice-id="index">{{item}}
+            <li v-for="(item,index) in cityList" :class="[currentSelectedChoice===index?'active':'']"
+                :data-index="index" :data-id="item.id">{{item.title}}
             </li>
           </ul>
         </transition>
@@ -18,16 +18,14 @@
         <transition name="fade">
           <ul class="filterPanel" v-show="currentIndex === 1" @click="onChoiceClick">
             <li v-for="(item,index) in typeList" :class="[currentSelectedChoice===index?'active':'']"
-                :data-choice-id="index">{{item}}
+                :data-index="index" :data-id="item.id">{{item.title}}
             </li>
           </ul>
         </transition>
       </div>
     </sticky>
     <!--内容块-->
-    <div class="projectBlock" v-for="(item,index) in projectList"
-         v-show="(item.location == areaList[choiceSelected[0]] || choiceSelected[0] === 0)
-         && (item.type == typeList[choiceSelected[1]] || choiceSelected[1] === 0)">
+    <div class="projectBlock" v-for="(item,index) in projectList">
       <!--头图-->
       <div class="headImg" :data-large="item.imgUrl">
         <img src="/static/loading.gif"/>
@@ -53,8 +51,8 @@
   export default {
     data() {
       return {
-        areaList: ['全部', '北京', '上海', '平潭'],// 区域列表
-        typeList: ['全部', '商务合作', '移动开发', '业务推广'],// 类型列表
+        cityList: [{id: -1, title: '全部'}],
+        typeList: [{id: -1, title: '全部'}], // 暂时接行业列表进去
         choiceSelected: [0, 0],// 选择的过滤项
         currentSelectedChoice: 0,// 当前应该高亮显示的过滤项
         currentIndex: -1, // 当前选择的过滤类型
@@ -98,7 +96,34 @@
         ],// 项目列表
       }
     },
+    computed:{
+      globalDOMAIN(){
+        return this.$store.state.globalDOMAIN
+      },
+      token(){
+        return sessionStorage.getItem('token')
+      }
+    },
     methods: {
+      getList(type) {
+        let url
+        switch (type) {
+          case 'city':
+            url = 'Api/Common/getCity'
+            break
+          case 'industry':
+            url = 'Api/Common/getIndustry'
+            break
+        }
+        this.$http.get(`${this.globalDOMAIN}${url}`).then(res => {
+          this.$store.commit('saveBaseData', {baseData: res.body.data.lists, type: type})
+          if (type == 'city') {
+            this.cityList = this.cityList.concat(this.$store.state.cityList)
+          } else {
+            this.typeList = this.typeList.concat(this.$store.state.industryList)
+          }
+        })
+      },// 获取城市、行业列表，并存入vuex
       onFilterBarClick(e) { // 点击筛选栏
         let id = e.target.dataset.filterItemId
         switch (id) {
@@ -123,19 +148,19 @@
         }
       },
       onChoiceClick(e) { // 点击下拉的筛选项列表
-        let id = e.target.dataset.choiceId
-        if (id != undefined) {
-          id = Number(id)
-          this.currentSelectedChoice = id
+        let index = e.target.dataset.index
+        if (index != undefined) {
+          index = Number(index)
+          this.currentSelectedChoice = index
           if (this.currentIndex === 0) {
-            this.choiceSelected[0] = id
+            this.choiceSelected[0] = index
           } else if (this.currentIndex === 1) {
-            this.choiceSelected[1] = id
+            this.choiceSelected[1] = index
           } else {
             return false
           }
         }
-      }
+      },
     },
     mounted(){
       // 图片加载过程优化，先显示一个loading的gif，图片加载完再显示实际图片
@@ -149,6 +174,9 @@
           item.appendChild(largeImg)
         }
       })
+
+      this.getList('city')
+      this.getList('industry')
     },
     components: {
       Sticky,

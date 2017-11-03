@@ -87,7 +87,6 @@
     data() {
       return {
         isLoading: false,
-        wxId: 'fwfa21', // 客服微信号
         showGetWxModel: false,// 客服微信号弹框显隐
         showGiveUpModel: false,
 
@@ -118,7 +117,10 @@
       },
       token() {
         return sessionStorage.getItem('token')
-      }
+      },
+      wxId(){
+        return this.$store.state.customerService.wechat
+      }, // 客服微信号
     },
     created() {
       this.taskId = this.$route.params.id

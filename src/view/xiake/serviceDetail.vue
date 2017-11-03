@@ -96,7 +96,7 @@
         isLoading:false,
         showAd: false,// 广告（下载行峡APP）显隐
         showGetWxModel: false,// 客服显隐
-        wxId: 'fwfa21', // 客服微信号
+
 
 
         // 服务信息
@@ -121,6 +121,9 @@
       token() {
         return sessionStorage.getItem('token')
       },
+      wxId(){
+        return this.$store.state.customerService.wechat
+      }, // 客服微信号
     },
     created() {
       this.id = this.$route.params.id

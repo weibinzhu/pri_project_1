@@ -90,9 +90,6 @@
             alert(response.body.msg)
             return false
           } else {
-            // 获取城市、行业、技能类型列表，并存入vuex
-            this.getList('city')
-            this.getList('industry')
             this.getList('skill')
 
             // 获取全国总客服信息，存入sessionStorage
