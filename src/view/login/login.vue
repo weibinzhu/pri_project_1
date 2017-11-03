@@ -15,7 +15,7 @@
     <div @click="login" class="loginBtn">登录
       <div class="findPsw" @click.stop="findPsw">找回密码</div>
     </div>
-    <div class="wxLoginBtn"><img class="wxLogo" src="./wechat@3x.png"/>微信登录</div>
+    <div @click="wxLogin" class="wxLoginBtn"><img class="wxLogo" src="./wechat@3x.png"/>微信登录</div>
     <footer class="signUpWrapper">
       <p>还没行峡网的账号？</p>
       <router-link to="/signUpPhone" class="signUp">注册账号 ></router-link>
@@ -44,8 +44,24 @@
       }
     },
     methods: {
+      wxLogin() {
+        this.$http.get(`${this.globalDOMAIN}Employ/Wechat/index`).then(res => {
+          this.$vux.toast.text(res.body.msg)
+          if (res.body.status) {
+            // 如果已经绑定过微信
+            saveResDataToSession(res.body.data) // 保存用户信息到sessionStorage，方便在其他页面使用
+            this.$router.push({path: '/home'})
+          } else {
+            // 如果还没绑定过
+            sessionStorage.setItem('openid', res.body.data.openid)
+            this.$router.push({path: '/signUpPhone'})
+          }
+        },err=>{
+          alert(`错误代码：${err.status}`)
+        })
+      },// 微信登录
       login() {
-        // 登录
+
         let data = {
           'phone': this.phoneNum.toString(),
           'password': this.psw.toString()
@@ -60,13 +76,13 @@
           }
         })
 
-      },
+      },// 登录
 
       findPsw() {
         this.$router.push({path: '/signUpPhone?type=2'})
       },// 找回密码
 
-      getList(type){
+      getList(type) {
         let url
         switch (type) {
           case 'city':
@@ -79,8 +95,8 @@
             url = 'Api/Common/getSkillType'
             break
         }
-        this.$http.get(`${this.globalDOMAIN}${url}`).then(res=>{
-          this.$store.commit('saveBaseData',{baseData: res.body.data.lists, type:type})
+        this.$http.get(`${this.globalDOMAIN}${url}`).then(res => {
+          this.$store.commit('saveBaseData', {baseData: res.body.data.lists, type: type})
         })
       },// 获取城市、技能类型或行业列表，并存入vuex
 
@@ -93,8 +109,8 @@
             this.getList('skill')
 
             // 获取全国总客服信息，存入sessionStorage
-            this.$http.get(`${this.globalDOMAIN}Api/Common/getCustomerService`).then(res=>{
-              this.$store.commit('saveBaseData',{baseData: res.body.data, type:'customerService'})
+            this.$http.get(`${this.globalDOMAIN}Api/Common/getCustomerService`).then(res => {
+              this.$store.commit('saveBaseData', {baseData: res.body.data, type: 'customerService'})
             })
 
             // 获取用户信息，存入sessionStorage

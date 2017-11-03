@@ -86,7 +86,8 @@
         let data = {
           'phone': phone,
           'password': psw,
-          'smsCode': code
+          'smsCode': code,
+          'openid': sessionStorage.getItem('openid'),
         }
         if (this.type == 1) {
           // 如果当前是【手机注册状态】
