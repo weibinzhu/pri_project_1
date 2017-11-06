@@ -78,7 +78,7 @@
       font-size :px2-2-rem(30)
       border-radius :px2-2-rem(8)
     .underCheckingBtn
-      margin-top :px2-2-rem(400)
+      margin-top :px2-2-rem(226)
       margin-bottom :px2-2-rem(30)
       border: 1px solid #55abf4
       color:#00a0e9

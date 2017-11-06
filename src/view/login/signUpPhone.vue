@@ -22,7 +22,7 @@
       <input id="agreement" name="agreement" type="checkbox" v-model="checked"/>
       <label for="agreement" class="agreement">
       </label>
-      <a href="http://www.baidu.com">阅读并同意《行峡网平台服务协议》</a>
+      <router-link to="/userAgreement">阅读并同意《行峡网平台服务协议》</router-link>
     </div>
     <!--【下一步】按钮-->
     <div class="nextStepBtn" @click="onNextStepBtnClick">
@@ -150,12 +150,12 @@
       width: px2-2-rem(688)
       height: px2-2-rem(86)
       margin-bottom: px2-2-rem(12)
-      padding-right: px2-2-rem(30)
+      padding-right: px2-2-rem(20)
       border: 1px solid #e5e5e5
       border-radius: px2-2-rem(8)
       img
-        width: px2-2-rem(38)
-        height: px2-2-rem(38)
+        width: px2-2-rem(40)
+        height: px2-2-rem(40)
         margin: 0 px2-2-rem(30)
       .pswEyeClose, .pswEye
         width: px2-2-rem(38)
@@ -170,6 +170,7 @@
       input
         flex: 1
       .getCodeBtn
+        font-size :px2-2-rem(28)
         color: #00a0e9
     .inputWrapper:first-child
       margin-top: px2-2-rem(50)

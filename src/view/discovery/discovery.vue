@@ -7,7 +7,7 @@
     <ul class="discoveryNav">
       <router-link to="/findProject" tag="li" class="discoveryNavBtn">
         <img src="/static/discovery/icon_xianmu@3x.png"/>
-        <div>找项目</div>
+        <div>项目推荐</div>
       </router-link>
       <router-link to="/findExpert" tag="li" class="discoveryNavBtn">
         <img src="/static/discovery/icon_ziyuan@3x.png"/>

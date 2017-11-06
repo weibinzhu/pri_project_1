@@ -26,7 +26,7 @@
       </router-link>
     </div>
     <div class="adWrapper" v-show="showAd">
-      <img :src="adImg" class="adImg"/>
+      <a class="adImgWrapper" :href="ad.href"><img :src=adImg class="adImg"/></a>
       <img src="./Close@3x.png" class="closeBtn" @click="toggleShowAd"/>
     </div>
     <div class="overlay" v-show="showAd" @click="toggleShowAd"></div>
@@ -38,12 +38,24 @@
     name: 'home',
     data() {
       return {
-        adImg: '/static/Popup@3x.png',
-        showAd: false
+        showAd: false,
+        ad: {},// 广告信息
+      }
+    },
+    computed: {
+      globalDOMAIN() {
+        return this.$store.state.globalDOMAIN
+      },
+      adImg() {
+        if (this.ad.img) {
+          return `${this.globalDOMAIN.slice(0, -11)}${this.ad.img}`
+        } else {
+          return '/static/Popup@3x.png'
+        }
       }
     },
     mounted() {
-      console.log('hi')
+      this.getAd()
       if (!sessionStorage.showAd) { // 只在第一次进入的时候显示广告
         window.scrollTo(0, 0)
         this.showAd = true
@@ -54,7 +66,12 @@
     methods: {
       toggleShowAd() {
         this.showAd = !this.showAd
-      }
+      },
+      getAd() {
+        this.$http.get(`${this.globalDOMAIN}Api/Common/getAd`).then(res => {
+          this.ad = res.body.data.lists[0]
+        })
+      },// 获取广告信息
     }
   }
 </script>
@@ -113,6 +130,12 @@
   .router-link-active, .router-link-active .tabIcon {
     color: #00a0ea
     background-position: px2-2-rem(56) 0
+  }
+
+  .adImgWrapper {
+    display: block;
+    width: 100%;
+    height: 100%;
   }
 
   .adImg {

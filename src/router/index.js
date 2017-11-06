@@ -35,6 +35,7 @@ import discovery from '@/view/discovery/discovery' // 发现首页
 import findProject from '@/view/discovery/findProject' // 找项目（项目推荐）页
 import findExpert from '@/view/discovery/findExpert' // 专家智库（旅创智库）
 import headline from '@/view/discovery/headline' // 行峡头条
+import htmlDetail from '@/view/discovery/htmlDetail' // 各种直接显示有后台返回html的详情页
 
 // 消息页
 
@@ -386,6 +387,12 @@ export default new Router({
       path: '/headline',
       name: 'headline',
       component: headline
+    },
+    {
+      // 专家详情等
+      path: '/htmlDetail',
+      name: 'htmlDetail',
+      component: htmlDetail
     },
     {
       // 服务详情页

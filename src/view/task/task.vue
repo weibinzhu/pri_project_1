@@ -133,6 +133,7 @@
         currentChoiceIndex: 0, // 当前的选择的index
         showGetWxModel: false,
         searchPh: '搜索旅游业者发布的任务', // 搜索框placeholder
+
       }
     },
     mounted() {
@@ -176,7 +177,7 @@
         }
         return false
       },
-      wxId(){
+      wxId() {
         return this.$store.state.customerService.wechat
       }, // 客服微信号
     },
@@ -247,7 +248,7 @@
           }, this).title
         }
 
-        if (this.selectedChoiceId[1] == -1){
+        if (this.selectedChoiceId[1] == -1) {
           task_type:''
         } else {
           task_type = this.typeList.find(function (item) {
@@ -257,17 +258,17 @@
 
         if (this.selectedChoiceId[2] == -1) {
           order = ''
-        }  else {
-          order = this.sortList.find(function(item){
+        } else {
+          order = this.sortList.find(function (item) {
             return item.id == this.selectedChoiceId[2]
-          },this).name
+          }, this).name
         }
 
         token = sessionStorage.getItem('token')
         this.$http.get(`${this.globalDOMAIN}Employ/Task/getList`, {
           params: {
             'city': city,
-            'task_type':task_type,
+            'task_type': task_type,
             'order': order
           },
           emulateJSON: true,
@@ -286,7 +287,7 @@
       },// 发送请求获取数据
       dataProcess(taskList) {
         let tempList = []
-        if(taskList){
+        if (taskList) {
           for (let task of taskList) {
             // 构造数据
             let tempItem = {

@@ -12,6 +12,8 @@ const  state = {
   skillTypeList:[],// 存放技能列表
   customerService:{},// 存放全国总客服的信息
 
+  htmlDetailTitle:'',// 各种后台直接返回html的详情标题
+  htmlDetailContent:'',// 各种后台直接返回html的详情内容
 
   // 筛选相关，暂时保留
   taskFilterActiveIndex: -1,
@@ -46,7 +48,13 @@ const  mutations = {
     }
 
   },// 保存城市、行业、技能表、全国总客服等信息
+  changeHtmlDetail(state, payload){
+    state.htmlDetailTitle = payload.title
+    state.htmlDetailContent = payload.content
+  }
 }
+
+
 // 整合初始状态和变更函数，我们就得到了我们所需的 store
 // 至此，这个 store 就可以链接到我们的应用中
 export default new Vuex.Store({

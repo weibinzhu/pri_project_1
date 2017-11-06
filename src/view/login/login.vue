@@ -151,7 +151,7 @@
     background-size: px2-2-rem(750)
     background-repeat: no-repeat
     .loginLogo
-      margin-top: px2-2-rem(176)
+      // margin-top: px2-2-rem(140)
       width: px2-2-rem(144)
       height: px2-2-rem(144)
       border-radius: px2-2-rem(16)
@@ -219,7 +219,7 @@
       flex-direction: column
       justify-content: center
       align-items: center
-      margin-top: px2-2-rem(160)
+      margin-top: px2-2-rem(100)
       .signUp
         margin-top: px2-2-rem(10)
         color: #00a0e9
