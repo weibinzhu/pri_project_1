@@ -31,11 +31,11 @@
             title: '峡客徽章',
             link: '/lightUpBadge'
           },
-          {
-            icon: '/static/zhima@3x.png',
-            title: '芝麻信用',
-            link: '/zhima'
-          }
+//          {
+//            icon: '/static/zhima@3x.png',
+//            title: '芝麻信用',
+//            link: '/zhima'
+//          }
         ]
       }
     },

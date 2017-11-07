@@ -13,10 +13,10 @@
         <img src="/static/discovery/icon_ziyuan@3x.png"/>
         <div>旅创智库</div>
       </router-link>
-      <li class="discoveryNavBtn">
+      <router-link tag="li" to="/myUnion" class="discoveryNavBtn">
         <img src="/static/discovery/icon_tongye@3x.png"/>
         <div>旅业联盟</div>
-      </li>
+      </router-link>
       <li class="discoveryNavBtn">
         <img src="/static/discovery/icon_pingtai@3x.png"/>
         <div>众创空间</div>

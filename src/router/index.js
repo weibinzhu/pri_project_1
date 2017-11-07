@@ -33,6 +33,7 @@ import makeReservationSuccess from '@/view/xiake/makeReservationSuccess' // 提�
 
 import discovery from '@/view/discovery/discovery' // 发现首页
 import findProject from '@/view/discovery/findProject' // 找项目（项目推荐）页
+import projectDetail from '@/view/discovery/projectDetail' // 项目详情页
 import findExpert from '@/view/discovery/findExpert' // 专家智库（旅创智库）
 import headline from '@/view/discovery/headline' // 行峡头条
 import htmlDetail from '@/view/discovery/htmlDetail' // 各种直接显示有后台返回html的详情页
@@ -86,7 +87,11 @@ import aboutXingxia from '@/view/user/setting/aboutXingxia' // 关于行峡网
 import userAgreement from '@/view/user/setting/userAgreement' // 用户协议
 import feedback from '@/view/user/setting/feedback' // 用户反馈
 import helpPage from '@/view/user/setting/help' // 帮助
+import helpDetail from '@/view/user/setting/helpDetail' // 帮助详情
 import signIn from '@/view/user/signIn/signIn' // 签到
+
+// ------------零碎
+import myPoster from '@/view/user/myPoster' // 我的海报
 
 
 Vue.use(Router)
@@ -347,6 +352,12 @@ export default new Router({
       component: helpPage
     },
     {
+      // 帮助详情
+      path: '/helpDetail',
+      name: 'helpDetail',
+      component: helpDetail
+    },
+    {
       // 反馈
       path: '/feedback',
       name: 'feedback',
@@ -371,10 +382,22 @@ export default new Router({
       component: signIn
     },
     {
+      // 我的海报
+      path: '/myPoster',
+      name: 'myPoster',
+      component: myPoster
+    },
+    {
       // 找项目（项目推荐）页
       path: '/findProject',
       name: 'findProject',
       component: findProject
+    },
+    {
+      // 项目详情页
+      path: '/projectDetail',
+      name: 'projectDetail',
+      component: projectDetail
     },
     {
       // 专家智库（旅创智库）

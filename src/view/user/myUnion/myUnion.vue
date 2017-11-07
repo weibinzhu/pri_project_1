@@ -39,38 +39,31 @@
             avatar: '/static/xiake/head@2x.png',
             id: 1,
           },
-          {
-            name: '移动办公2',// 联盟名称
-            peopleNum: 50, // 成员人数
-            desc: '选择自己喜欢的空间，OVE创客里实现和小伙伴们的沟通和协作OVE创客里实现和小伙伴的沟通',// 描述
-            isIn: false,// 是否已经加入
-            avatar: '/static/xiake/head@2x.png',
-            id: 2,
-          },
-          {
-            name: '移动办公3',// 联盟名称
-            peopleNum: 50, // 成员人数
-            desc: '选择自己喜欢的空间，OVE创客里实现和小伙伴们的沟通和协作OVE创客里实现和小伙伴的沟通',// 描述
-            isIn: false,// 是否已经加入
-            avatar: '/static/xiake/head@2x.png',
-            id: 3,
-          },
-          {
-            name: '移动办公4',// 联盟名称
-            peopleNum: 50, // 成员人数
-            desc: '选择自己喜欢的空间，OVE创客里实现和小伙伴们的沟通和协作OVE创客里实现和小伙伴的沟通',// 描述
-            isIn: true,// 是否已经加入
-            avatar: '/static/xiake/head@2x.png',
-            id: 4,
-          },
         ], // 拿回来的原始数据，未排序
         unionListSorted: [], // 存放已排序的数组
       }
     },
     created() {
+      this.getUnion()
       this.sortUnionList(this.unionListUnsorted)
     },
+    computed:{
+      globalDOMAIN(){
+        return this.$store.state.globalDOMAIN
+      },
+      token(){
+        return sessionStorage.getItem('token')
+      }
+    },
     methods: {
+      getUnion(){
+        this.$http.post(`${this.globalDOMAIN}Employ/User/getUnion`,{},{
+          headers:{token:this.token},
+          emulateJSON:true
+        }).then(res=>{
+          console.log(res)
+        })
+      },// 获取联盟列表
       sortUnionList(toBeSort) {
         toBeSort.forEach((item) => {
           if (item.isIn) {

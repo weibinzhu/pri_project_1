@@ -3,7 +3,7 @@
     <!--loading 图标-->
     <loading v-show="isLoading"></loading>
     <v-header @share="onShareClick" :title="pageTitle" :shareShow="type == 0"
-              :starShow="type == 0"></v-header>
+              :starShow="type == 0" :id="taskId"></v-header>
     <div class="taskId">任务编号：{{taskId}}
       <span v-if="taskInfo.status == 99 && taskInfo.on == 1 && taskInfo.order_status == 3">托管赏金</span>
       <span v-else-if="taskInfo.status == 99 && taskInfo.on == 1 && taskInfo.order_status == 4">增加赏金</span>

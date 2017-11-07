@@ -4,7 +4,8 @@
       <i class="iconfont icon-left headerArrow" @click="goBack"></i>
       <p>{{title}}</p>
       <div class="toolsWrapper">
-        <img class="headerCollect" src="./favor@3x.png" v-if="starShow"/>
+        <div @click="collect" :class="['headerCollect',isFav?'isFav':'']" v-if="starShow"></div>
+        <!--<img @click="collect" class="headerCollect" src="./favor@3x.png" v-if="starShow"/>-->
         <img @click="onShareClick" class="headerShare" src="./share_light@3x.png" v-if="shareShow"/>
       </div>
     </div>
@@ -24,7 +25,22 @@
       },
       title: {
         type: String
-      }
+      },
+      isFav:{
+        type: Boolean,
+        default:false
+      },
+      id:{
+        type: String
+      }// 任务id或服务id
+    },
+    computed:{
+      globalDOMAIN() {
+        return this.$store.state.globalDOMAIN
+      },
+      token() {
+        return sessionStorage.getItem('token')
+      },
     },
     methods: {
       goBack() {
@@ -32,6 +48,23 @@
       },
       onShareClick() {
         this.$emit('share') // emit一个叫share的自定义事件，父组件会捕获这个事件
+      },
+      collect(){
+        if(this.title == '任务详情'){
+          this.$http.post(`${this.globalDOMAIN}Employ/Task/favorite`,{task_id:this.id},{
+            headers:{token:this.token},
+            emulateJSON:true
+          }).then(res=>{
+            console.log(res)
+          })
+        }else if(this.title == '服务详情'){
+          this.$http.post(`${this.globalDOMAIN}Employ/Service/favorite`,{service_id:this.id},{
+            headers:{token:this.token},
+            emulateJSON:true
+          }).then(res=>{
+            console.log(res)
+          })
+        }
       }
     },
   }
@@ -77,6 +110,11 @@
       width :px2-2-rem(42)
       height :px2-2-rem(42)
       margin-right :px2-2-rem(40)
+      background-size :px2-2-rem(84) px2-2-rem(42)
+      background-position :0 0
+      background-image :url("/static/collect.png")
+    .isFav
+      background-position :px2-2-rem(42) 0
     .headerShare
       width :px2-2-rem(38)
       height :px2-2-rem(40)

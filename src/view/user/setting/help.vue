@@ -1,9 +1,9 @@
 <template>
   <div class="helpPageWrapper">
     <v-header title="使用帮助"></v-header>
-    <div class="helpBlock" v-for="(item,index) in helpList">
+    <div @click="toDetail(item.id)" class="helpBlock" v-for="(item,index) in helpList">
       <div class="helpTitle">{{item.title}}</div>
-      <p class="helpContent">{{item.content}}</p>
+      <p class="helpContent">{{item.desc}}</p>
     </div>
   </div>
 </template>
@@ -15,16 +15,42 @@
     data() {
       return {
         helpList: [
-          {
-            title: '帮助标题1',
-            content: '巴拉巴拉这里是帮助内容巴拉巴拉这里是帮助内容巴拉巴拉这里是帮助内容巴拉巴拉这里是帮助内容巴拉巴拉这里是帮助内容'
-          },
-          {
-            title: '帮助标题2',
-            content: '巴拉巴拉这里是帮助这里是帮助这里是帮助内容巴拉巴拉这里是帮助内容巴拉巴拉这里是帮助内容巴拉巴拉这里是帮助内容巴拉巴拉这里是帮助内容'
-          }
+//          {
+//            title: '帮助标题1',
+//            desc: '巴拉巴拉这里是帮助内容巴拉巴拉这里是帮助内容巴拉巴拉这里是帮助内容巴拉巴拉这里是帮助内容巴拉巴拉这里是帮助内容'
+//          },
         ]
       }
+    },
+    computed:{
+      globalDOMAIN(){
+        return this.$store.state.globalDOMAIN
+      },
+      token(){
+        return sessionStorage.getItem('token')
+      }
+    },
+    mounted(){
+      this.getHelpList()
+    },
+    methods:{
+      getHelpList(){
+        this.$http.get(`${this.globalDOMAIN}Api/Common/getHelp`).then(res=>{
+          let tempList = []
+          for(let item of res.body.data.lists){
+            let tempItem = {
+              title:item.title,
+              desc:item.desc,
+              id:item.id
+            }
+            tempList.push(tempItem)
+          }
+          this.helpList = tempList
+        })
+      },
+      toDetail(id){
+        this.$router.push({ path: '/helpDetail', query: { id: id }})
+      },
     },
     components: {
       'v-header': header

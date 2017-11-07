@@ -7,9 +7,9 @@
         <i class="iconfont icon-sousuo"></i>
         <input type="text" placeholder="搜索旅游峡客发布的服务"/>
       </div>
-      <div class="releaseService">
+      <router-link tag="div" to="/releaseService" class="releaseService">
         发布服务
-      </div>
+      </router-link>
     </header>
     <loading v-show="isLoading"></loading>
     <!--分割线-->
@@ -23,8 +23,8 @@
       <!--<div class="proItemWrapper">-->
       <div class="proItem" v-for="(item,index) in proList">
         <div class="proImgWrapper" :data-large="item.img">
-          <img class="discoverHeadImgLoading" src="/static/loading.gif"/>
-          <!--<img :src=item.img class="proImg"/>-->
+          <!--<img class="discoverHeadImgLoading" src="/static/loading.gif"/>-->
+          <img :src=item.img class="proImg"/>
           <div class="proTagWrapper">
             <img class="proTag" v-if="item.tags[0]" src="/static/zhuan@3x.png">
             <img class="proTag" v-if="item.tags[1]" src="/static/xia@3x.png">
@@ -32,7 +32,7 @@
           </div>
         </div>
         <p class="proSkill">
-          {{item.skill}}
+          {{item.job}}
         </p>
         <div class="proNameWrapper">
           <div class="proName">{{item.name}}</div>
@@ -103,34 +103,13 @@
       return {
         isLoading: false,
         proList: [
-          {
-            img: '/static/xiake/pro.png',
-            tags: [true, true, true], // 按顺序分别是专家、峡客、芝麻
-            skill: '海报设计、平面设计、美女写手',
-            name: 'Michel Lee',
-            isCertificated: true
-          },
-          {
-            img: '/static/xiake/pro.png',
-            tags: [true, false, true],
-            skill: '海报设计、平面设计、美女写手',
-            name: 'Michel Lee',
-            isCertificated: false
-          },
-          {
-            img: '/static/xiake/pro.png',
-            tags: [true, false, false],
-            skill: '海报设计、平面设计、美女写手',
-            name: 'Michel Lee',
-            isCertificated: true
-          },
-          {
-            img: '/static/xiake/pro.png',
-            tags: [true, true, false],
-            skill: '海报设计、平面设计、美女写手',
-            name: 'Michel Lee',
-            isCertificated: true
-          },
+//          {
+//            img: '/static/xiake/pro.png',
+//            tags: [true, true, true], // 按顺序分别是专家、峡客、芝麻
+//            job: '海报设计、平面设计、美女写手',
+//            name: 'Michel Lee',
+//            isCertificated: true
+//          },
         ],
         serviceList: [],
         filterItems: ['城市', '类别', '级别', '排序'],
@@ -193,17 +172,17 @@
     mounted() {
       this.getList('city')
       this.getList('industry')
-
+      this.getExpertList()
       // 推荐的专家的图片加载
-      let proImg = document.querySelectorAll('.proImgWrapper')
-      for (let i = 0; i < proImg.length; i++) {
-        let img = new Image()
-        img.src = proImg[i].dataset.large
-        img.onload = function () {
-          img.classList.add('proImg')
-          proImg[i].appendChild(img);
-        }
-      }
+//      let proImg = document.querySelectorAll('.proImgWrapper')
+//      for (let i = 0; i < proImg.length; i++) {
+//        let img = new Image()
+//        img.src = proImg[i].dataset.large
+//        img.onload = function () {
+//          img.classList.add('proImg')
+//          proImg[i].appendChild(img);
+//        }
+//      }
       this.getServiceList()
     },
     methods: {
@@ -226,6 +205,38 @@
           }
         })
       },// 获取城市、行业列表，并存入vuex
+      getExpertList(){
+        this.$http.get(`${this.globalDOMAIN}Api/Common/getRecommandXiake`).then(res=>{
+//          console.log(res)
+//          {
+//            img: '/static/xiake/pro.png',
+//              tags: [true, true, true], // 按顺序分别是专家、峡客、芝麻
+//            job: '海报设计、平面设计、美女写手',
+//            name: 'Michel Lee',
+//            isCertificated: true
+//          },
+          let tempList = []
+          for (let item of res.body.data.lists){
+            let tempItem = {
+              img: `${this.globalDOMAIN.slice(0, -11)}${item.userpic}`,
+              tags:[],
+              job: item.xiakeInfo.job,
+              name:item.username,
+              isCertificated:false,
+            }
+            if(item.expert_badge){
+              tempItem.tags.push(true)
+            }
+            if(item.xiake_badge){
+              tempItem.tags.push(true)
+              tempItem.isCertificated = true
+            }
+            tempList.push(tempItem)
+          }
+          this.proList = tempList
+
+        })
+      },// 获取推荐专家列表
       selectChoice(event) {
         if (event.target.dataset.id != undefined) {
           this.selectedChoiceId[this.$store.state.taskFilterActiveIndex_xiake] = event.target.dataset.id
@@ -480,6 +491,8 @@
           display: flex
           align-items: center
           font-size: px2-2-rem(26)
+    .recommendedPro::-webkit-scrollbar // 隐藏webkit浏览器的滚动条
+      display: none
     .dividerWrapper
       display: flex
       align-items: center

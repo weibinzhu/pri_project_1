@@ -1,6 +1,6 @@
 <template>
   <div class="serviceDetailWrapper">
-    <v-header @share="onShareClick" title="服务详情" :starShow="true" :shareShow="true"></v-header>
+    <v-header @share="onShareClick" title="服务详情" :id="id" :starShow="true" :shareShow="true"></v-header>
     <loading v-show="isLoading"></loading>
     <!--内容区块Wrapper-->
     <div class="serviceInfoWrapper">

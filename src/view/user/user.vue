@@ -140,7 +140,7 @@
             {
               icon: '/static/user/pic.png',
               text: '我的海报',
-              link: '/home/signIn'
+              link: '/myPoster'
             },
             {
               icon: '/static/user/group@2x.png',

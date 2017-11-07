@@ -38,13 +38,21 @@
   export default {
     data() {
       return {
-        bindStatus: '未绑定'
+//        bindStatus: '未绑定'
       }
     },
     computed:{
       globalDOMAIN(){
         return this.$store.state.globalDOMAIN
-      }
+      },
+      bindStatus(){
+        let openId = sessionStorage.getItem('open_id')
+        if(openId == ''){
+          return '未绑定'
+        }else{
+          return '已绑定'
+        }
+      },// 绑定状态
     },
     methods:{
       logout(){

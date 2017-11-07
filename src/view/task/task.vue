@@ -16,12 +16,12 @@
     <loading v-show="isLoading"></loading>
     <swiper :list="demo01_list" dots-position="center" height="3.335rem" :show-desc-mask="false"></swiper>
     <ul class="selectWrapper">
-      <router-link to="/releaseTask" tag="li" class="selectItem">
+      <router-link to="/taskRelease2" tag="li" class="selectItem">
         <img class="selectItemImgSm" src="./pic_@3x.png"/>
       </router-link>
-      <li class="selectItem">
+      <router-link tag="li" to="/home/xiake" class="selectItem">
         <img class="selectItemImgSm" src="./pic_right@3x.png"/>
-      </li>
+      </router-link>
     </ul>
     <div class="dividerWrapper">
       <divider>任务大厅</divider>
