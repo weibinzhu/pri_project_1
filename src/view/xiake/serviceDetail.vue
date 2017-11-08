@@ -150,12 +150,18 @@
         this.gongli = data.user.point
         this.times = 6// 交易量
         this.price = data.price
+        this.favorite = data.favorite
         if(data.imgs){
           this.imgList = []
           for (let img of data.imgs){
             let url = `${this.globalDOMAIN.slice(0,-11)}${img}`
             this.imgList.push(url)
           }
+        }
+        if(this.favorite){
+          this.$store.commit('changeFavId',{id:this.favorite.id})
+        }else{
+          this.$store.commit('changeFavId',{id:-1})
         }
       },
       onCloseBtnClick() {

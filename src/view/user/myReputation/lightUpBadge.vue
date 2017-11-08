@@ -13,7 +13,7 @@
         徽章介绍
       </div>
       <div class="lightUpBadgeIntroContent">
-        巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉
+        徽章介绍徽章介绍，写在前端。徽章介绍徽章介绍，写在前端。徽章介绍徽章介绍，写在前端。徽章介绍徽章介绍，写在前端。徽章介绍徽章介绍，写在前端。
       </div>
     </div>
     <div class="lightUpBadgePrice">
@@ -21,12 +21,12 @@
       <span>￥80 / 年</span>
     </div>
     <div class="lightUpBadgeAgreement">
-      <input id="agreement" name="agreement" type="checkbox"/>
+      <input id="agreement" name="agreement" type="checkbox" v-model="check"/>
       <label for="agreement" class="agreement">
       </label>
-      <a href="http://www.baidu.com">阅读并同意《行峡网平台服务协议》</a>
+      <router-link to="/userAgreement" >阅读并同意《行峡网平台服务协议》</router-link>
     </div>
-    <div class="lightUpBadgeBtn">
+    <div @click="toLightUp" class="lightUpBadgeBtn">
       微信支付
     </div>
   </div>
@@ -36,6 +36,46 @@
   import header from '@/components/v-header/v-header'
 
   export default {
+    name:'lightUpBadge',
+    data(){
+      return {
+        check:false
+      }
+    },
+    computed:{
+      globalDOMAIN() {
+        return this.$store.state.globalDOMAIN
+      },
+      token() {
+        return sessionStorage.getItem('token')
+      },
+    },
+    methods:{
+      toLightUp(){
+        if(this.check){
+          let url = ''
+          if(this.$route.query.type == 0){
+            // type == 0 代表是专家徽章
+            url = 'Employ/User/expertBadgeCertified'
+          }else if(this.$route.query.type == 1){
+            // type == 1 代表是峡客徽章
+            url = 'Employ/User/xiakeBadgeCertified'
+          }
+          this.$http.post(`${this.globalDOMAIN}${url}`,{
+            pay_code:'wx_pay'
+          },{
+            headers:{token:this.token},
+            emulateJSON:true
+          }).then(res=>{
+            if(res.body.status){
+              this.$vux.toast.text('认证成功')
+            }
+          })
+        }else{
+          this.$vux.toast.text('请先阅读并同意协议')
+        }
+      }
+    },
     components: {
       'v-header': header
     }

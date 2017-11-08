@@ -69,7 +69,7 @@
             typeId: 1,
           },
           {
-            name: '公司',
+            name: '雇主',
             typeId: 2,
           },
           {

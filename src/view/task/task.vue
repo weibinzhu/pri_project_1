@@ -14,7 +14,7 @@
       </header>
     </sticky>
     <loading v-show="isLoading"></loading>
-    <swiper :list="demo01_list" dots-position="center" height="3.335rem" :show-desc-mask="false"></swiper>
+    <swiper :list="bannerImgList" dots-position="center" height="3.335rem" :show-desc-mask="false"></swiper>
     <ul class="selectWrapper">
       <router-link to="/taskRelease2" tag="li" class="selectItem">
         <img class="selectItemImgSm" src="./pic_@3x.png"/>
@@ -89,19 +89,11 @@
     data() {
       return {
         isLoading: false,
-        demo01_list: [
+        bannerImgList: [
           {
-            url: 'javascript:',
-            img: '/static/banner_@3x.png',
+//            url: 'javascript:',
+//            img: '/static/banner_@3x.png',
           },
-          {
-            url: 'javascript:',
-            img: '/static/banner_@3x.png',
-          },
-          {
-            url: 'javascript:',
-            img: '/static/banner_@3x.png',
-          }
         ],
         filterItems: ['城市', '类别', '排序'],
         taskItems: [
@@ -137,6 +129,7 @@
       }
     },
     mounted() {
+      this.getTaskAd()
       this.getTaskList()
       // 获取城市、行业列表，并存入vuex
       this.getList('city')
@@ -182,6 +175,21 @@
       }, // 客服微信号
     },
     methods: {
+      getTaskAd(){
+        this.$http.get(`${this.globalDOMAIN}Api/Common/getAd`).then(res => {
+          if(res.body.status){
+            let tempList = []
+            for (let item of res.body.data.lists){
+              let tempItem = {
+                url:item.href,
+                img:`${this.globalDOMAIN.slice(0, -11)}${item.img}`
+              }
+              tempList.push(tempItem)
+            }
+            this.bannerImgList = tempList
+          }
+        })
+      },// 获取轮播图用的ad图片
       getList(type) {
         let url
         switch (type) {

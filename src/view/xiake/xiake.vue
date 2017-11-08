@@ -221,7 +221,7 @@
               img: `${this.globalDOMAIN.slice(0, -11)}${item.userpic}`,
               tags:[],
               job: item.xiakeInfo.job,
-              name:item.username,
+              name:item.nickname,
               isCertificated:false,
             }
             if(item.expert_badge){
@@ -318,7 +318,7 @@
             let tempItem = {
               avatar: '/static/xiake/head@2x.png',
               serviceName: item.title,
-              name: item.user.username,
+              name: item.user.nickname,
               tags: [true, true, true], // 按顺序分别是专家、峡客、芝麻
               descList: ['市场推广', '3年经验'],
               gongli: 780, // 功力值

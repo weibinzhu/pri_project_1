@@ -6,7 +6,7 @@
         <img src="/static/avatar.png" class="userAvatar"/>
         <div class="userInfo">
           <div class="userName">{{nickName}}
-            <tag :tagClass="'tagWhite'" :tagName="'审核中'"></tag>
+            <tag v-if="isXiake" :tagClass="'tagWhite'" :tagName="'已认证'"></tag>
           </div>
           <div class="userId">ID: {{userId}}</div>
         </div>
@@ -184,6 +184,13 @@
       wxId(){
         return this.$store.state.customerService.wechat
       }, // 客服微信号
+      isXiake(){
+        if(sessionStorage.getItem('is_xiake')==1){
+          return true
+        }else{
+          return false
+        }
+      }
     },
     mounted() {
       this.gongli = sessionStorage.getItem('point')

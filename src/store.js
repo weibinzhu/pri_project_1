@@ -15,6 +15,7 @@ const  state = {
   htmlDetailTitle:'',// 各种后台直接返回html的详情标题
   htmlDetailContent:'',// 各种后台直接返回html的详情内容
 
+  favId:'-1',// 收藏的id
   // 筛选相关，暂时保留
   taskFilterActiveIndex: -1,
   taskFilterPanelShow:false,
@@ -51,6 +52,9 @@ const  mutations = {
   changeHtmlDetail(state, payload){
     state.htmlDetailTitle = payload.title
     state.htmlDetailContent = payload.content
+  },
+  changeFavId(state,payload){
+    state.favId = payload.id
   }
 }
 

@@ -6,7 +6,7 @@
       <div class="userBasicInfo">
         <img :src="avatar"/>
         <div class="userName">
-          <div>{{name}}<span>{{status}}</span></div>
+          <div>{{name}}<span v-if="isCertificated">{{status}}</span></div>
           <div class="userId">ID:{{id}}</div>
         </div>
       </div>
@@ -25,7 +25,8 @@
       </div>
     </div>
     <div class="noInvitationNotice" v-if="noInvitation">
-      暂无邀请
+      <img src="/static/noBid@3x.png"/>
+      <p>暂无邀请</p>
     </div>
     <div class="invitationContentBlock" v-else>
       <ul class="invitationTabBar" @click="onTabBarClick">
@@ -108,148 +109,68 @@
       return {
         avatar: '/static/avatar.png',
         QRCode: '/static/QR.png',
-        name: '郑某某',
-        id: 12112,
-        status: '审核中',
-        invitationNum: 750,
-        gongli: 780,
+        name: '',
+        id: -1,
+        status: '已认证',
+        isCertificated:false,
+        invitationNum: 0,
+        gongli: 0,
         currentInviAll: [5, 3, 5],// 目前的各个级别邀请数
         currentActiveIndex: 0,
         directInvitationList: [
-          {
-            name: '郑某某',
-            isCertificated: true,
-            avatar: '/static/avatar.png',
-            date: '2016-09-10',
-            invitationNum: 5,
-            addedGongli: 500
-          },
-          {
-            name: '郑某某',
-            isCertificated: true,
-            avatar: '/static/avatar.png',
-            date: '2016-09-10',
-            invitationNum: 5,
-            addedGongli: 500
-          },
-          {
-            name: '郑某某',
-            isCertificated: true,
-            avatar: '/static/avatar.png',
-            date: '2016-09-10',
-            invitationNum: 5,
-            addedGongli: 500
-          },
-          {
-            name: '郑某某',
-            isCertificated: true,
-            avatar: '/static/avatar.png',
-            date: '2016-09-10',
-            invitationNum: 5,
-            addedGongli: 500
-          },
-          {
-            name: '郑某某',
-            isCertificated: true,
-            avatar: '/static/avatar.png',
-            date: '2016-09-10',
-            invitationNum: 5,
-            addedGongli: 500
-          },
-          {
-            name: '郑某某',
-            isCertificated: true,
-            avatar: '/static/avatar.png',
-            date: '2016-09-10',
-            invitationNum: 5,
-            addedGongli: 500
-          },
-          {
-            name: '郑某某',
-            isCertificated: true,
-            avatar: '/static/avatar.png',
-            date: '2016-09-10',
-            invitationNum: 5,
-            addedGongli: 500
-          },
-          {
-            name: '郑某某',
-            isCertificated: true,
-            avatar: '/static/avatar.png',
-            date: '2016-09-10',
-            invitationNum: 5,
-            addedGongli: 500
-          },
-          {
-            name: '郑某某',
-            isCertificated: true,
-            avatar: '/static/avatar.png',
-            date: '2016-09-10',
-            invitationNum: 5,
-            addedGongli: 500
-          },
-          {
-            name: '郑某某',
-            isCertificated: true,
-            avatar: '/static/avatar.png',
-            date: '2016-09-10',
-            invitationNum: 5,
-            addedGongli: 500
-          },
-          {
-            name: '郑某某',
-            isCertificated: true,
-            avatar: '/static/avatar.png',
-            date: '2016-09-10',
-            invitationNum: 5,
-            addedGongli: 500
-          },
+//          {
+//            name: '郑某某',
+//            isCertificated: true,
+//            avatar: '/static/avatar.png',
+//            date: '2016-09-10',
+//            invitationNum: 5,
+//            addedGongli: 500
+//          },
         ], // 直接邀请
         firstInvitationList: [
-          {
-            name: 'mou某某',
-            isCertificated: true,
-            avatar: '/static/avatar.png',
-            date: '2016-09-10',
-            invitationNum: 5,
-            addedGongli: 500
-          },
-          {
-            name: '郑某某',
-            isCertificated: false,
-            avatar: '/static/avatar.png',
-            date: '2016-09-10',
-            invitationNum: 511,
-            addedGongli: 500
-          },
-
+//          {
+//            name: 'mou某某',
+//            isCertificated: true,
+//            avatar: '/static/avatar.png',
+//            date: '2016-09-10',
+//            invitationNum: 5,
+//            addedGongli: 500
+//          },
         ], // 一级邀请
         secondInvitationList: [
-          {
-            name: '记某某',
-            isCertificated: false,
-            avatar: '/static/avatar.png',
-            date: '2016-09-30',
-            invitationNum: 5,
-            addedGongli: 500
-          },
-          {
-            name: '郑某某',
-            isCertificated: true,
-            avatar: '/static/avatar.png',
-            date: '2016-09-10',
-            invitationNum: 5,
-            addedGongli: 500
-          },
+//          {
+//            name: '记某某',
+//            isCertificated: false,
+//            avatar: '/static/avatar.png',
+//            date: '2016-09-30',
+//            invitationNum: 5,
+//            addedGongli: 500
+//          },
         ], // 二级邀请
       }
     },
     computed: {
       noInvitation() {
         return this.directInvitationList.length === 0 || this.firstInvitationList.length === 0 || this.secondInvitationList.length === 0
-      }
+      },
+      globalDOMAIN() {
+        return this.$store.state.globalDOMAIN
+      },
+    },
+    created(){
+      this.initUserInfo()
     },
     methods: {
+      initUserInfo(){
+        this.name = sessionStorage.getItem('nickname')
+        this.id = sessionStorage.getItem('userid')
+        this.isCertificated = sessionStorage.getItem('is_xiake')==1?true:false
+        this.gongli = sessionStorage.getItem('point')
+        let userpic = sessionStorage.getItem('userpic')
+        if(userpic){
+          this.avatar = `${this.globalDOMAIN}${userpic}`
+        }
+      },// 初始化用户信息
       onTabBarClick(e) {
         if (e.target.dataset.id) {
           this.currentActiveIndex = e.target.dataset.id
@@ -271,6 +192,16 @@
     min-height: 100vh
     font-size: px2-2-rem(32)
     background-color: #f8f8f8
+    .noInvitationNotice
+      display :flex
+      flex-direction :column
+      align-items:center
+      img
+        width :px2-2-rem(300)
+        margin-top :px2-2-rem(100)
+      p
+        font-size :px2-2-rem(36)
+        margin-top :px2-2-rem(50)
     .userInfo
       box-sizing: border-box
       position: relative

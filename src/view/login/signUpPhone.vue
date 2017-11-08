@@ -33,7 +33,7 @@
 
 <script type="text/ecmascript-6">
   import header from '../../components/v-header/v-header.vue'
-
+  import {saveResDataToSession} from '../../common/utils/utils'
   export default {
     name: 'signUpPhone',
     data() {
@@ -99,10 +99,25 @@
           this.$http.post(`${this.globalDOMAIN}Employ/Public/register`, data, {emulateJSON: true}).then((response) => {
             if (!response.body.status) {
               // 失败的话
-              alert(response.body.msg)
+              if(res.body.status){
+                this.$vux.toast.text(response.body.msg)
+              }
             } else {
               // 成功的话给出提示并跳转
-              alert(response.body.msg)
+              this.$vux.toast.text('注册成功')
+              // 获取全国总客服信息，存入sessionStorage
+              this.$http.get(`${this.globalDOMAIN}Api/Common/getCustomerService`).then(res => {
+                this.$store.commit('saveBaseData', {baseData: res.body.data, type: 'customerService'})
+              })
+
+              // 获取用户信息，存入sessionStorage
+              let token = response.body.data.token
+              this.$http.get(`${this.globalDOMAIN}Employ/User/getUserInfo`, {headers: {'token': token}}).then((response) => {
+                if (response.body.status) {
+                  let data = response.body.data
+                  saveResDataToSession(data) // 保存用户信息到sessionStorage，方便在其他页面使用
+                }
+              })
               this.$router.push({path: '/selectIdentity'})
             }
           })

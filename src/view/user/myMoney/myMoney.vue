@@ -29,7 +29,7 @@
 
 <script type="text/ecmascript-6">
   import header from '@/components/v-header/v-header'
-
+  import {formatDate} from '@/common/utils/utils.js'
   export default {
     data() {
       return {
@@ -41,19 +41,42 @@
             money: '16.00',
             type: 0,// 0-支出，1-收入
           },
-          {
-            name: '服务佣金',
-            date: '2016-10-01',
-            money: '42.00',
-            type: 1,// 0-支出，1-收入
-          },
-          {
-            name: '服务佣金',
-            date: '2016-8-11',
-            money: '106.00',
-            type: 1,// 0-支出，1-收入
-          }
         ],// 余额明细
+      }
+    },
+    computed:{
+      globalDOMAIN() {
+        return this.$store.state.globalDOMAIN
+      },
+      token() {
+        return sessionStorage.getItem('token')
+      },
+    },
+    mounted(){
+      this.getCapital()
+    },
+    methods:{
+      getCapital(){
+        this.$http.post(`${this.globalDOMAIN}Employ/User/capital`,{},{
+          headers:{token:this.token}
+        }).then(res=>{
+          if(res.body.status){
+            let data = res.body.data
+            let tempList=[]
+            this.money = data.balance
+            for (let item of data.lists){
+              let tempItem = {
+                name:item.detail,
+                date: formatDate(new Date(item.create_time*1000),'yyyy-MM-dd'),
+                money: Math.abs(item.income - item.pay),
+                type: item.income>=item.pay?1:0
+              }
+              tempList.push(tempItem)
+            }
+            this.detailList = tempList
+            console.log(this.detailList)
+          }
+        })
       }
     },
     components: {
@@ -88,7 +111,7 @@
         display: flex
         justify-content: space-between
         align-items: center
-        font-size: px2-2-rem(80)
+        font-size: px2-2-rem(60)
         .withdrawBtn
           font-size: px2-2-rem(40)
           right: px2-2-rem(30)

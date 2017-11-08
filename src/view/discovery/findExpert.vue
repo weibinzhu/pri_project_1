@@ -47,20 +47,20 @@
       return {
         currentActiveIndex : '0',// 当前点击的tab栏项的索引
         companyList:[ // 合作单位列表
-          {
-            name:'加载中',
-            desc:'加载中',
-            imgUrl:'/static/discovery/picture@3x.png',
-            group:'加载中'
-          },
+//          {
+//            name:'加载中',
+//            desc:'加载中',
+//            imgUrl:'/static/discovery/picture@3x.png',
+//            group:'加载中'
+//          },
         ],
         expertList:[ // 合作专家列表
-          {
-            name:'加载中',
-            desc:'加载中',
-            imgUrl:'/static/discovery/picture@3x.png',
-            group:'加载中'
-          },
+//          {
+//            name:'加载中',
+//            desc:'加载中',
+//            imgUrl:'/static/discovery/picture@3x.png',
+//            group:'加载中'
+//          },
         ]
       }
     },

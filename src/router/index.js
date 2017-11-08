@@ -37,7 +37,8 @@ import projectDetail from '@/view/discovery/projectDetail' // 项目详情页
 import findExpert from '@/view/discovery/findExpert' // 专家智库（旅创智库）
 import headline from '@/view/discovery/headline' // 行峡头条
 import htmlDetail from '@/view/discovery/htmlDetail' // 各种直接显示有后台返回html的详情页
-
+import applyZhongChuang from '@/view/discovery/applyZhongChuang' // 申请众创空间
+import applyBaicheng from '@/view/discovery/applyBaicheng' // 申请百城旅创合伙人
 // 消息页
 
 import message from '@/view/message/message' // 消息页首页
@@ -177,7 +178,7 @@ export default new Router({
     },
     {
       // 联盟列表
-      path: '/unionDetail/:id',
+      path: '/unionDetail',
       name: 'unionDetail',
       component: unionDetail
     },
@@ -404,6 +405,18 @@ export default new Router({
       path: '/findExpert',
       name: 'findExpert',
       component: findExpert
+    },
+    {
+      // 申请众创空间
+      path: '/applyZhongChuang',
+      name: 'applyZhongChuang',
+      component:applyZhongChuang
+    },
+    {
+      // 申请百城
+      path: '/applyBaicheng',
+      name: 'applyBaicheng',
+      component:applyBaicheng
     },
     {
       // 行峡头条

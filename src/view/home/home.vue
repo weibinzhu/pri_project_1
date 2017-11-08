@@ -26,7 +26,7 @@
       </router-link>
     </div>
     <div class="adWrapper" v-show="showAd">
-      <a class="adImgWrapper" :href="ad.href"><img :src=adImg class="adImg"/></a>
+      <a class="adImgWrapper" :href="adHref"><img :src=adImg class="adImg"/></a>
       <img src="./Close@3x.png" class="closeBtn" @click="toggleShowAd"/>
     </div>
     <div class="overlay" v-show="showAd" @click="toggleShowAd"></div>
@@ -39,7 +39,7 @@
     data() {
       return {
         showAd: false,
-        ad: {},// 广告信息
+//        ad: {},// 广告信息
       }
     },
     computed: {
@@ -47,10 +47,17 @@
         return this.$store.state.globalDOMAIN
       },
       adImg() {
-        if (this.ad.img) {
+        if (this.ad) {
           return `${this.globalDOMAIN.slice(0, -11)}${this.ad.img}`
         } else {
           return '/static/Popup@3x.png'
+        }
+      },
+      adHref(){
+        if(this.ad){
+          return this.ad.href
+        }else{
+          return '#'
         }
       }
     },
@@ -68,10 +75,12 @@
         this.showAd = !this.showAd
       },
       getAd() {
-        this.$http.get(`${this.globalDOMAIN}Api/Common/getAd`).then(res => {
-          this.ad = res.body.data.lists[0]
+        this.$http.get(`${this.globalDOMAIN}Api/Common/getModalAd`).then(res => {
+          if(res.body.status){
+            this.ad = res.body.data
+          }
         })
-      },// 获取广告信息
+      },// 获取弹框广告信息
     }
   }
 </script>

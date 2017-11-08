@@ -23,7 +23,7 @@
       <div class="detailInfoHeader"><img class="headerImg" src="./location@3x.png"/>招聘城市：{{taskInfo.city}}</div>
       <!--<div class="detailInfoHeader"><img class="headerImg" src="./friend_add@3x.png"/>所需人数：{{peopleNum}}</div>-->
       <div class="detailInfoHeader"><img class="headerImg" src="./apps@3x.png"/>工作形式：{{taskInfo.work_type}}</div>
-      <div class="detailInfoHeader"><img class="headerImg" src="./countdown@3x.png"/>项目周期：{{period}}</div>
+      <div class="detailInfoHeader"><img class="headerImg" src="./countdown@3x.png"/>项目周期：{{taskInfo.cycle}}</div>
       <div class="detailInfoHeader"><img class="headerImg" src="./choiceness@3x.png"/>所需技能：</div>
       <div class="skillList">
         <div class="skill" v-for="(item,index) in skills">{{item}}</div>
@@ -173,7 +173,11 @@
     data() {
       return {
         isLoading: false,
-        taskInfo: {},// 传回来的任务数据
+        taskInfo: {
+//          favorite:{
+//            id:'-1'
+//          } // 给一个默认值
+        },// 传回来的任务数据
         files: [
           {
             name: 'V前端..',
@@ -228,8 +232,6 @@
         orderId: 0, // 预约服务的时候的订单id
         taskStatus: 0, // 任务类型，解释：-1-任务页用 0-已选择，1-已放弃，2-托管资金，3-已支付，4-评价，5-交易成功，6-未选择，7-暂无竞标
         type: -1,
-        date: '2017-08-05', // 任务日期
-        period: '1周', // 项目周期
         skills: ['SEM', '市场策划', 'SEO'], // 所需技能
         bidNum: 16,// 投标人数
         hasValidBidder: true,
@@ -237,6 +239,9 @@
       }
     },
     computed: {
+      favId(){
+        return this.$store.state.favId
+      },
       pageTitle() {
         // 根据是从哪里进来的来控制导航条文字
         let type = this.type
@@ -321,6 +326,8 @@
                 city: data.service.city || '查询不到',
                 work_type: '查询不到',
                 desc: data.remark,
+                cycle:data.cycle,
+                favorite:data.favorite,
                 bids: [
                   {
                     status: 99,
@@ -340,6 +347,11 @@
             } else {
               this.$vux.toast.text(response.body.msg)
             }
+            if(this.taskInfo.favorite){
+              this.$store.commit('changeFavId',{id:this.taskInfo.favorite.id})
+            }else{
+              this.$store.commit('changeFavId',{id:-1})
+            }
           })
         } else {
           let id = this.taskId
@@ -353,12 +365,17 @@
               this.taskInfo = data
               this.hasValidBidderMethod()
               this.bidIdMethod()
-              console.log(this.taskInfo)
             } else {
               this.$vux.toast.text(response.body.msg)
             }
+            if(this.taskInfo.favorite){
+              this.$store.commit('changeFavId',{id:this.taskInfo.favorite.id})
+            }else{
+              this.$store.commit('changeFavId',{id:-1})
+            }
           })
         }
+
       },// 发送请求获取数据
       goToContract() {
         if (this.type == 2) { // 服务
