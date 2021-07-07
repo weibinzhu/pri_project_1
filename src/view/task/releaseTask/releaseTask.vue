@@ -139,9 +139,9 @@
         let vm = this;
 
         reader.onload = (e) => {
+          console.log(e)
           vm.images.push(e.target.result);
         };
-
         reader.readAsDataURL(file);
       },
     },

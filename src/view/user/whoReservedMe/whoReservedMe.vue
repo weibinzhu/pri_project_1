@@ -4,22 +4,25 @@
     <div class="whoReservedMeItem" v-for="(item,index) in tasks" :key="index">
       <div class="whoReservedMeItemInfo">
         <div class="itemName">
-          {{item.name}} status：{{statusList[item.status]}}
+          {{item.name}}
         </div>
         <div class="itemPrice">
-          ￥{{item.price}}<span :class="item.status==0?'hightlight':''">{{typeList[item.status]}}</span>
+          ￥{{item.price}}<span :class="item.status==0?'hightlight':''">{{statusShowText(item)}}</span>
         </div>
       </div>
       <div class="whoReservedMeItemFooter">
         <div class="companyWrapper">
           <img :src='item.companyLogo'/>
           <div class="companyName">{{item.company}}</div>
-          <div class="certificate" v-if="item.isCertificated">已认证</div>
+          <tag v-if="item.isCertificated"></tag>
         </div>
         <div class="whoReservedMeItemBtn">
-          <div @click.stop="toggleModel('.giveUpModel','showGiveUpModel')" class="giveUpBtn" v-if="item.status == 1">放弃</div>
-          <router-link tag="div" :to="{name:'reservationDetail', params:{id:item.taskId,status:item.status,type:2}}"
-                       class="moreBtn">查看详情</router-link>
+          <div @click.stop="toggleModel('.giveUpModel','showGiveUpModel',item.orderId)" class="giveUpBtn"
+               v-if="item.status == 99 && (item.order_status == 1 || item.order_status == 2)">放弃
+          </div>
+          <router-link tag="div" :to="{name:'reservationDetail', params:{id:item.orderId}}"
+                       class="moreBtn">查看详情
+          </router-link>
         </div>
       </div>
     </div>
@@ -43,106 +46,128 @@
 
 <script type="text/ecmascript-6">
   import header from '@/components/v-header/v-header'
+  import Tag from '@/components/tag'
+  import Loading from '@/components/loading'
 
   export default {
     data() {
       return {
-        typeList: ['未接受', '洽谈中', '服务中', '待评价', '已完成'],
-        statusList: ['0-初始', '1-待评价', '2-已成功'],
+        isLoading: false,
         tasks: [
-          // type解释：'0未接受', '1洽谈中', '2服务中', '3待评价', '4已完成'
-          // status解释：'0-初始', '1-待评价', '2-已成功'
           {
-            name: '英语主持服务',
-            price: '15000-59500',
-            company: '主题邦科技',
+            name: '加载中',
+            price: '加载中',
+            company: '加载中',
             companyLogo: '/static/icon@3x.png',
-            isCertificated: true,
+            isCertificated: false,
             taskId: 1,
-            type: 0,
-            status: 0,
+            orderId: -1,
           },
-          {
-            name: '英语主持务',
-            price: '15000-59500',
-            company: '闻喜科技',
-            companyLogo: '/static/icon@3x.png',
-            isCertificated: true,
-            taskId: 2,
-            type: 1,
-            status: 1,
-          },
-          {
-            name: '英语主持服',
-            price: '15000-59500',
-            company: '闻喜科技',
-            companyLogo: '/static/icon@3x.png',
-            isCertificated: true,
-            taskId: 3,
-            type: 3,
-            status: 2,
-          },
-          {
-            name: '英语主持持服持服服务',
-            price: '15000-59500',
-            company: '主题邦科技',
-            companyLogo: '/static/icon@3x.png',
-            isCertificated: false,
-            taskId: 4,
-            type: 2,
-            status: 1,
-          },
-          {
-            name: '英语服务',
-            price: '15000-59500',
-            company: '主题邦科技',
-            companyLogo: '/static/icon@3x.png',
-            isCertificated: true,
-            taskId: 5,
-            type: 4,
-            status: 2,
-          },
-          {
-            name: '英务',
-            price: '15000-59500',
-            company: '主题邦科技',
-            companyLogo: '/static/icon@3x.png',
-            isCertificated: false,
-            taskId: 6,
-            type: 4,
-            status: 1,
-          },
-          {
-            name: '英务da',
-            price: '15000-59500',
-            company: '主题邦科技',
-            companyLogo: '/static/icon@3x.png',
-            isCertificated: true,
-            taskId: 7,
-            type: 2,
-            status: 0,
-          }
         ],
         showGiveUpModel: false,
       }
     },
+    computed: {
+      globalDOMAIN() {
+        return this.$store.state.globalDOMAIN
+      },
+      token() {
+        return sessionStorage.getItem('token')
+      }
+    },
+    created() {
+      this.getOrderList()
+    },
     methods: {
-      toggleModel(selector,flag){
+      statusShowText(item) {
+        switch (item.status) {
+          case '0':
+            return '未接受'
+          case '1':
+            return '待接受'
+          case '3':
+            return '对方已放弃'
+        }
+        if (item.status == 99) {
+          switch (item.order_status) {
+            case '1':
+            case '2':
+              return '洽谈中'
+            case '3':
+              return '待支付'
+            case '4':
+              return '服务中'
+            case '5':
+              return '待评价'
+            case '99':
+              return '已完成'
+          }
+        }
+      },
+      getOrderList() {
+        this.$http.get(`${this.globalDOMAIN}Employ/Service/getOrderList`, {
+          emulateJSON: true,
+          headers: {'token': this.token},
+        }).then(res => {
+          if (res.body.status) {
+            this.processOrderData(res.body.data)
+          } else {
+            this.$vux.toast.text(res.body.msg)
+          }
+        })
+      },// 获取预约我的列表
+      processOrderData(data) {
+        this.tasks = []
+        if (data) {
+          for (let item of data) {
+            let tempItem = {
+              name: item.service.title,
+              price: item.service.price,
+              company: item.employ.username,
+              taskId: item.service_id,
+              orderId: item.id,
+              status: item.status,
+              order_status: item.order_status,
+
+              // 以下是暂无数据，空着的
+              isCertificated: true,
+              companyLogo: '/static/icon@3x.png',
+            }
+            this.tasks.push(tempItem)
+          }
+        } else {
+          this.$vux.toast.text('暂无数据')
+        }
+      },// 处理列表数据
+
+
+      toggleModel(selector, flag, orderId) {
         // 弹出或隐藏某个框
         // selector: String, 用于传给querySelector
         // flag: String, 用于确定是哪一个框
         let y = window.scrollY + 200;
         let model = document.querySelector(selector)
         model.style.top = y + 'px'
+        model.dataset.toBeProcessedId = orderId// 修改特定框的绑定参数
         this[flag] = !this[flag]
       },
       giveUpItem() {
         // 放弃某项
-        console.log('gived up!')
+        let orderId = document.querySelector('.giveUpModel').dataset.toBeProcessedId
+        this.$http.post(`${this.globalDOMAIN}Employ/Service/weedOut`, {
+          'order_id': orderId
+        }, {
+          emulateJSON: true,
+          headers: {'token': this.token},
+        }).then(res => {
+          this.$vux.toast.text(res.body.msg)
+        })
         this.showGiveUpModel = !this.showGiveUpModel
       }
     },
     components: {
+      Loading,
+      Tag,
       'v-header': header
     }
   }
@@ -153,7 +178,6 @@
   .whoReservedMeWrapper
     display: flex
     flex-direction: column
-    justify-content: center
     align-items: center
     min-height: 100vh
     font-size: px2-2-rem(32)
@@ -202,20 +226,6 @@
           img
             width: px2-2-rem(50)
             height: px2-2-rem(50)
-            margin-right: px2-2-rem(20)
-          .certificate
-            position: relative
-            top: px2-2-rem(2)
-            height: px2-2-rem(26)
-            width: px2-2-rem(86)
-            line-height: px2-2-rem(26)
-            text-align: center
-            margin-left: px2-2-rem(20)
-            border-radius: px2-2-rem(8)
-            border: 1px solid #00a0e9
-            font-size: px2-2-rem(22)
-            color: #00a0e9
-
       .whoReservedMeItemBtn
         display: flex
         flex-wrap: wrap

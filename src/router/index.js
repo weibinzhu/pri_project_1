@@ -33,9 +33,12 @@ import makeReservationSuccess from '@/view/xiake/makeReservationSuccess' // 提�
 
 import discovery from '@/view/discovery/discovery' // 发现首页
 import findProject from '@/view/discovery/findProject' // 找项目（项目推荐）页
+import projectDetail from '@/view/discovery/projectDetail' // 项目详情页
 import findExpert from '@/view/discovery/findExpert' // 专家智库（旅创智库）
 import headline from '@/view/discovery/headline' // 行峡头条
-
+import htmlDetail from '@/view/discovery/htmlDetail' // 各种直接显示有后台返回html的详情页
+import applyZhongChuang from '@/view/discovery/applyZhongChuang' // 申请众创空间
+import applyBaicheng from '@/view/discovery/applyBaicheng' // 申请百城旅创合伙人
 // 消息页
 
 import message from '@/view/message/message' // 消息页首页
@@ -57,6 +60,8 @@ import unionDetail from '@/view/user/myUnion/unionDetail' // 联盟列表
 import xiakeMainPage from '@/view/user/xiakeMainPage/xiakeMainPage' // 峡客主页首页
 import myService from '@/view/user/xiakeMainPage/myService/myService' // 峡客-我的服务列表
 import serviceDetail2 from '@/view/user/xiakeMainPage/myService/serviceDetail2' // 峡客-服务详情
+import serviceContract from '@/view/user/whoReservedMe/serviceContract' // 服务用合同
+import releaseService from '@/view/user/xiakeMainPage/myService/releaseService/releaseService' // 发布服务
 import editXiake from '@/view/user/xiakeMainPage/editXiake/editXiake' // 峡客主页编辑页
 import editCase from '@/view/user/xiakeMainPage/editXiake/editCase/editCase' // 峡客案例编辑页
 import whoReservedMe from '@/view/user/whoReservedMe/whoReservedMe' // 峡客-谁预约我
@@ -83,7 +88,11 @@ import aboutXingxia from '@/view/user/setting/aboutXingxia' // 关于行峡网
 import userAgreement from '@/view/user/setting/userAgreement' // 用户协议
 import feedback from '@/view/user/setting/feedback' // 用户反馈
 import helpPage from '@/view/user/setting/help' // 帮助
+import helpDetail from '@/view/user/setting/helpDetail' // 帮助详情
 import signIn from '@/view/user/signIn/signIn' // 签到
+
+// ------------零碎
+import myPoster from '@/view/user/myPoster' // 我的海报
 
 
 Vue.use(Router)
@@ -138,10 +147,22 @@ export default new Router({
       component: myService
     },
     {
+      // 发布服务
+      path: '/releaseService',
+      name: 'releaseService',
+      component: releaseService
+    },
+    {
       // 峡客-服务详情2
       path: '/serviceDetail2/:id',
       name: 'serviceDetail2',
       component: serviceDetail2
+    },
+    {
+      // 服务用合同
+      path: '/serviceContract/:orderId',
+      name: 'serviceContract',
+      component: serviceContract
     },
     {
       // 雇主主页
@@ -157,7 +178,7 @@ export default new Router({
     },
     {
       // 联盟列表
-      path: '/unionDetail/:id',
+      path: '/unionDetail',
       name: 'unionDetail',
       component: unionDetail
     },
@@ -211,13 +232,13 @@ export default new Router({
     },
     {
       // 查看合同。。
-      path: '/contract',
+      path: '/contract/:taskId',
       name: 'contract',
       component: contract
     },
     {
       // 评价任务
-      path: '/toRateTask',
+      path: '/toRateTask/:taskId/:bidId',
       name: 'toRateTask',
       component: toRateTask
     },
@@ -235,8 +256,8 @@ export default new Router({
     },
     {
       // 任务详情页
-      path: '/taskDetail/:id/:status/:type',
-      // 传递参数：id-任务id，status-任务状态（待评价，待支付等），type-入口类型（任务页，任务管理页，我的预约页）
+      path: '/taskDetail/:id/:type',
+      // 传递参数：id-任务id，type-入口类型（任务页，任务管理页，我的预约页）
       // type：0-任务，1-任务管理，2-我的预约
       name: 'taskDetail',
       component: taskDetail
@@ -255,13 +276,13 @@ export default new Router({
     },
     {
       // 我竞标的详情
-      path: '/hasBiddedItemDetail/:id/:status',
+      path: '/hasBiddedItemDetail/:id',
       name: 'hasBiddedItemDetail',
       component: hasBiddedItemDetail
     },
     {
       // 预约服务详情
-      path: '/reservationDetail/:id/:status',
+      path: '/reservationDetail/:id',
       name: 'reservationDetail',
       component: reservationDetail
     },
@@ -332,6 +353,12 @@ export default new Router({
       component: helpPage
     },
     {
+      // 帮助详情
+      path: '/helpDetail',
+      name: 'helpDetail',
+      component: helpDetail
+    },
+    {
       // 反馈
       path: '/feedback',
       name: 'feedback',
@@ -356,10 +383,22 @@ export default new Router({
       component: signIn
     },
     {
+      // 我的海报
+      path: '/myPoster',
+      name: 'myPoster',
+      component: myPoster
+    },
+    {
       // 找项目（项目推荐）页
       path: '/findProject',
       name: 'findProject',
       component: findProject
+    },
+    {
+      // 项目详情页
+      path: '/projectDetail',
+      name: 'projectDetail',
+      component: projectDetail
     },
     {
       // 专家智库（旅创智库）
@@ -368,10 +407,28 @@ export default new Router({
       component: findExpert
     },
     {
+      // 申请众创空间
+      path: '/applyZhongChuang',
+      name: 'applyZhongChuang',
+      component:applyZhongChuang
+    },
+    {
+      // 申请百城
+      path: '/applyBaicheng',
+      name: 'applyBaicheng',
+      component:applyBaicheng
+    },
+    {
       // 行峡头条
       path: '/headline',
       name: 'headline',
       component: headline
+    },
+    {
+      // 专家详情等
+      path: '/htmlDetail',
+      name: 'htmlDetail',
+      component: htmlDetail
     },
     {
       // 服务详情页

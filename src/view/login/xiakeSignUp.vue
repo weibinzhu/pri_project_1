@@ -2,7 +2,7 @@
   <div class="xiakeSignUpWrapper">
     <div class="xiakeSignUpHeader">
       <div class="headerBtn" @click="exit">退出注册</div>
-      <div class="headerTitle">选择身份</div>
+      <div class="headerTitle">峡客验证</div>
       <div class="headerBtn" @click="xiakeSignUpSave">完成</div>
     </div>
     <!--<v-header :starShow="false" :shareShow="false" :title="'选择身份'"></v-header>-->

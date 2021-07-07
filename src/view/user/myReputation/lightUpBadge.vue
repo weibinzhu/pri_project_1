@@ -1,10 +1,10 @@
 <template>
   <div class="lightUpBadgeWrapper">
     <v-header title="点亮徽章"></v-header>
-    <img class="headImg" src="/static/caseDetail.png"/>
+    <img class="headImg" src="/static/banner2@3x.png"/>
     <div class="lightUpBadgeNotice">
       <div class="lightUpBadgeNoticeText">
-        <img class="lightUpBadgeIcon" src="/static/kefu@3x.png"/>如有疑问，请咨询：020-34479909(9:00-18:00)
+        <img class="lightUpBadgeIcon" src="./phone@3x.png"/>如有疑问，请咨询：020-34479909(9:00-18:00)
       </div>
       <img class="lightUpBadgeArrow" src="/static/arrow-right-gray.png"/>
     </div>
@@ -13,21 +13,20 @@
         徽章介绍
       </div>
       <div class="lightUpBadgeIntroContent">
-        巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉巴拉
+        徽章介绍徽章介绍，写在前端。徽章介绍徽章介绍，写在前端。徽章介绍徽章介绍，写在前端。徽章介绍徽章介绍，写在前端。徽章介绍徽章介绍，写在前端。
       </div>
     </div>
     <div class="lightUpBadgePrice">
-      <img src="/static/kefu@3x.png"/>
+      <img src="./check1@3x.png"/>
       <span>￥80 / 年</span>
     </div>
     <div class="lightUpBadgeAgreement">
-      <input id="agreement" name="agreement" type="checkbox"/>
+      <input id="agreement" name="agreement" type="checkbox" v-model="check"/>
       <label for="agreement" class="agreement">
-        <div></div>
       </label>
-      <a href="http://www.baidu.com">阅读并同意《行峡网平台服务协议》</a>
+      <router-link to="/userAgreement" >阅读并同意《行峡网平台服务协议》</router-link>
     </div>
-    <div class="lightUpBadgeBtn">
+    <div @click="toLightUp" class="lightUpBadgeBtn">
       微信支付
     </div>
   </div>
@@ -37,6 +36,46 @@
   import header from '@/components/v-header/v-header'
 
   export default {
+    name:'lightUpBadge',
+    data(){
+      return {
+        check:false
+      }
+    },
+    computed:{
+      globalDOMAIN() {
+        return this.$store.state.globalDOMAIN
+      },
+      token() {
+        return sessionStorage.getItem('token')
+      },
+    },
+    methods:{
+      toLightUp(){
+        if(this.check){
+          let url = ''
+          if(this.$route.query.type == 0){
+            // type == 0 代表是专家徽章
+            url = 'Employ/User/expertBadgeCertified'
+          }else if(this.$route.query.type == 1){
+            // type == 1 代表是峡客徽章
+            url = 'Employ/User/xiakeBadgeCertified'
+          }
+          this.$http.post(`${this.globalDOMAIN}${url}`,{
+            pay_code:'wx_pay'
+          },{
+            headers:{token:this.token},
+            emulateJSON:true
+          }).then(res=>{
+            if(res.body.status){
+              this.$vux.toast.text('认证成功')
+            }
+          })
+        }else{
+          this.$vux.toast.text('请先阅读并同意协议')
+        }
+      }
+    },
     components: {
       'v-header': header
     }
@@ -110,18 +149,13 @@
         display: block
         height: px2-2-rem(30)
         width: px2-2-rem(30)
-        border: 2px solid #e5e5e5
+        background-image :url("/static/checkbox.png")
+        background-size :px2-2-rem(60) px2-2-rem(30)
         margin-right: px2-2-rem(20)
       input[type=checkbox]
         display: none
       input[type=checkbox]:checked + .agreement
-        div
-          box-sizing: border-box
-          width :0
-          height :0
-          border-top: 10px solid red
-          border-left: 5px solid transparent
-          border-right: 5px solid transparent
+        background-position :px2-2-rem(30) 0
     /*background-color :red*/
     .lightUpBadgeBtn
       position: fixed

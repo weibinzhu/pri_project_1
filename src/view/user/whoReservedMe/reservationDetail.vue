@@ -1,7 +1,8 @@
 <template>
   <div class="reservationDetailWrapper">
     <v-header title="预约订单详情"></v-header>
-    <div class="taskId">任务编号：{{taskId}}</div>
+    <loading v-show="isLoading"></loading>
+    <div class="taskId">任务编号：{{id}}</div>
     <div class="taskBasicInfo">
       <div class="taskBasicInfoLeft">
         <div class="taskTitle">{{title}}</div>
@@ -13,94 +14,54 @@
       </div>
     </div>
     <div class="taskDetailInfo">
-      <!--<div class="detailInfoHeader"><img class="headerImg" src="./location@3x.png"/>招聘城市：{{city}}</div>-->
-      <!--<div class="detailInfoHeader"><img class="headerImg" src="./friend_add@3x.png"/>所需人数：{{peopleNum}}</div>-->
-      <!--<div class="detailInfoHeader"><img class="headerImg" src="./apps@3x.png"/>工作形式：{{taskForm}}</div>-->
-      <!--<div class="detailInfoHeader"><img class="headerImg" src="./countdown@3x.png"/>项目周期：{{period}}</div>-->
-      <!--<div class="detailInfoHeader"><img class="headerImg" src="./choiceness@3x.png"/>所需技能：</div>-->
-      <!--<div class="skillList">-->
-      <!--<div class="skill" v-for="(item,index) in skills">{{item}}</div>-->
-      <!--</div>-->
       <div class="detailInfoHeader"><img class="headerImg" src="./choiceness@3x.png"/>服务要求：</div>
       <p class="requirement">{{requirement}}</p>
     </div>
-    <!--<div class="sectionHeader">投标人：</div>-->
-    <!--<div class="bidderListWrapper">-->
-    <!--<div class="noBidder" v-if="bidder.length === 0">-->
-    <!--<img src="./logo@2x.png"/>-->
-    <!--</div>-->
-    <!--<div class="bidder" v-for="(item,index) in bidder" v-if="item.status==2 || taskStatus==6">-->
-    <!--<img class="bidderAvatar" src="./avatar.png"/>-->
-    <!--<div class="bidderInfo">-->
-    <!--<div class="name">-->
-    <!--{{item.name}}-->
-    <!--<div class="tag" v-if="item.isCertificated">已认证</div>-->
-    <!--</div>-->
-    <!--<div class="detail">-->
-    <!--<div class="location">{{item.location}}</div>-->
-    <!--<div class="desc" v-for="(desc,index) in item.desc">-->
-    <!--{{desc}}-->
-    <!--</div>-->
-    <!--</div>-->
-    <!--<div class="score">-->
-    <!--<div class="gongli">功力值：<span>{{item.gongli}}</span></div>-->
-    <!--<div class="times">交易量：<span>{{item.times}}</span></div>-->
-    <!--</div>-->
-    <!--</div>-->
-    <!--&lt;!&ndash;加一层判断，只有在任务管理里面点开才需要这些按钮&ndash;&gt;-->
-    <!--<div class="btnWrapper" v-if="taskStatus != -1">-->
-    <!--<div class="bidderBtnNormal" v-if="item.status == 0">-->
-    <!--<div class="chooseHim">选Ta</div>-->
-    <!--<div class="eliminate">淘汰</div>-->
-    <!--</div>-->
-    <!--<div class="bidderBtnGiveUp" v-else-if="item.status == 1">-->
-    <!--<div class="chooseHim">选Ta</div>-->
-    <!--<div class="giveUp">已放弃</div>-->
-    <!--</div>-->
-    <!--<div class="bidderBtnChosen" v-else>-->
-    <!--<div class="chosen">中标</div>-->
-    <!--</div>-->
-    <!--</div>-->
-    <!--</div>-->
-    <!--</div>-->
-    <!--项目文件柜-->
-    <!--<div class="filesBlockWrapper" v-if="taskStatus == 3 || taskStatus == 4 || taskStatus == 5">-->
-    <!--<div class="filesBlockHeader">项目文件柜</div>-->
-    <!--<div class="filesContent">-->
-    <!--<router-link tag="div" :to="item.url" class="file" v-for="(item,index) in files" :key="index">-->
-    <!--<div class="fileImg">{{item.extension}}</div>-->
-    <!--<div class="fileText">{{item.name}}</div>-->
-    <!--</router-link>-->
-    <!--</div>-->
-    <!--</div>-->
     <!--各种底部功能条-->
-    <footer class="taskDetailFooter taskSelected" v-if="taskStatus == 0">
+    <footer class="taskDetailFooter taskSelected" v-if="status == 99 && (order_status == 2 || order_status == 3)">
       <div class="contact" @click="toggleWxId"><img src="./service@3x.png"/>联系顾问</div>
       <div class="btnWrapperLeft">
         <div class="giveUp">放弃</div>
         <div class="contactXiake">沟通一下</div>
       </div>
-      <router-link to="/contract" tag="div" class="viewContractBtn">发起合同</router-link>
+      <router-link :to="{name:'serviceContract',params:{orderId:id}}" tag="div" class="viewContractBtn">发起合同
+      </router-link>
     </footer>
-
-    <!--<footer class="taskDetailFooter taskGiveUp" v-if="taskStatus == 1">已放弃</footer>-->
-    <!--<footer class="taskDetailFooter taskManageMoney" v-if="taskStatus == 2">-->
-    <!--<div class="contact" @click="toggleWxId"><img src="./service@3x.png"/>联系顾问</div>-->
-    <!--<router-link to="/applyCheck" tag="div" class="check">验收</router-link>-->
-    <!--<router-link to="/takeCareMoney" tag="div" class="manageMoneyBtn">托管赏金</router-link>-->
-    <!--</footer>-->
-    <!--<footer class="taskDetailFooter taskHasBeenPaid" v-if="taskStatus == 3">-->
-    <!--<div class="contact" @click="toggleWxId"><img src="./service@3x.png"/>联系顾问</div>-->
-    <!--<router-link to="/contract" tag="div" class="viewContractBtn">查看合同</router-link>-->
-    <!--<router-link to="/applyCheck" tag="div" class="check">验收</router-link>-->
-    <!--</footer>-->
-    <footer class="taskDetailFooter taskComment" v-if="taskStatus == 1">
+    <footer class="taskDetailFooter taskComment" v-if="status == 99 && (order_status == 4)">
       <div class="contact" @click="toggleWxId"><img src="./service@3x.png"/>联系顾问</div>
-      <router-link to="/contract" tag="div" class="viewContractBtn">查看合同</router-link>
-      <router-link to="/toRateTask" tag="div" class="comment">评价</router-link>
+      <router-link :to="{name:'serviceContract',params:{orderId:id}}" tag="div" class="viewContractBtn">查看合同
+      </router-link>
+      <!--taskId这个名字就不改了，bid_id==-2表明这是一个服务发起的评价-->
     </footer>
-    <footer class="taskDetailFooter taskSuccess" v-if="taskStatus == 2">已成功</footer>
-
+    <footer class="taskDetailFooter taskComment" v-if="status == 99 && (order_status == 5)">
+      <div class="contact" @click="toggleWxId"><img src="./service@3x.png"/>联系顾问</div>
+      <router-link :to="{name:'serviceContract',params:{orderId:id}}" tag="div" class="viewContractBtn">查看合同
+      </router-link>
+      <router-link :to="{name:'toRateTask', params:{taskId:id,bidId:-2}}" tag="div" class="comment">评价</router-link>
+      <!--taskId这个名字就不改了，bid_id==-2表明这是一个服务发起的评价-->
+    </footer>
+    <footer class="taskDetailFooter taskSuccess" v-if="status == 99 && order_status == 99">已成功</footer>
+    <footer class="taskDetailFooter taskSelected" v-if="status == 1 || (status == 99 && order_status == 1)">
+      <div class="contact" @click="toggleWxId"><img src="./service@3x.png"/>联系顾问</div>
+      <div class="btnWrapperLeft">
+        <div class="giveUp">放弃</div>
+        <div class="contactXiake">沟通一下</div>
+      </div>
+      <div class="viewContractBtn" @click="toggleModel('.acceptModel','showAcceptModel',id)">接受邀请</div>
+    </footer>
+    <!--接受预约确认框-->
+    <transition name="acceptModelFade">
+      <div class="acceptModel" v-show="showAcceptModel">
+        <div class="showText">
+          <div class="title">是否确认接受该服务邀约</div>
+          <div class="desc">告知当前状态，信息和解决办法</div>
+        </div>
+        <div class="actionBtnWrapper">
+          <div @click.stop="acceptItem" class="confirmBtn">是</div>
+          <div @click.stop="toggleModel('.acceptModel','showAcceptModel')" class="cancelBtn">否</div>
+        </div>
+      </div>
+    </transition>
     <!--客服-->
     <transition name="getWxFade">
       <div class="getWxModel" v-show="showGetWxModel">
@@ -113,67 +74,118 @@
         </div>
       </div>
     </transition>
-    <!--广告-->
-    <!--<transition name="adFade">-->
-    <!--<div class="adWrapper" v-show="showAd">-->
-    <!--<img class="adImg" src="/static/pic@3x.png"/>-->
-    <!--<img @click="onCloseBtnClick" class="closeBtn" src="./Close@3x.png"/>-->
-    <!--<div class="getAppBtn">-->
-    <!--下载行峡APP-->
-    <!--</div>-->
-    <!--</div>-->
-    <!--</transition>-->
     <!--遮罩-->
     <transition name="overlayFade">
-      <div class="overlay" v-show="showGetWxModel" @click="hideWxModel"></div>
+      <div class="overlay" v-show="showGetWxModel||showAcceptModel" @click="hideWxModel"></div>
     </transition>
   </div>
 </template>
 
 <script type="text/ecmascript-6">
   import header from "@/components/v-header/v-header"
+  import loading from '@/components/loading'
+  import {formatDate} from '@/common/utils/utils.js'
 
   export default {
     name: 'taskDetail',
     data() {
       return {
-        wxId: 'fwfa21', // 客服微信号
+        isLoading: false,
         showGetWxModel: false,// 客服微信号弹框显隐
-        taskId: 0, // 任务id
-        taskStatus: 0, // 任务类型，解释：'0-初始', '1-待评价', '2-已成功'
-        title: '公众号推广核心商户扶持计划数据全面支持', // 任务名称
-        price: '15000-30000', // 任务价格范围
-        date: '2017-08-05', // 任务日期
-        requirement: "服务要求服务要求服务要求服务要求服务要求服务要求服务要求服务要求服务要求服务要求服务要求服务要求服务要求服务要求服务要求服务要求服务要求服务要求服务要求",
+        showAcceptModel: false,// 接受服务弹框显隐
+
+        // 预约服务、订单信息
+        id: 0, // 订单id
+        serviceStatus: 0, // 任务类型，解释：'0-初始', '1-待评价', '2-已成功'
+        title: '未查询到', // 服务名称
+        price: '未查询到', // 任务价格范围
+        date: '未查询到', // 任务日期
+        requirement: "未查询到",
+        status: -1,
+        order_status: -1,
 
       }
     },
+    computed: {
+      globalDOMAIN() {
+        return this.$store.state.globalDOMAIN
+      },
+      token() {
+        return sessionStorage.getItem('token')
+      },
+      wxId(){
+        return this.$store.state.customerService.wechat
+      }, // 客服微信号
+    },
     created() {
-      this.taskId = this.$route.params.id
-      this.taskStatus = this.$route.params.status
+      this.id = this.$route.params.id
+      this.getBookInfo()// 错了，这里应该是根据
     },
     methods: {
-      toggleWxId() { // 弹出或隐藏【点击复制客服微信】框
+      getBookInfo() {
+        this.$http.get(`${this.globalDOMAIN}Employ/Service/getBookInfo`, {
+          params: {'order_id': this.id},
+          emulateJSON: true,
+          headers: {'token': this.token}
+        }).then((res) => {
+          this.processBookInfoData(res.body.data)
+        })
+      },
+      processBookInfoData(data) {
+        let date = new Date(data.inputtime * 1000)
+        this.title = data.service.title
+        this.price = data.service.price
+        this.requirement = data.remark
+        this.date = formatDate(date, 'yyyy-MM-dd')
+        this.status = data.status
+        this.order_status = data.order_status
+      },
+      toggleModel(selector, flag, orderId) {
+        // 弹出或隐藏某个框
+        // selector: String, 用于传给querySelector
+        // flag: String, 用于确定是哪一个框
+        let y = window.scrollY + 200;
+        let model = document.querySelector(selector)
+        model.style.top = y + 'px'
+        model.dataset.toBeProcessedId = orderId// 修改特定框的绑定参数
+        this[flag] = !this[flag]
+      },
+
+      acceptItem() {
+        // 接受某项
+        let orderId = document.querySelector('.acceptModel').dataset.toBeProcessedId
+        this.$http.post(`${this.globalDOMAIN}Employ/Service/accept`, {
+          'order_id': orderId
+        }, {
+          emulateJSON: true,
+          headers: {'token': this.token},
+        }).then(res => {
+          this.$vux.toast.text(res.body.msg)
+        })
+        this.showAcceptModel = !this.showAcceptModel
+      },
+
+      toggleWxId() {
         let y = window.scrollY + 200;
         let model = document.querySelector(".getWxModel")
         model.style.top = y + 'px'
         this.showGetWxModel = !this.showGetWxModel
-      },
-      checkIphone() { // 优雅降级。（暂时不需要用）
+      },// 弹出或隐藏【点击复制客服微信】框
+      checkIphone() {
         if (navigator.userAgent.match(/ipad|ipod|iphone/i)) {
           alert('如果复制失败请手动复制')
         }
-      },
+      },// 优雅降级。（暂时不需要用）
       hideWxModel() {
-        // 点击遮罩隐藏客服微信号
         if (this.showGetWxModel) {
           this.showGetWxModel = false
         } else {
           return false
         }
-      }
+      },// 点击遮罩隐藏客服微信号
     },
     components: {
+      loading,
       'v-header': header
     }
   }
@@ -336,7 +348,7 @@
       background-color: rgba(0, 0, 0, .8);
 
   //    【点击复制客服微信弹框】
-  .getWxModel
+  .getWxModel, .acceptModel
     position: absolute
     z-index: 10000
     left: calc(50vw - 3.7333rem)
@@ -362,6 +374,10 @@
         font-size: 0.42666rem
         color: #d2d3d5
         text-align: center
+      .desc
+        font-size: 0.42666rem
+        color: #d2d3d5
+        text-align: center
     .getWxIdBtn
       width: 100%
       height: 1.3333rem
@@ -369,10 +385,27 @@
       text-align: center
       border-top: 1px solid #d2d3d5
       color: #00a0e9
+    .actionBtnWrapper
+      display: flex
+      flex-direction: row
+      align-items: center
+      justify-content: center
+      width: 100%
+      height: 1.3333rem
+      border-top: 1px solid #d2d3d5
+      .confirmBtn, .cancelBtn
+        box-sizing: border-box
+        flex: 1
+        height: 1.3333rem
+        line-height: 1.3333rem
+        text-align: center
+      .cancelBtn
+        color: #00a0e9
+        border-left: 1px solid #cccccc
 
-  .getWxFade-leave-active, .getWxFade-enter-active, .overlayFade-leave-active, .overlayFade-enter-active
+  .getWxFade-leave-active, .getWxFade-enter-active, .acceptModelFade-leave-active, .acceptModel-enter-active .overlayFade-leave-active, .overlayFade-enter-active
     transition: all .5s
 
-  .getWxFade-enter, .getWxFade-leave-to, .overlayFade-enter, .overlayFade-leave-to
+  .getWxFade-enter, .getWxFade-leave-to, .acceptModelFade-enter, .acceptModelFade-leave-to, .overlayFade-enter, .overlayFade-leave-to
     opacity: 0
 </style>

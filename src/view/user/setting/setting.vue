@@ -28,7 +28,7 @@
         <img src="/static/arrow-right-gray.png"/>
       </router-link>
     </div>
-    <div class="settingLogout">退出登录</div>
+    <div class="settingLogout" @click="logout">退出登录</div>
   </div>
 </template>
 
@@ -38,7 +38,37 @@
   export default {
     data() {
       return {
-        bindStatus: '未绑定'
+//        bindStatus: '未绑定'
+      }
+    },
+    computed:{
+      globalDOMAIN(){
+        return this.$store.state.globalDOMAIN
+      },
+      bindStatus(){
+        let openId = sessionStorage.getItem('open_id')
+        if(openId == ''){
+          return '未绑定'
+        }else{
+          return '已绑定'
+        }
+      },// 绑定状态
+    },
+    methods:{
+      logout(){
+        let token = sessionStorage.getItem('token')
+        this.$http.post(`${this.globalDOMAIN}Employ/User/logout`,{},{headers:{'token':token}}).then((res)=>{
+          if(res.body){
+            if(!res.body.status){
+              this.$vux.toast.text(res.body.msg)
+            }
+          }else{
+            sessionStorage.clear()
+            localStorage.clear()
+            this.$vux.toast.text('已退出')
+            this.$router.push('/login')
+          }
+        })
       }
     },
     components: {

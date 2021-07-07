@@ -7,10 +7,11 @@
         <i class="iconfont icon-sousuo"></i>
         <input type="text" placeholder="搜索旅游峡客发布的服务"/>
       </div>
-      <div class="releaseService">
+      <router-link tag="div" to="/releaseService" class="releaseService">
         发布服务
-      </div>
+      </router-link>
     </header>
+    <loading v-show="isLoading"></loading>
     <!--分割线-->
     <div class="headDividerWrapper">
       <divider>
@@ -22,8 +23,8 @@
       <!--<div class="proItemWrapper">-->
       <div class="proItem" v-for="(item,index) in proList">
         <div class="proImgWrapper" :data-large="item.img">
-          <img class="discoverHeadImgLoading" src="/static/loading.gif"/>
-          <!--<img :src=item.img class="proImg"/>-->
+          <!--<img class="discoverHeadImgLoading" src="/static/loading.gif"/>-->
+          <img :src=item.img class="proImg"/>
           <div class="proTagWrapper">
             <img class="proTag" v-if="item.tags[0]" src="/static/zhuan@3x.png">
             <img class="proTag" v-if="item.tags[1]" src="/static/xia@3x.png">
@@ -31,11 +32,12 @@
           </div>
         </div>
         <p class="proSkill">
-          {{item.skill}}
+          {{item.job}}
         </p>
         <div class="proNameWrapper">
           <div class="proName">{{item.name}}</div>
-          <div class="proCertificated" v-if="item.isCertificated">已认证</div>
+          <tag v-if="item.isCertificated"></tag>
+          <!--<div class="proCertificated" v-if="item.isCertificated">已认证</div>-->
         </div>
       </div>
       <!--</div>-->
@@ -50,8 +52,8 @@
         <v-filter v-for="(item,index) in filterItems" :item="item" :index="index" :key="index" :page=1></v-filter>
         <transition name="fade2">
           <ul class="filterPanel" v-if=taskFilterPanelShow_xiake @click="selectChoice">
-            <li v-for="(choice,index) in choices" class="choices" :id="index"
-                :class="[index==currentChoiceIndex?'active':'']">{{choice}}
+            <li v-for="(choice,index) in choices" class="choices" :data-index="index" :data-id="choice.id"
+                :class="[index==currentChoiceIndex?'active':'']">{{choice.title}}
             </li>
             <p v-if="showNotice">更多城市将逐步开放，敬请期待</p>
           </ul>
@@ -74,7 +76,7 @@
         <div class="serviceDetail">
           <div class="nameWrapper">
             <div class="name">{{item.name}}</div>
-            <div class="certificated">已认证</div>
+            <tag v-if="item.isCertificated"></tag>
           </div>
           <div class="descWrapper">
             <div class="desc" v-for="(desc,index) in item.descList">{{desc}}</div>
@@ -93,109 +95,41 @@
 <script type="text/ecmascript-6">
   import Divider from 'vux/src/components/divider/index.vue'
   import Filter from '@/components/filter/filter.vue';
+  import Tag from '@/components/tag'
+  import loading from '@/components/loading'
 
   export default {
     data() {
       return {
+        isLoading: false,
         proList: [
-          {
-            img: '/static/xiake/pro.png',
-            tags: [true, true, true], // 按顺序分别是专家、峡客、芝麻
-            skill: '海报设计、平面设计、美女写手',
-            name: 'Michel Lee',
-            isCertificated: true
-          },
-          {
-            img: '/static/xiake/pro.png',
-            tags: [true, false, true],
-            skill: '海报设计、平面设计、美女写手',
-            name: 'Michel Lee',
-            isCertificated: false
-          },
-          {
-            img: '/static/xiake/pro.png',
-            tags: [true, false, false],
-            skill: '海报设计、平面设计、美女写手',
-            name: 'Michel Lee',
-            isCertificated: true
-          },
-          {
-            img: '/static/xiake/pro.png',
-            tags: [true, true, false],
-            skill: '海报设计、平面设计、美女写手',
-            name: 'Michel Lee',
-            isCertificated: true
-          },
+//          {
+//            img: '/static/xiake/pro.png',
+//            tags: [true, true, true], // 按顺序分别是专家、峡客、芝麻
+//            job: '海报设计、平面设计、美女写手',
+//            name: 'Michel Lee',
+//            isCertificated: true
+//          },
         ],
-        serviceList: [
-          {
-            avatar: '/static/xiake/head@2x.png',
-            serviceName: '微信开发',
-            name: '郑某某',
-            tags: [true, true, true], // 按顺序分别是专家、峡客、芝麻
-            descList: ['市场推广', '3年经验'],
-            gongli: 780, // 功力值
-            times: 6, // 交易量
-            rate: 4.6,// 好评度
-            isCertificated: true,
-            id: 1213312,// 服务id
-          },
-          {
-            avatar: '/static/xiake/head@2x.png',
-            serviceName: '微信开发',
-            name: '郑某某',
-            tags: [true, false, true], // 按顺序分别是专家、峡客、芝麻
-            descList: ['市场推广', '3年经验'],
-            gongli: 780, // 功力值
-            times: 6, // 交易量
-            rate: 4.6,// 好评度
-            isCertificated: true,
-            id: 12,// 服务id
-          },
-          {
-            avatar: '/static/xiake/head@2x.png',
-            serviceName: '微信开发',
-            name: '郑某某',
-            tags: [true, false, false], // 按顺序分别是专家、峡客、芝麻
-            descList: ['市场推广', '3年经验'],
-            gongli: 780, // 功力值
-            times: 6, // 交易量
-            rate: 4.6,// 好评度
-            isCertificated: true,
-            id: 1212353312,// 服务id
-          },
-          {
-            avatar: '/static/xiake/head@2x.png',
-            serviceName: '微信开发',
-            name: '郑某某',
-            tags: [true, true, false], // 按顺序分别是专家、峡客、芝麻
-            descList: ['市场推广', '3年经验'],
-            gongli: 780, // 功力值
-            times: 6, // 交易量
-            rate: 4.6,// 好评度
-            isCertificated: true,
-            id: 12597812,// 服务id
-          },
-          {
-            avatar: '/static/xiake/head@2x.png',
-            serviceName: '微信开发',
-            name: '郑某某',
-            tags: [true, false, false], // 按顺序分别是专家、峡客、芝麻
-            descList: ['市场推广', '3年经验'],
-            gongli: 780, // 功力值
-            times: 6, // 交易量
-            rate: 4.6,// 好评度
-            isCertificated: true,
-            id: 78912,// 服务id
-          },
-        ],
+        serviceList: [],
         filterItems: ['城市', '类别', '级别', '排序'],
-        cityList: ['全部', '北京', '上海', '广州', '深圳'],
-        typeList: ['全部', '设计', '技术', '运营', '市场', '产品'],
-        levelList: ['全部', '专家认证', '创客认证', '芝麻认证'],
-        sortList: ['全部', '最新', '最热', '价格↓', '价格↑'],
-        selectedChoiceIndex: [0, 0, 0, 0], // 保存各个下拉框的选择值
-        currentChoiceIndex: 0, // 当前的选择
+        cityList: [{id: -1, title: '全部'}],
+        typeList: [{id: -1, title: '全部'}], // 暂时接行业列表进去
+        sortList: [
+          {id: -1, title: '全部'},
+          {id: 0, title: '创建时间', name: 'inputtime'},
+          {id: 1, title: '价格↑', name: 'price_min'},
+          {id: 2, title: '价格↓', name: 'price_max'}
+        ],
+        levelList: [
+          {id: -1, title: '全部'},
+          {id: 0, title: '专家认证', name:'zhuanjia'},
+          {id: 1, title: '峡客认证', name:'xiake'},
+          {id: 2, title: '芝麻认证', name:'zima'}
+        ],
+        selectedChoiceIndex: [0, 0, 0, 0], // 保存各个下拉框的选择值的index
+        selectedChoiceId: [-1, -1, -1, -1],// 保存各个下拉框的选择值的id
+        currentChoiceIndex: 0, // 当前的选择的index
       }
     },
     computed: {
@@ -227,32 +161,181 @@
       },
       showNotice() {
         return this.$store.state.taskFilterActiveIndex_xiake == 0 ? true : false
-      }
-    },
-    mounted() {
-      // 推荐的专家的图片加载
-      let proImg = document.querySelectorAll('.proImgWrapper')
-      for (let i = 0; i < proImg.length; i++) {
-        let img = new Image()
-        img.src = proImg[i].dataset.large
-        img.onload = function () {
-          img.classList.add('proImg')
-          proImg[i].appendChild(img);
-        }
-      }
-    },
-    methods: {
-      selectChoice(event) {
-        if (event.target.id != '') {
-          this.selectedChoiceIndex[this.$store.state.taskFilterActiveIndex_xiake] = event.target.id
-          this.currentChoiceIndex = event.target.id
-          //if (this.$store.state.taskFilterActiveIndex == 2) { // 如果当前在【排序】下拉框下
-          //this.sortTaskList(this.selectedChoiceIndex[2]) // 把选择的排序类型传递到排序函数中
-          //}
-        }
+      },
+      globalDOMAIN() {
+        return this.$store.state.globalDOMAIN
+      },
+      token() {
+        return sessionStorage.getItem('token')
       },
     },
+    mounted() {
+      this.getList('city')
+      this.getList('industry')
+      this.getExpertList()
+      // 推荐的专家的图片加载
+//      let proImg = document.querySelectorAll('.proImgWrapper')
+//      for (let i = 0; i < proImg.length; i++) {
+//        let img = new Image()
+//        img.src = proImg[i].dataset.large
+//        img.onload = function () {
+//          img.classList.add('proImg')
+//          proImg[i].appendChild(img);
+//        }
+//      }
+      this.getServiceList()
+    },
+    methods: {
+      getList(type) {
+        let url
+        switch (type) {
+          case 'city':
+            url = 'Api/Common/getCity'
+            break
+          case 'industry':
+            url = 'Api/Common/getIndustry'
+            break
+        }
+        this.$http.get(`${this.globalDOMAIN}${url}`).then(res => {
+          this.$store.commit('saveBaseData', {baseData: res.body.data.lists, type: type})
+          if (type == 'city') {
+            this.cityList = this.cityList.concat(this.$store.state.cityList)
+          } else {
+            this.typeList = this.typeList.concat(this.$store.state.industryList)
+          }
+        })
+      },// 获取城市、行业列表，并存入vuex
+      getExpertList(){
+        this.$http.get(`${this.globalDOMAIN}Api/Common/getRecommandXiake`).then(res=>{
+//          console.log(res)
+//          {
+//            img: '/static/xiake/pro.png',
+//              tags: [true, true, true], // 按顺序分别是专家、峡客、芝麻
+//            job: '海报设计、平面设计、美女写手',
+//            name: 'Michel Lee',
+//            isCertificated: true
+//          },
+          let tempList = []
+          for (let item of res.body.data.lists){
+            let tempItem = {
+              img: `${this.globalDOMAIN.slice(0, -11)}${item.userpic}`,
+              tags:[],
+              job: item.xiakeInfo.job,
+              name:item.nickname,
+              isCertificated:false,
+            }
+            if(item.expert_badge){
+              tempItem.tags.push(true)
+            }
+            if(item.xiake_badge){
+              tempItem.tags.push(true)
+              tempItem.isCertificated = true
+            }
+            tempList.push(tempItem)
+          }
+          this.proList = tempList
+
+        })
+      },// 获取推荐专家列表
+      selectChoice(event) {
+        if (event.target.dataset.id != undefined) {
+          this.selectedChoiceId[this.$store.state.taskFilterActiveIndex_xiake] = event.target.dataset.id
+          this.selectedChoiceIndex[this.$store.state.taskFilterActiveIndex_xiake] = event.target.dataset.index
+          this.currentChoiceIndex = event.target.dataset.index
+          this.getServiceList()
+        }
+      },
+      getServiceList() {
+        let city,service_type,grade,order
+
+        if (this.selectedChoiceId[0] == -1) {
+          city = ''
+        } else {
+          city = this.cityList.find(function (item) {
+            return item.id == this.selectedChoiceId[0]
+          }, this).title
+        }
+
+        if (this.selectedChoiceId[1] == -1){
+          service_type: ''
+        } else {
+          service_type = this.typeList.find(function (item) {
+            return item.id == this.selectedChoiceId[1]
+          }, this).title
+        }
+
+        if (this.selectedChoiceId[2] == -1) {
+          grade = ''
+        }  else {
+          grade = this.levelList.find(function(item){
+            return item.id == this.selectedChoiceId[2]
+          },this).name
+        }
+
+        if (this.selectedChoiceId[3] == -1) {
+          order = ''
+        }  else {
+          order = this.sortList.find(function(item){
+            return item.id == this.selectedChoiceId[3]
+          },this).name
+        }
+
+        this.$http.get(`${this.globalDOMAIN}Employ/Service/getList`, {
+          params:{
+            'city':city,
+            'service_type':service_type,
+            'grade':grade,
+            'order':order,
+          },
+          emulateJSON: true,
+          headers: {'token': this.token}
+        }).then((res) => {
+          if (res.body.status) {
+            this.serviceList = this.processServiceData(res.body.data.lists)
+          } else {
+            this.$vux.toast.text(res.body.msg)
+          }
+        })
+      },// 获取服务列表
+      processServiceData(data) {
+//        serviceList: [
+//          {
+//            avatar: '/static/xiake/head@2x.png',
+//            serviceName: '微信开发',
+//            name: '郑某某',
+//            tags: [true, true, true], // 按顺序分别是专家、峡客、芝麻
+//            descList: ['市场推广', '3年经验'],
+//            gongli: 780, // 功力值
+//            times: 6, // 交易量
+//            rate: 4.6,// 好评度
+//            isCertificated: true,
+//            id: 1213312,// 服务id
+//          },
+//        ],
+        let tempList = []
+        if (data) {
+          for (let item of data) {
+            let tempItem = {
+              avatar: '/static/xiake/head@2x.png',
+              serviceName: item.title,
+              name: item.user.nickname,
+              tags: [true, true, true], // 按顺序分别是专家、峡客、芝麻
+              descList: ['市场推广', '3年经验'],
+              gongli: 780, // 功力值
+              times: 6, // 交易量
+              rate: 4.6,// 好评度
+              isCertificated: true,
+              id: item.id,// 服务id
+            }
+            tempList.push(tempItem)
+          }
+        }
+        return tempList
+      },// 处理服务列表数据
+    },
     components: {
+      loading,
+      Tag,
       Divider,
       'v-filter': Filter
     }
@@ -313,6 +396,7 @@
     color: #00a0e9;
     border: 1px solid #00a0e9;
   }
+
   // 动画设置
   .fade2-enter-active, .fade2-leave-active {
     top: 1.11rem;
@@ -326,6 +410,10 @@
     top: 0;
   }
 
+  .customSticky {
+    position: sticky
+    top: 1.2rem
+  }
 
   .xiakeWrapper
     min-height: 100vh
@@ -403,16 +491,8 @@
           display: flex
           align-items: center
           font-size: px2-2-rem(26)
-          .proCertificated
-            width: px2-2-rem(88)
-            height: px2-2-rem(26)
-            line-height: px2-2-rem(26)
-            text-align: center
-            font-size: px2-2-rem(22)
-            margin-left: px2-2-rem(20)
-            border: 1px solid #00a0e9
-            border-radius: px2-2-rem(8)
-            color: #00a0e9
+    .recommendedPro::-webkit-scrollbar // 隐藏webkit浏览器的滚动条
+      display: none
     .dividerWrapper
       display: flex
       align-items: center
@@ -468,24 +548,17 @@
           flex-direction: row
           flex-wrap: wrap
           align-items: center
+        .descWrapper
+        // 字太大的话会分两行
+          font-size: 0.3rem
         .name
           height: px2-2-rem(28)
           line-height: px2-2-rem(28)
-        .certificated
-          width: px2-2-rem(88)
-          height: px2-2-rem(26)
-          line-height: px2-2-rem(26)
-          text-align: center
-          font-size: px2-2-rem(22)
-          margin-left: px2-2-rem(20)
-          border: 1px solid #00a0e9
-          border-radius: px2-2-rem(8)
-          color: #00a0e9
         .desc
           height: px2-2-rem(28)
           line-height: px2-2-rem(28)
-          padding-right: px2-2-rem(20)
-          margin-left: px2-2-rem(20)
+          padding-right: px2-2-rem(10)
+          margin-left: px2-2-rem(10)
           border-right: 1px solid #999999
         .desc:last-child
           border: none

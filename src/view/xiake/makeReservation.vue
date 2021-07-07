@@ -1,6 +1,7 @@
 <template>
   <div class="makeReservationWrapper">
     <v-header title="预约服务"></v-header>
+    <loading v-show="isLoading"></loading>
     <div class="info">
       <p class="name">{{serviceName}}</p>
       <P class="price">￥{{price}}/次</P>
@@ -23,25 +24,64 @@
 
 <script type="text/ecmascript-6">
   import header from '@/components/v-header/v-header'
-
+  import loading from '@/components/loading'
   export default {
+    name:'makeReservation',
     data() {
       return {
-        serviceName: '海报设计、平面设计、美女写手',
-        price: 15000,
-        wordLimit:500,
-        requirementPlaceholder:'请详细描述你的服务需求，以便对方做好准备',
-        requirementValue:'',
+        isLoading:false,
+        id: '',// 服务id
+        serviceName: '未查询到',
+        price: '未查询到',
+        wordLimit: 500,
+        requirementPlaceholder: '请详细描述你的服务需求，以便对方做好准备',
+        requirementValue: '',
       }
     },
-    methods:{
-      submit(){
-        let result = 'OK'
-        if (result === 'OK'){}
-        this.$router.push({ path: '/makeReservationSuccess' })
+    computed: {
+      globalDOMAIN() {
+        return this.$store.state.globalDOMAIN
+      },
+      token() {
+        return sessionStorage.getItem('token')
       }
+    },
+    mounted() {
+      this.id = this.$route.params.id
+      this.getServiceInfo()
+    },
+    methods: {
+      submit() {
+        this.$http.post(`${this.globalDOMAIN}Employ/Service/book`, {
+          'service_id': this.id,
+          'remark': this.requirementValue,
+        }, {
+          emulateJSON: true,
+          headers: {'token': this.token}
+        }).then(res => {
+          this.$vux.toast.text(res.body.msg)
+          if (res.body.status) {
+            console.log(res)
+            this.$router.push({path: '/makeReservationSuccess'})
+          }
+        })
+      },
+      getServiceInfo() {
+        this.$http.get(`${this.globalDOMAIN}Employ/Service/getById`, {
+          params: {'service_id': this.id},
+          emulateJSON: true,
+          headers: {'token': this.token}
+        }).then((res) => {
+          this.processServiceInfoData(res.body.data)
+        })
+      },
+      processServiceInfoData(data) {
+        this.serviceName = data.title
+        this.price = data.price
+      },
     },
     components: {
+      loading,
       'v-header': header
     }
   }
@@ -56,33 +96,33 @@
     font-size: px2-2-rem(32)
     background-color: #f8f8f8
     .info
-      display :flex
-      flex-direction :column
-      justify-content :center
-      height :px2-2-rem(158)
-      margin-bottom :px2-2-rem(20)
-      padding:px2-2-rem(20) px2-2-rem(34)
-      border-top :1px solid #e5e5e5
-      background-color :#ffffff
-      .name,.price
-        line-height :px2-2-rem(60)
+      display: flex
+      flex-direction: column
+      justify-content: center
+      height: px2-2-rem(158)
+      margin-bottom: px2-2-rem(20)
+      padding: px2-2-rem(20) px2-2-rem(34)
+      border-top: 1px solid #e5e5e5
+      background-color: #ffffff
+      .name, .price
+        line-height: px2-2-rem(60)
       .price
-        color:#e4790f
+        color: #e4790f
     .requirementWrapper
-      position :relative
-      display :flex
-      flex-direction :column
-      height :px2-2-rem(252)
-      padding:px2-2-rem(20) px2-2-rem(34)
-      border-top :1px solid #e5e5e5
-      background-color :#ffffff
+      position: relative
+      display: flex
+      flex-direction: column
+      height: px2-2-rem(252)
+      padding: px2-2-rem(20) px2-2-rem(34)
+      border-top: 1px solid #e5e5e5
+      background-color: #ffffff
       /*justify-content :center*/
       .requirementHeader
-        line-height :px2-2-rem(60)
+        line-height: px2-2-rem(60)
       .requirementContent
-        margin-top :px2-2-rem(20)
+        margin-top: px2-2-rem(20)
         .requirement
-          height :px2-2-rem(100)
+          height: px2-2-rem(100)
         .count
           position: relative
           right: -7.56rem
@@ -96,19 +136,19 @@
           border-radius: 0.35rem
           margin-bottom: 0.4rem
       .example
-        position :absolute
-        top:px2-2-rem(28)
-        right :px2-2-rem(30)
-        font-size :px2-2-rem(28)
-        color:#00a0e9
+        position: absolute
+        top: px2-2-rem(28)
+        right: px2-2-rem(30)
+        font-size: px2-2-rem(28)
+        color: #00a0e9
     .notice
-      font-size :px2-2-rem(28)
-      color:#00a0e9
-      padding:px2-2-rem(20) px2-2-rem(34)
+      font-size: px2-2-rem(28)
+      color: #00a0e9
+      padding: px2-2-rem(20) px2-2-rem(34)
     .submit
       position: fixed
       bottom: 0
-      width :100%
+      width: 100%
       height: px2-2-rem(86)
       line-height: px2-2-rem(86)
       text-align: center

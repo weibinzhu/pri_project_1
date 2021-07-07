@@ -167,11 +167,10 @@
       // 提交编辑，一次性验证全部表单数据
       editXiakeSave() {
         var that = this
-        this.validator.validateAll({wxIdRule: this.wxId}).then(result => {
+        this.$validator.validateAll().then(result => {
           if (!result) {
             // validation failed.
-            alert('请确保必填项都已经填上')
-            return
+            return false
           }
           // success stuff.
           alert('保存成功')
@@ -186,12 +185,6 @@
         console.log(this.selectValue)
       },
     },
-    created() {
-      this.validator = new Validator({
-        wxIdRule: 'required',
-        locationRule: 'required'
-      });
-    }
   }
 </script>
 

@@ -1,7 +1,7 @@
 <template>
   <div class="myReputationWrapper">
     <v-header title="我的名号"></v-header>
-    <img class="headImg" src="/static/banner2@3x.png"/>
+    <img class="headImg" :src="banner"/>
     <div class="reputationNotice">名号须知</div>
     <router-link tag="div" :to="item.link" v-for="(item,index) in reputationList"
                  class="reputationItem" :key="index">
@@ -20,23 +20,41 @@
   export default {
     data() {
       return {
+        banner:'/',
         reputationList: [
           {
             icon: '/static/zhuan@3x.png',
             title: '专家徽章',
-            link: '/lightUpBadge'
+            link: '/lightUpBadge?type=0'
           },
           {
             icon: '/static/xia@3x.png',
             title: '峡客徽章',
-            link: '/lightUpBadge'
+            link: '/lightUpBadge?type=1'
           },
-          {
-            icon: '/static/zhima@3x.png',
-            title: '芝麻信用',
-            link: '/zhima'
-          }
+//          {
+//            icon: '/static/zhima@3x.png',
+//            title: '芝麻信用',
+//            link: '/zhima'
+//          }
         ]
+      }
+    },
+    computed:{
+      globalDOMAIN() {
+        return this.$store.state.globalDOMAIN
+      },
+    },
+    mounted(){
+      this.getAd()
+    },
+    methods:{
+      getAd(){
+        this.$http.get(`${this.globalDOMAIN}Api/Common/getAd`,{params:{type:3}}).then(res => {
+          if(res.body.status){
+            this.banner = `${this.globalDOMAIN.slice(0, -11)}${res.body.data.lists[0].img}`
+          }
+        })
       }
     },
     components: {
@@ -55,7 +73,7 @@
     font-size: px2-2-rem(32)
     background-color: #f8f8f8
     .headImg
-      height: px2-2-rem(380)
+      width :100%
     .reputationNotice
       position: absolute
       color: #00a0e9

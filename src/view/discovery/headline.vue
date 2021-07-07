@@ -1,105 +1,125 @@
 <template>
   <div class="headlineWrapper">
     <v-header title="行峡头条"></v-header>
+    <loading v-show="isLoading"></loading>
     <!--箭头，用于提示tab bar还可以向右滚动。相对于整个组件定位-->
     <div class="arrowIndicator">
       <img src="/static/arrow-right@2x.png"/>
     </div>
     <!--tab bar-->
     <ul class="tabBar" @click="onTabBarClick">
-      <li class="tabBarItem" :data-index=index v-for="(item,index) in typeList">
+      <li class="tabBarItem" :data-index=index :data-id=item.id v-for="(item,index) in typeList">
         <!--这里在判断项的index是否等于当前active index时用了双等，而不是三等-->
         <!--因为项的index是数字，而当前active index是字符串-->
-        <div :class="[currentActiveIndex==index?'active':'','tabBarItemText']" :data-index=index>{{item}}</div>
+        <div :class="[currentActiveIndex==index?'active':'','tabBarItemText']" :data-index=index :data-id=item.id>
+          {{item.title}}
+        </div>
       </li>
     </ul>
-    <div class="headlineBlock" v-for="(item,index) in headlineList" v-show="currentActiveIndex===item.type">
+    <a class="headlineBlock" v-for="(item,index) in headlineList" :href="item.href">
       <!--头图-->
-      <div class="headImg" :data-large="item.imgUrl">
-        <img src="/static/loading.gif"/>
-      </div>
+      <img class="headImg" :src="item.imgUrl"/>
       <div class="contentBlock">
         <p class="title">{{item.title}}</p>
         <p class="desc">{{item.desc}}</p>
       </div>
-    </div>
+    </a>
   </div>
 </template>
 
 <script type="text/ecmascript-6">
   import header from '../../components/v-header/v-header.vue'
+  import loading from '@/components/loading'
 
   export default {
     data() {
       return {
-        typeList:['分类0','分类1','分类2','分类3','分类4','分类5',],// tab bar所有选择项
+        isLoading: false,
+        typeList: [{
+          id: 0,
+          title: '加载中...'
+        }],// tab bar所有选择项
         currentActiveIndex: '0',// 当前tab bar选择的项的index
-        headlineList: [ // 头条列表，暂时所有分类都放一起，以后可能一个分离一个数组（看后台怎么给数据）
+        headlineList: [
           {
-            title: '头条标题-0',
-            desc: '简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介',
-            imgUrl: '/static/discovery/picture@3x.png',
-            type: '0'
+            title: '加载中...',
+            desc: '加载中...',
           },
-          {
-            title: '头条标题-1',
-            desc: '简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介',
-            imgUrl: '/static/discovery/picture@3x.png',
-            type: '1'
-          },
-          {
-            title: '头条标题-2',
-            desc: '简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介',
-            imgUrl: '/static/discovery/picture@3x.png',
-            type: '2'
-          },
-          {
-            title: '头条标题-3',
-            desc: '简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介',
-            imgUrl: '/static/discovery/picture@3x.png',
-            type: '3'
-          },
-          {
-            title: '头条标题-3',
-            desc: '简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介',
-            imgUrl: '/static/discovery/picture@3x.png',
-            type: '3'
-          },
-          {
-            title: '头条标题-4',
-            desc: '简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介',
-            imgUrl: '/static/discovery/picture@3x.png',
-            type: '4'
-          },
-          {
-            title: '头条标题-5',
-            desc: '简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介',
-            imgUrl: '/static/discovery/picture@3x.png',
-            type: '5'
-          },
-        ],
+        ],// 头条列表
       }
     },
+    computed: {
+      globalDOMAIN() {
+        return this.$store.state.globalDOMAIN
+      },
+    },
     methods: {
+      initAll() {
+        this.getTopicType()
+        this.$http.get(`${this.globalDOMAIN}Api/Common/getTopic`).then(res => {
+          let tempheadlineList = []
+          for (let item of res.body.data.lists) {
+            let tempItem = {
+              title: item.title,
+              desc: item.desc,
+              imgUrl: `${this.globalDOMAIN.slice(0, -11)}${item.img}`,
+              href:item.href
+            }
+            tempheadlineList.unshift(tempItem)
+          }
+          this.headlineList = tempheadlineList
+        })
+      },
+
       onTabBarClick(e) {
         let index = e.target.dataset.index
+        let id = e.target.dataset.id
+        let dataSent
         if (index) {
           this.currentActiveIndex = index
         }
+        if (id == -1) {
+          // 全部
+          dataSent = {}
+        } else {
+          dataSent = {
+            params: {type: id}
+          }
+        }
+        this.$http.get(`${this.globalDOMAIN}Api/Common/getTopic`, dataSent).then(res => {
+          let tempheadlineList = []
+          for (let item of res.body.data.lists) {
+            let tempItem = {
+              title: item.title,
+              desc: item.desc,
+              imgUrl: `${this.globalDOMAIN.slice(0, -11)}${item.img}`,
+              href:item.href
+            }
+            tempheadlineList.unshift(tempItem)
+          }
+          this.headlineList = tempheadlineList
+        })
+      },
+      getTopicType() {
+        this.$http.get(`${this.globalDOMAIN}Api/Common/getTopicType`).then(res => {
+          let tempTypeList = []
+          for (let item of res.body.data.lists) {
+            let tempTypeItem = {
+              id: item.id,
+              title: item.title
+            }
+            tempTypeList.unshift(tempTypeItem)
+          }
+          tempTypeList.unshift({id: -1, title: '全部'})
+          this.typeList = tempTypeList
+        })
       }
     },
     mounted() {
-      let headImg = document.querySelectorAll('.headImg')
-      headImg.forEach((item, index) => {
-        let largeImg = new Image()
-        largeImg.src = item.dataset.large
-        largeImg.onload = () => {
-          largeImg.classList.add('largeImg')
-          item.appendChild(largeImg)
-        }
-      })
+      this.initAll()
     },
     components: {
+      loading,
       'v-header': header
     }
   }
@@ -166,6 +186,8 @@
       background-color: #ffffff
       border-radius: px2-2-rem(8)
       .contentBlock
+        box-sizing :border-box
+        width :100%
         padding: px2-2-rem(10) px2-2-rem(30)
         .title
           line-height: px2-2-rem(60)

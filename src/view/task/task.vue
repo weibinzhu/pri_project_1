@@ -13,14 +13,15 @@
         </div>
       </header>
     </sticky>
-    <swiper :list="demo01_list" dots-position="center" height="3.335rem" :show-desc-mask="false"></swiper>
+    <loading v-show="isLoading"></loading>
+    <swiper :list="bannerImgList" dots-position="center" height="3.335rem" :show-desc-mask="false"></swiper>
     <ul class="selectWrapper">
-      <router-link to="/releaseTask" tag="li" class="selectItem">
+      <router-link to="/taskRelease2" tag="li" class="selectItem">
         <img class="selectItemImgSm" src="./pic_@3x.png"/>
       </router-link>
-      <li class="selectItem">
+      <router-link tag="li" to="/home/xiake" class="selectItem">
         <img class="selectItemImgSm" src="./pic_right@3x.png"/>
-      </li>
+      </router-link>
     </ul>
     <div class="dividerWrapper">
       <divider>任务大厅</divider>
@@ -30,8 +31,8 @@
         <v-filter v-for="(item,index) in filterItems" :item="item" :index="index" :key="index"></v-filter>
         <transition name="fade">
           <ul class="filterPanel" v-if=taskFilterPanelShow @click="selectChoice">
-            <li v-for="(choice,index) in choices" class="choices" :id="index"
-                :class="[index==currentChoiceIndex?'active':'']">{{choice}}
+            <li v-for="(choice,index) in choices" class="choices" :data-id="choice.id" :data-index="index"
+                :class="[index==currentChoiceIndex?'active':'']">{{choice.title}}
             </li>
             <p v-if="showNotice">更多城市将逐步开放，敬请期待</p>
           </ul>
@@ -39,9 +40,10 @@
       </ul>
     </div>
     <div class="tasksItems" @click="onTaskItemClick">
-      <taskitem v-for="(item,index) in taskItems" :key="index" :item="item"
-                v-show="(item.location==selectedChoiceIndex[0]||selectedChoiceIndex[0]==0)
-                  &&(item.type==selectedChoiceIndex[1]||selectedChoiceIndex[1]==0)"></taskitem>
+      <!--<taskitem v-for="(item,index) in taskItems" :key="index" :item="item" v-if="item.status==99"-->
+      <!--v-show="(item.location==selectedChoiceIndex[0]||selectedChoiceIndex[0]==0||item.location==0)-->
+      <!--&&(item.type==selectedChoiceIndex[1]||selectedChoiceIndex[1]==0)"></taskitem>-->
+      <taskitem v-for="(item,index) in taskItems" :key="index" :item="item" v-if="item.status==99"></taskitem>
     </div>
     <transition name="getWxFade">
       <div class="getWxModel" v-show="showGetWxModel">
@@ -71,7 +73,7 @@
   import Filter from '@/components/filter/filter.vue';
   import TaskItem from '@/view/task/taskItem/taskItem.vue';
   import Clipboard from 'clipboard'
-
+  import loading from '@/components/loading'
   // 放在这里是为了避免多次绑定事件
   var clipboard = new Clipboard('.getWxIdBtn') // 绑定到【点击复制客服微信号】按钮
   clipboard.on('success', (e) => {
@@ -86,115 +88,59 @@
   export default {
     data() {
       return {
-        demo01_list: [
+        isLoading: false,
+        bannerImgList: [
           {
-            url: 'javascript:',
-            img: '/static/banner_@3x.png',
+//            url: 'javascript:',
+//            img: '/static/banner_@3x.png',
           },
-          {
-            url: 'javascript:',
-            img: '/static/banner_@3x.png',
-          },
-          {
-            url: 'javascript:',
-            img: '/static/banner_@3x.png',
-          }
         ],
         filterItems: ['城市', '类别', '排序'],
         taskItems: [
           // location: 1-北京，2-上海，3-广州，4-深圳。
           // type: 1-设计，2-技术，3-运营，4-市场，5-产品
-          {
-            taskTitle: '社区活动营销方案-北京-设计',
-            taskPrice: '15000-30000',
-            taskDetail: ['一个月内', '按需出勤'],
-            clientName: '主题邦科技',
-            clientTag: '已认证',
-            logo: 'static/icon@3x.png',
-            isCertificated: true,
-            location: 1,
-            id: 1211,// 任务id
-            type: 1,
-          },
-          {
-            taskTitle: '营销方案-广州-技术',
-            taskPrice: '20590-30000',
-            taskDetail: ['三个月内', '按需出勤'],
-            clientName: '主题邦',
-            clientTag: '已认证',
-            logo: 'static/icon@3x.png',
-            isCertificated: true,
-            location: 3,
-            id: 121,// 任务id
-            type: 2,
-          },
-          {
-            taskTitle: '营销方案-上海-市场',
-            taskPrice: '100-30000',
-            taskDetail: ['三个月内', '按需出勤'],
-            clientName: '主题邦',
-            clientTag: '已认证',
-            logo: 'static/icon@3x.png',
-            isCertificated: true,
-            location: 2,
-            id: 12111,// 任务id
-            type: 4,
-          },
-          {
-            taskTitle: '营销方案-深圳-运营',
-            taskPrice: '2000-30000',
-            taskDetail: ['三个月内', '按需出勤'],
-            clientName: '主题邦',
-            clientTag: '已认证',
-            logo: 'static/icon@3x.png',
-            isCertificated: false,
-            location: 4,
-            id: 124311,// 任务id
-            type: 3,
-          },
-          {
-            taskTitle: '社区活动营销方案-深圳-产品',
-            taskPrice: '25000-30000',
-            taskDetail: ['一个月内', '按需出勤'],
-            clientName: '主题邦科技',
-            clientTag: '已认证',
-            logo: 'static/icon@3x.png',
-            isCertificated: true,
-            location: 4,
-            id: 122121,// 任务id
-            type: 5,
-          },
-          {
-            taskTitle: '社区活动营销方案-深圳-技术',
-            taskPrice: '15000-30000',
-            taskDetail: ['一个月内', '按需出勤'],
-            clientName: '主题邦科技',
-            clientTag: '已认证',
-            logo: 'static/icon@3x.png',
-            isCertificated: false,
-            location: 4,
-            id: 4331,// 任务id
-            type: 2,
-          },
+//          {
+//            taskTitle: '社区活动营销方案-北京-设计',
+//            taskPrice: '15000-30000',
+//            taskDetail: ['一个月内', '按需出勤'],
+//            clientName: '主题邦科技',
+//            clientTag: '已认证',
+//            logo: 'static/icon@3x.png',
+//            isCertificated: true,
+//            location: 1,
+//            id: 1211,// 任务id
+//            type: 1,
+//          },
         ],
-        original: [], // 初始值跟taskItems一样，用于恢复原排序
-        cityList: ['全部', '北京', '上海', '广州', '深圳'],
-        typeList: ['全部', '设计', '技术', '运营', '市场', '产品'],
-        sortList: ['全部', '最新', '最热', '价格↓', '价格↑'],
-        selectedChoiceIndex: [0, 0, 0], // 保存各个下拉框的选择值
-        currentChoiceIndex: 0, // 当前的选择
-        wxId: 'fwfa21', // 客服微信号
+        cityList: [{id: -1, title: '全部'}],
+        typeList: [{id: -1, title: '全部'}], // 暂时接行业列表进去
+        sortList: [
+          {id: -1, title: '全部'},
+          {id: 0, title: '创建时间', name: 'inputtime'},
+          {id: 1, title: '价格↑', name: 'price_min'},
+          {id: 2, title: '价格↓', name: 'price_max'}
+        ],
+        selectedChoiceIndex: [0, 0, 0], // 保存各个下拉框的选择值的index
+        selectedChoiceId: [-1, -1, -1],// 保存各个下拉框的选择值的id
+        currentChoiceIndex: 0, // 当前的选择的index
         showGetWxModel: false,
-        scrollData: [],
         searchPh: '搜索旅游业者发布的任务', // 搜索框placeholder
+
       }
     },
-    created() {
-      this.deepCopy(this.taskItems, this.original) // 将数组保存（复制一份）到this.original
+    mounted() {
+      this.getTaskAd()
+      this.getTaskList()
+      // 获取城市、行业列表，并存入vuex
+      this.getList('city')
+      this.getList('industry')
     },
     computed: {
-      count() {
-        return this.$store.state.count
+      globalDOMAIN() {
+        return this.$store.state.globalDOMAIN
+      },
+      token() {
+        return sessionStorage.getItem('token')
       },
       taskFilterPanelShow() {
         return this.$store.state.taskFilterPanelShow
@@ -224,25 +170,62 @@
         }
         return false
       },
+      wxId() {
+        return this.$store.state.customerService.wechat
+      }, // 客服微信号
     },
     methods: {
-      selectChoice(event) {
-        if (event.target.id != '') {
-          this.selectedChoiceIndex[this.$store.state.taskFilterActiveIndex] = event.target.id
-          this.currentChoiceIndex = event.target.id
-          if (this.$store.state.taskFilterActiveIndex == 2) { // 如果当前在【排序】下拉框下
-            this.sortTaskList(this.selectedChoiceIndex[2]) // 把选择的排序类型传递到排序函数中
+      getTaskAd(){
+        this.$http.get(`${this.globalDOMAIN}Api/Common/getAd`).then(res => {
+          if(res.body.status){
+            let tempList = []
+            for (let item of res.body.data.lists){
+              let tempItem = {
+                url:item.href,
+                img:`${this.globalDOMAIN.slice(0, -11)}${item.img}`
+              }
+              tempList.push(tempItem)
+            }
+            this.bannerImgList = tempList
           }
+        })
+      },// 获取轮播图用的ad图片
+      getList(type) {
+        let url
+        switch (type) {
+          case 'city':
+            url = 'Api/Common/getCity'
+            break
+          case 'industry':
+            url = 'Api/Common/getIndustry'
+            break
+        }
+        this.$http.get(`${this.globalDOMAIN}${url}`).then(res => {
+          this.$store.commit('saveBaseData', {baseData: res.body.data.lists, type: type})
+          if (type == 'city') {
+            this.cityList = this.cityList.concat(this.$store.state.cityList)
+          } else {
+            this.typeList = this.typeList.concat(this.$store.state.industryList)
+          }
+        })
+      },// 获取城市、行业列表，并存入vuex
+      selectChoice(event) {
+        if (event.target.dataset.index != undefined) {
+          // id用于发送请求，index用于显示当前选中的项的蓝色框
+          this.selectedChoiceId[this.$store.state.taskFilterActiveIndex] = event.target.dataset.id
+          this.selectedChoiceIndex[this.$store.state.taskFilterActiveIndex] = event.target.dataset.index
+          this.currentChoiceIndex = event.target.dataset.index
+          this.getTaskList()
         }
       },
       onTaskItemClick(e) {
-        // 点击任务项，编程式导航到任务详情页
+
         let that = this
 
         // id只绑定在最外层，如果点击到内层元素则不断向外层寻找，直到寻找到最外层为止
         function _getId(node) {
           if (node.className == 'taskItemWrapper') {
-            that.$router.push({name: 'taskDetail', params: {id: node.dataset.id, status: -1, type: 0}})
+            that.$router.push({name: 'taskDetail', params: {id: node.dataset.id, type: 0}})
             return
           } else {
             _getId(node.parentElement)
@@ -250,64 +233,95 @@
         }
 
         _getId(e.target)
-      },
-      toggleWxId() { // 弹出或隐藏【点击复制客服微信】框
+      },// 点击任务项，编程式导航到任务详情页
+      toggleWxId() {
         let y = window.scrollY + 200;
         let model = document.querySelector(".getWxModel")
         model.style.top = y + 'px'
         this.showGetWxModel = !this.showGetWxModel
-      },
-      checkIphone() { // 优雅降级。（暂时不需要用）
+      },// 弹出或隐藏【点击复制客服微信】框
+      checkIphone() {
         if (navigator.userAgent.match(/ipad|ipod|iphone/i)) {
           alert('如果复制失败请手动复制')
         }
-      },
-      sortTaskList(type) { // 排序函数
-        let _compare // 声明比较函数
-        switch (type) { // 根据传进来的排序类型分别定义比较函数的值
-          case 0:
-          case '0': // 默认排序，即原来是怎么排就怎么排
-            _compare = function (value1, value2) {
-              return -1 // 顺序不变
-            }
-            this.deepCopy(this.original, this.taskItems) // 用保存了的原数组替换掉
-            break
-          case '3': // 按价格的降序排列
-            _compare = function (value1, value2) {
-              let valueMinPrice1 = value1.taskPrice.split('-')[0]
-              let valueMinPrice2 = value2.taskPrice.split('-')[0]
-              return valueMinPrice2 - valueMinPrice1
-            }
-            break
-          case '4': // 按价格的升序排列
-            _compare = function (value1, value2) {
-              let valueMinPrice1 = value1.taskPrice.split('-')[0]
-              let valueMinPrice2 = value2.taskPrice.split('-')[0]
-              return valueMinPrice1 - valueMinPrice2
-            }
-            break
-        }
-        this.taskItems.sort(_compare) // 根据定义好的比较函数排序
-      },
-      deepCopy(original, target) { // 用于深度复制一个数组或对象
-        var that = this
-        var target = target
-        for (let i in original) {
-          if (typeof original[i] === 'object') {
-            if (original[i] instanceof Array) {
-              target[i] = []
-            } else {
-              target[i] = {}
-            }
-            that.deepCopy(original[i], target[i])
-          } else {
-            target[i] = original[i]
-          }
+      },// 优雅降级。（暂时不需要用）
+      getTaskList() {
+        let city, task_type, order, token
 
+        if (this.selectedChoiceId[0] == -1) {
+          city = ''
+        } else {
+          city = this.cityList.find(function (item) {
+            return item.id == this.selectedChoiceId[0]
+          }, this).title
         }
-      },
+
+        if (this.selectedChoiceId[1] == -1) {
+          task_type:''
+        } else {
+          task_type = this.typeList.find(function (item) {
+            return item.id == this.selectedChoiceId[1]
+          }, this).title
+        }
+
+        if (this.selectedChoiceId[2] == -1) {
+          order = ''
+        } else {
+          order = this.sortList.find(function (item) {
+            return item.id == this.selectedChoiceId[2]
+          }, this).name
+        }
+
+        token = sessionStorage.getItem('token')
+        this.$http.get(`${this.globalDOMAIN}Employ/Task/getList`, {
+          params: {
+            'city': city,
+            'task_type': task_type,
+            'order': order
+          },
+          emulateJSON: true,
+          headers: {'token': token}
+        }).then((response) => {
+          if (response.body.status) {
+            let data = response.body.data
+            // console.log(data.lists)
+            // 处理传回来的数组并赋值
+            this.taskItems = this.dataProcess(data.lists)
+            // this.deepCopy(this.taskItems, this.original) // 将数组保存（复制一份）到this.original
+          } else {
+            this.$vux.toast.text('获取任务列表失败')
+          }
+        })
+      },// 发送请求获取数据
+      dataProcess(taskList) {
+        let tempList = []
+        if (taskList) {
+          for (let task of taskList) {
+            // 构造数据
+            let tempItem = {
+              taskTitle: task.title,
+              minPrice: task.price_min,
+              maxPrice: task.price_max,
+              taskId: task.id,
+              cycle: task.cycle,
+              workType: task.work_type.split('（')[0],// 必须用中文括号
+              clientName: '主题邦科技',
+              logo: 'static/icon@3x.png',
+              isCertificated: Math.random() > 0.5 ? true : false,
+              location: this.cityList.indexOf(task.city),
+              type: Math.floor(Math.random() * 4) + 1,
+              status: task.status,
+              on: task.on,
+              order_status: task.order_status
+            }
+            tempList.push(tempItem)
+          }
+        }
+        return tempList
+      },// 处理数据并返回
     },
     components: {
+      loading,
       Swiper,
       Divider,
       Sticky,

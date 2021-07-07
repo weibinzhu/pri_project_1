@@ -5,7 +5,8 @@
       <!--taskDetail页面不需要缓存-->
     <!--需要传数据的都不应该keep-alive-->
       <!--这里的taskDetail是组件的name-->
-      <keep-alive exclude="taskDetail,serviceDetail,signUpPhone,xiakeMainPage">
+      <keep-alive exclude="taskDetail,serviceDetail,signUpPhone,
+xiakeMainPage,login,contract,taskManageMainPage,makeReservation,myService,projectDetail,lightUpBadge,myUnion">
         <router-view></router-view>
       </keep-alive>
     <!--</transition>-->

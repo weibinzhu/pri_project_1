@@ -6,7 +6,7 @@
       <p>连续签到7天额外赠送5功力</p>
     </div>
     <div class="progressWrapper">
-      <div class="notice" style="top:-1.1rem;left:-0.36rem">
+      <div class="notice" style="top:-1.1rem;">
         <p>+{{addGongli}}</p>
         <p>功力值</p>
       </div>
@@ -15,7 +15,7 @@
     <div class="progressDesc">
       <div v-for="(item,index) in days" class="progressText">{{index + 1}}</div>
     </div>
-    <div class="signInBtn">
+    <div @click="toSignIn" class="signInBtn">
       签到
     </div>
   </div>
@@ -29,32 +29,64 @@
     data() {
       return {
         days: [],
-        signInDays: 3,
+        signInDays: 0,
+        initLeft: -0.36,
+        normalPoint: 1,
+        bonusPoint: 6,
       }
     },
-    computed:{
-      addGongli(){
-        if (this.signInDays == 6){
-          return 6
-        }else{
-          return 1
-        }
-      }
-    },
-    created() {
-      for (let i = 0; i < DAYLENGTH; i++) {
-        if (i < this.signInDays) {
-          this.days.push(1)
+    computed: {
+      addGongli() {
+        if (this.signInDays == 6) {
+          return this.bonusPoint
         } else {
-          this.days.push(0)
+          return this.normalPoint
         }
+      },
+      globalDOMAIN() {
+        return this.$store.state.globalDOMAIN
       }
+    },
+    watch: {
+      signInDays() {
+        this.setDayBar()
+      }// 响应signInDays发生的变化
     },
     mounted() {
-      let notice = document.querySelector('.notice')
-      let currentLeft = notice.style.left
-      let newLeft = (currentLeft.substring(0, 5) / 1) + this.signInDays * 1.36
-      notice.style.left = newLeft + 'rem'
+      this.signInDays = sessionStorage.getItem('sign_num')
+      this.setDayBar()
+    },
+    methods: {
+      toSignIn() {
+        let token = sessionStorage.getItem('token')
+        this.$http.post(`${this.globalDOMAIN}Employ/User/sign`, {}, {headers: {'token': token}}).then((res) => {
+          if (res.body.status) {
+            let num = res.body.data.num, point = res.body.data.point
+            this.signInDays = num
+            sessionStorage.setItem('sign_num',this.signInDays)
+            this.$vux.toast.text(`成功签到，积分已加${point}`)
+          } else {
+            if (res.body.msg){
+              this.$vux.toast.text(res.body.msg)
+            }else{
+              this.$vux.toast.text('请登录')
+            }
+          }
+        })
+      },// 签到
+      setDayBar() {
+        this.days = []
+        for (let i = 0; i < DAYLENGTH; i++) {
+          if (i < this.signInDays) {
+            this.days.push(1)
+          } else {
+            this.days.push(0)
+          }
+        }
+        let notice = document.querySelector('.notice')
+        let newLeft = this.initLeft + this.signInDays * 1.36
+        notice.style.left = newLeft + 'rem'
+      },// 设置当前显示条的样子
     },
     components: {
       'v-header': header
@@ -123,6 +155,7 @@
       background-color: #ffffff
       font-size: px2-2-rem(24)
       color: #00a0e9
+      transition: all 0.2s linear
       p
         line-height: px2-2-rem(26)
       p:last-child
@@ -155,5 +188,5 @@
     margin-top: px2-2-rem(108)
     background-color: #ffffff
     color: #00a0e9
-    border-radius : px2-2-rem(36) px2-2-rem(40)
+    border-radius: px2-2-rem(36) px2-2-rem(40)
 </style>

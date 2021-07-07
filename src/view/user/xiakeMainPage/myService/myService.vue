@@ -1,33 +1,38 @@
 <template>
   <div class="myServiceWrapper">
     <v-header title="我的服务"></v-header>
-    <router-link tag="div" :to="{name:'serviceDetail2', params:{id:item.taskId}}"
+    <loading v-show="isLoading"></loading>
+    <router-link tag="div" :to="{name:'serviceDetail2', params:{id:item.serviceId}}"
                  class="myServiceItem"
                  v-for="(item,index) in service" :key="index">
       <div class="myServiceItemInfo">
         <div class="itemName">
-          {{item.name}}-type:{{typeList[item.type]}}
+          {{item.name}}
         </div>
         <div class="itemPrice">
           <div class="priceText">
             ￥{{item.price}}
             <div class="tradeNumber">交易：{{item.num}}笔</div>
           </div>
-          <span v-if="item.type==0||item.type==1" :class="item.type==1?'special':''">{{typeList[item.type]}}</span>
+          <span :class="item.status==0?'special':''">{{serviceStatusText(item)}}</span>
         </div>
       </div>
       <div class="myServiceItemBtn">
-        <div @click.stop="toggleModel('.reasonModel','showReasonModel')" class="refuseBtn" v-if="item.type == 1 ">拒绝原因</div>
-        <div @click.stop="toggleModel('.deleteModel','showDeleteModel')" class="deleteBtn"
-             v-if="item.type == 1">删除
+        <div @click.stop="toggleModel('.reasonModel','showReasonModel',item)" class="refuseBtn"
+             v-if="item.status == 0 ">拒绝原因
         </div>
-        <div class="modifyBtn" v-if="item.type == 1 || item.type == 2">修改</div>
-        <div @click.stop="toggleModel('.removeModel','showRemoveModel')" class="remove" v-if="item.type == 2">下架</div>
-        <div class="add" v-if="item.type == 1">上架</div>
+        <div @click.stop="toggleModel('.deleteModel','showDeleteModel',item)" class="deleteBtn"
+             v-if="(item.status == 99 && item.on == 0) || ( item.status == 0)">删除
+        </div>
+        <div class="modifyBtn" v-if="(item.status == 99 || item.status == 0)">修改</div>
+        <div @click.stop="toggleModel('.removeModel','showRemoveModel',item)" class="remove"
+             v-if="item.status == 99 && item.on == 1">下架
+        </div>
+        <div @click.stop="addService(item.serviceId)" class="add" v-if="(item.status == 99 && item.on == 0) || item.status == 0">上架</div>
       </div>
     </router-link>
     <footer class="myServiceFooter" @click="myServiceRelease">
-      <router-link to="/taskRelease2" tag="div" class="myServiceRelease">发布服务</router-link>
+      <router-link to="/releaseService" tag="div" class="myServiceRelease">发布服务</router-link>
     </footer>
     <transition name="deleteModelFade">
       <div class="deleteModel" v-show="showDeleteModel">
@@ -45,7 +50,7 @@
       <div class="reasonModel" v-show="showReasonModel">
         <div class="showText">
           <div class="title">拒绝原因</div>
-          <div class="desc">告知原因及解决办法</div>
+          <div class="desc">{{handle_remark}}</div>
         </div>
         <div class="actionBtnWrapper">
           <div @click.stop="toggleModel('.reasonModel','showReasonModel')" class="cancelBtn">确定</div>
@@ -72,58 +77,97 @@
 
 <script type="text/ecmascript-6">
   import header from '@/components/v-header/v-header'
+  import loading from '@/components/loading'
 
   export default {
+    name: 'myService',
     data() {
       return {
+        isLoading: false,
+        handle_remark:'',// 拒绝原因
         typeList: ['审核中', '审核不通过', '普通'],
         //statusList: ['0-已选择', '1-已放弃', '2-托管资金', '3-已支付', '4-评价', '5-交易成功', '6-未选择', '7-暂无竞标'],
-        service: [
-          // type解释：0-审核中，1-审核不通过，2-普通，3-已完成(列表显示时用)
-          // status解释：0-已选择，1-已放弃，2-托管资金，3-已支付，4-评价，5-交易成功，6-未选择，7-暂无竞标（进去详情后用）
-          {
-            name: '公众号推广核心商户扶持计划数据全面支持',
-            price: '15000-59500',
-            taskId: 1,
-            num: 2,// 交易笔数
-            type: 0,
-            status: 0,
-          },
-          {
-            name: '公众号推广核心商户扶持计划数据全面支持',
-            price: '15000-59500',
-            taskId: 2,
-            num: 2,// 交易笔数
-            type: 1,
-            status: 1,
-          },
-          {
-            name: '公众号推广核心商户扶持计划数据全面支持',
-            price: '15000-59500',
-            taskId: 3,
-            num: 2,// 交易笔数
-            type: 2,
-            status: 2,
-          },
-          {
-            name: '英语主持持服持服服务',
-            price: '15000-59500',
-            taskId: 4,
-            num: 2,// 交易笔数
-            type: 2,
-            status: 3,
-          },
-        ],
+        service: [],
         showDeleteModel: false,
         showRemoveModel: false,
         showReasonModel: false,
       }
     },
+    computed: {
+      globalDOMAIN() {
+        return this.$store.state.globalDOMAIN
+      },
+      token() {
+        return sessionStorage.getItem('token')
+      }
+    },
+    created() {
+      this.getServiceList()
+    },
     methods: {
+      serviceStatusText(item) {
+        switch (item.status) {
+          case '0':
+            return '审核不通过'
+          case '1':
+            return '审核中'
+        }
+        console.log(item)
+      },// 服务状态文字显示
       myServiceRelease() {
         return;
       },
-      toggleModel(selector,flag){
+
+      getServiceList() {
+        this.$http.get(`${this.globalDOMAIN}Employ/Service/getList`, {
+          params: {'user_id': sessionStorage.getItem('userid')},
+          emulateJSON: true,
+          headers: {'token': this.token}
+        }).then((res) => {
+          if (res.body.status) {
+            this.processServiceData(res.body.data.lists)
+          } else {
+            this.$vux.toast.text(res.body.msg)
+          }
+        })
+      },// 获取服务列表
+      processServiceData(data) {
+//        typeList: ['审核中', '审核不通过', '普通'],
+//        statusList: ['0-已选择', '1-已放弃', '2-托管资金', '3-已支付', '4-评价', '5-交易成功', '6-未选择', '7-暂无竞标'],
+//        service: [
+//           type解释：0-审核中，1-审核不通过，2-普通，3-已完成(列表显示时用)
+//           status解释：0-已选择，1-已放弃，2-托管资金，3-已支付，4-评价，5-交易成功，6-未选择，7-暂无竞标（进去详情后用）
+//          {
+//            name: '公众号推广核心商户扶持计划数据全面支持',
+//            price: '15000-59500',
+//            taskId: 1,
+//            num: 2,// 交易笔数
+//            type: 0,
+//            status: 0,
+//          },
+//        ],
+        if (data.length != 0) {
+          for (let item of data) {
+            let tempItem = {
+              name: item.title,
+              price: item.price,
+              serviceId: item.id,// 服务id
+              num: 6, // 交易量
+              status: item.status,
+              on: item.on,
+              order_status: item.order_status,
+              handle_remark: item.handle_remark,
+            }
+            this.service.push(tempItem)
+          }
+        } else {
+          this.$vux.toast.text('暂无服务')
+        }
+
+      },// 处理服务列表数据
+
+
+      toggleModel(selector, flag, item) {
         // 弹出或隐藏某个框
         // selector: String, 用于传给querySelector
         // flag: String, 用于确定是哪一个框
@@ -131,19 +175,42 @@
         let model = document.querySelector(selector)
         model.style.top = y + 'px'
         this[flag] = !this[flag]
+        if(item){
+          model.dataset.toBeProcessedId = item.serviceId// 修改特定框的绑定参数
+          this.handle_remark = item.handle_remark// 拒绝原因
+        }
       },
       deleteItem() {
         // 删除某项
-        console.log('deleted!')
+        let serviceId = document.querySelector('.deleteModel').dataset.toBeProcessedId
+        this.sentServiceReleatedRequest('del', serviceId)
         this.showDeleteModel = !this.showDeleteModel
       },
       removeItem() {
         // 下架某项
-        console.log('removed!')
+        let serviceId = document.querySelector('.removeModel').dataset.toBeProcessedId
+        this.sentServiceReleatedRequest('off', serviceId)
         this.showRemoveModel = !this.showRemoveModel
-      }
+      },
+      addService(serviceId) {
+        this.sentServiceReleatedRequest('on', serviceId)
+      },// 上架某项
+      sentServiceReleatedRequest(action, serviceId) {
+        serviceId = serviceId.toString()
+        this.$http.post(`${this.globalDOMAIN}Employ/Service/${action}`, {'service_id': serviceId}, {
+          emulateJSON: true,
+          headers: {'token': this.token}
+        }).then((res) => {
+          if (res.body.status) {
+            this.$vux.toast.text(`${res.body.msg}`)
+          } else {
+            this.$vux.toast.text(`${res.body.msg}`)
+          }
+        })
+      },// 发送服务相关请求，如上架、下架、删除
     },
     components: {
+      loading,
       'v-header': header
     }
   }
@@ -154,7 +221,6 @@
   .myServiceWrapper
     display: flex
     flex-direction: column
-    justify-content: center
     align-items: center
     min-height: 100vh
     font-size: px2-2-rem(32)

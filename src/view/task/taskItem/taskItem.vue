@@ -1,26 +1,31 @@
 <template>
-  <div class="taskItemWrapper" :data-id="item.id">
+  <div class="taskItemWrapper" :data-id="item.taskId">
     <div class="taskContent">
-      <p class="taskTitle">{{item.taskTitle}}</p>
-      <p class="taskPrice">￥<span>{{item.taskPrice}}</span></p>
+      <p class="taskTitle">{{item.taskTitle}}-{{item.location}}</p>
+      <p class="taskPrice">￥<span>{{item.minPrice}}-{{item.maxPrice}}</span></p>
       <p class="taskDetail">
-        <span>任务周期：{{item.taskDetail[0]}}</span><span class="dot">·</span><span>协作方式：{{item.taskDetail[1]}}</span>
+        <span>任务周期：{{item.cycle}}</span><span class="dot">·</span><span>协作方式：{{item.workType}}</span>
       </p>
     </div>
     <div class="clientInfo">
       <img :src="item.logo" class="clientLogo"/>
       <span class="clientName">{{item.clientName}}{{item.type}}</span>
-      <span class="clientTag" v-if="item.isCertificated">{{item.clientTag}}</span>
+      <tag v-if="item.isCertificated"></tag>
     </div>
   </div>
 </template>
 
 <script type="text/ecmascript-6">
+  import tag from '@/components/tag.vue'
+
   export default {
-    props:{
-      item:{
+    props: {
+      item: {
         type: Object,
       },
+    },
+    components: {
+      'tag': tag
     }
   }
 </script>
@@ -72,14 +77,4 @@
       .clientName
         color: #b3b3b3
         font-size: px2-2-rem(26)
-      .clientTag
-        height: 0.3514rem
-        width: 1.216rem
-        line-height: 0.3514rem
-        border: 1px solid #00a0e9
-        border-radius: 5px
-        color: #00a0e9
-        font-size: 0.2703rem
-        text-align: center
-        margin-left: 0.2703rem
 </style>

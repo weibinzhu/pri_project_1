@@ -11,11 +11,12 @@
       </li>
     </ul>
     <!--内容块: 合作单位-->
-    <div class="expertBlock" v-for="(item,index) in companyList" v-show="currentActiveIndex==='0'">
+    <div @click="goToDetail(item)" class="expertBlock" v-for="(item,index) in companyList" v-show="currentActiveIndex==='0'">
       <!--头图-->
-      <div class="headImg" :data-large="item.imgUrl">
-        <img src="/static/loading.gif"/>
-      </div>
+      <!--<div class="headImg" :data-large="item.imgUrl">-->
+        <!--<img src="/static/loading.gif"/>-->
+      <!--</div>-->
+      <img class="headImg" :src="item.imgUrl"/>
       <div class="contentBlock">
         <p class="name">{{item.name}}</p>
         <p class="desc">{{item.desc}}</p>
@@ -23,11 +24,12 @@
       <div class="group">{{item.group}}</div>
     </div>
     <!--内容块: 合作专家-->
-    <div class="expertBlock" v-for="(item,index) in expertList" v-show="currentActiveIndex==='1'">
+    <div @click="goToDetail(item)" class="expertBlock" v-for="(item,index) in expertList" v-show="currentActiveIndex==='1'">
       <!--头图-->
-      <div class="headImg" :data-large="item.imgUrl">
-        <img src="/static/loading.gif"/>
-      </div>
+      <!--<div class="headImg" :data-large="item.imgUrl">-->
+        <!--<img src="/static/loading.gif"/>-->
+      <!--</div>-->
+      <img class="headImg" :src="item.imgUrl"/>
       <div class="contentBlock">
         <p class="name">{{item.name}}</p>
         <p class="desc">{{item.desc}}</p>
@@ -45,54 +47,92 @@
       return {
         currentActiveIndex : '0',// 当前点击的tab栏项的索引
         companyList:[ // 合作单位列表
-          {
-            name:'广州闻喜信息科技有限公司',
-            desc:'简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介',
-            imgUrl:'/static/discovery/picture@3x.png',
-            group:'旅游协会'
-          },
-          {
-            name:'广州闻喜信息科技有限公司',
-            desc:'简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介',
-            imgUrl:'/static/discovery/picture@3x.png',
-            group:'旅游协会'
-          },
+//          {
+//            name:'加载中',
+//            desc:'加载中',
+//            imgUrl:'/static/discovery/picture@3x.png',
+//            group:'加载中'
+//          },
         ],
         expertList:[ // 合作专家列表
-          {
-            name:'陈教授',
-            desc:'简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介',
-            imgUrl:'/static/discovery/picture@3x.png',
-            group:'旅游协会'
-          },
-          {
-            name:'陈教授',
-            desc:'简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介',
-            imgUrl:'/static/discovery/picture@3x.png',
-            group:'旅游协会'
-          },
+//          {
+//            name:'加载中',
+//            desc:'加载中',
+//            imgUrl:'/static/discovery/picture@3x.png',
+//            group:'加载中'
+//          },
         ]
       }
     },
+    computed:{
+      globalDOMAIN(){
+        return this.$store.state.globalDOMAIN
+      }
+    },
     methods:{
+      getExpertList(){
+        this.$http.get(`${this.globalDOMAIN}Api/Common/getExpert`).then(res=>{
+          let tempList = []
+          for(let item of res.body.data.lists){
+            let tempItem = {
+              name:item.title,
+              desc:item.desc,
+              imgUrl:`${this.globalDOMAIN.slice(0, -11)}${item.img}`,
+              group:'旅游协会', // 有？
+              content:item.content,
+              id:item.id,
+            }
+            tempList.push(tempItem)
+          }
+          this.expertList = tempList
+        })
+      },
+
+      getUnitList(){
+        this.$http.get(`${this.globalDOMAIN}Api/Common/getUnit`).then(res=>{
+          let tempList = []
+          for(let item of res.body.data.lists){
+            let tempItem = {
+              name:item.title,
+              desc:item.desc,
+              imgUrl:`${this.globalDOMAIN.slice(0, -11)}${item.img}`,
+              group:'旅游协会', // 有？
+              content:item.content,
+              id:item.id,
+            }
+            tempList.push(tempItem)
+          }
+          this.companyList = tempList
+        })
+      },
+
       onTabBarClick(e){
         let index = e.target.dataset.index
         if(index){
           this.currentActiveIndex = index
         }
+      },
+      goToDetail(item){
+        this.$store.commit('changeHtmlDetail',{
+          title:item.name,
+          content:item.content
+        })
+        this.$router.push({path:'/htmlDetail'})
       }
     },
     mounted(){
+      this.getUnitList()
+      this.getExpertList()
       // 优化图片加载过程
-      let headImgContainer = document.querySelectorAll('.headImg')
-      headImgContainer.forEach((item,index)=>{
-        let largeImg = new Image()
-        largeImg.src = item.dataset.large
-        largeImg.onload = () => {
-          largeImg.classList.add('largeImg')
-          item.appendChild(largeImg)
-        }
-      })
+//      let headImgContainer = document.querySelectorAll('.headImg')
+//      headImgContainer.forEach((item,index)=>{
+//        let largeImg = new Image()
+//        largeImg.src = item.dataset.large
+//        largeImg.onload = () => {
+//          largeImg.classList.add('largeImg')
+//          item.appendChild(largeImg)
+//        }
+//      })
     },
     components: {
       'v-header': header
@@ -141,6 +181,8 @@
       background-color: #ffffff
       border-radius: px2-2-rem(8)
       .contentBlock
+        box-sizing :border-box
+        width :100%
         padding: px2-2-rem(10) px2-2-rem(30)
         .name
           line-height: px2-2-rem(60)

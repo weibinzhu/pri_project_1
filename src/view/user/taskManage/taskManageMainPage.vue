@@ -1,25 +1,31 @@
 <template>
   <div class="taskManageWrapper">
     <v-header title="任务管理"></v-header>
-    <router-link tag="div" :to="{name:'taskDetail', params:{id:item.taskId,status:item.status,type:1}}"
+    <loading v-show="isLoading"></loading>
+    <router-link tag="div" :to="{name:'taskDetail', params:{id:item.taskId,type:1}}"
                  class="taskManageItem"
-                 v-for="(item,index) in tasks" :key="index">
+                 v-for="(item,index) in taskList" :key="index">
       <div class="taskManageItemInfo">
         <div class="itemName">
-          {{item.name}} status：{{statusList[item.status]}}
+          {{item.name}}
         </div>
         <div class="itemPrice">
-          ￥{{item.price}}<span>{{typeList[item.type]}}</span>
+          ￥{{item.minPrice}}-{{item.maxPrice}}<span>{{statusText(item)}}</span>
         </div>
       </div>
       <div class="taskManageItemBtn">
-        <router-link to="/toRateTask" tag="div" class="toBeRate" v-if="item.type == 5 ">评价</router-link>
-        <div @click.stop="toggleModel('.deleteModel','showDeleteModel')" class="deleteBtn"
-             v-if="item.type == 1 || item.type == 2 || item.type == 3 || item.type == 6">删除
+        <router-link to="/toRateTask" tag="div" class="toBeRate" v-if="item.order_status == 5 ">评价</router-link>
+        <div @click.stop="toggleModel('.deleteModel','showDeleteModel',item.taskId)" class="deleteBtn"
+             v-if="item.status == 0 || item.status == 1 || item.on == 0 || item.order_status == 1|| item.order_status == 99">
+          删除
         </div>
-        <div class="modifyBtn" v-if="item.type == 0 || item.type == 1 || item.type == 3 || item.type == 3">修改</div>
-        <div @click.stop="toggleModel('.removeModel','showRemoveModel')" class="remove" v-if="item.type == 0 || item.type == 2">下架</div>
-        <div class="add" v-if="item.type == 3">上架</div>
+        <div class="modifyBtn" v-if="item.status == 0 || item.status == 1 || item.on == 0 || item.order_status == 1">
+          修改
+        </div>
+        <div @click.stop="toggleModel('.removeModel','showRemoveModel',item.taskId)" class="remove"
+             v-if="item.order_status == 1 && item.status == 99 && item.on == 1">下架
+        </div>
+        <div @click.stop="addTask(item.taskId)" class="add" v-if="item.on == 0 && item.status == 99">上架</div>
       </div>
     </router-link>
     <footer class="taskManageFooter" @click="taskManageRelease">
@@ -57,10 +63,13 @@
 
 <script type="text/ecmascript-6">
   import header from '@/components/v-header/v-header'
+  import Loading from '@/components/loading'
 
   export default {
+    name: 'taskManageMainPage',
     data() {
       return {
+        isLoading: false,
         typeList: ['审核中', '审核不通过', '竞标中', '已下架', '服务中', '待评价', '已完成'],
         statusList: ['0-已选择', '1-已放弃', '2-托管资金', '3-已支付', '4-评价', '5-交易成功', '6-未选择', '7-暂无竞标'],
         tasks: [
@@ -70,88 +79,138 @@
             name: '英语主持服务',
             price: '15000-59500',
             taskId: 1,
-            type: 0,
-            status: 0,
-          },
-          {
-            name: '英语主持务',
-            price: '15000-59500',
-            taskId: 2,
-            type: 1,
-            status: 1,
-          },
-          {
-            name: '英语主持服',
-            price: '15000-59500',
-            taskId: 3,
-            type: 3,
-            status: 2,
-          },
-          {
-            name: '英语主持持服持服服务',
-            price: '15000-59500',
-            taskId: 4,
             type: 2,
-            status: 3,
-          },
-          {
-            name: '英语服务',
-            price: '15000-59500',
-            taskId: 5,
-            type: 5,
-            status: 4,
-          },
-          {
-            name: '英务',
-            price: '15000-59500',
-            taskId: 6,
-            type: 4,
-            status: 5,
-          },
-          {
-            name: '英务da',
-            price: '15000-59500',
-            taskId: 7,
-            type: 6,
-            status: 6,
-          },
-          {
-            name: '英务da',
-            price: '15000-59500',
-            taskId: 7,
-            type: 6,
-            status: 7,
+            status: 0,
           }
         ],
+        taskList: [],// 后台传回来的
         showDeleteModel: false,
+        //toBeDeleteId: -1,// 待删除id
         showRemoveModel: false,
       }
     },
+    computed: {
+      globalDOMAIN() {
+        return this.$store.state.globalDOMAIN
+      },
+      token() {
+        return sessionStorage.getItem('token')
+      },
+      userId() {
+        return sessionStorage.getItem('userid')
+      },
+    },
+    created() {
+      this.getTaskList()
+    },
     methods: {
+      statusText(task) {
+        let status = task.status, on = task.on, order_status = task.order_status
+        switch (status) {
+          case '0':
+            return '审核不通过'
+          case '1':
+            return '审核中'
+        }
+        switch (on) {
+          case '0':
+            return '已下架'
+        }
+        switch (order_status) {
+          case '1':
+            return '竞标中'
+          case '4':
+            return '服务中'
+          case '5':
+            return '待评价'
+          case '99':
+            return '服务完成'
+        }
+      },// 显示在列表中，表明当前状态
       taskManageRelease() {
         return;
       },
-      toggleModel(selector,flag){
+      toggleModel(selector, flag, taskId) {
         // 弹出或隐藏某个框
         // selector: String, 用于传给querySelector
         // flag: String, 用于确定是哪一个框
+        // taskId: Number, 唤起当前弹框的任务的taskId
         let y = window.scrollY + 200;
         let model = document.querySelector(selector)
         model.style.top = y + 'px'
+        model.dataset.toBeProcessedId = taskId// 修改特定框的绑定参数
         this[flag] = !this[flag]
+
       },
       deleteItem() {
         // 删除某项
-        console.log('deleted!')
+        let taskId = document.querySelector('.deleteModel').dataset.toBeProcessedId
+        this.sentTaskReleatedRequest('del', taskId)
         this.showDeleteModel = !this.showDeleteModel
+        this.getTaskList()
       },
       removeItem() {
         // 下架某项
-        console.log('removed!')
+        let taskId = document.querySelector('.removeModel').dataset.toBeProcessedId
+        this.sentTaskReleatedRequest('off', taskId)
         this.showRemoveModel = !this.showRemoveModel
-      }
+      },
+
+      addTask(taskId) {
+        this.sentTaskReleatedRequest('on', taskId)
+      },// 上架某任务
+
+      sentTaskReleatedRequest(action, taskId) {
+        taskId = taskId.toString()
+        this.$http.post(`${this.globalDOMAIN}Employ/Task/${action}`, {'task_id': taskId}, {
+          emulateJSON: true,
+          headers: {'token': this.token}
+        }).then((res) => {
+          if (res.body.status) {
+            this.$vux.toast.text(`${res.body.msg}`)
+          } else {
+            this.$vux.toast.text(`${res.body.msg}`)
+          }
+        })
+      },// 发送任务相关请求，如上架、下架、删除
+      getTaskList() {
+        this.$http.get(`${this.globalDOMAIN}Employ/Task/getList`, {
+          params: {'user_id': this.userId},
+          emulateJSON: true,
+          headers: {'token': this.token}
+        }).then((response) => {
+          if (response.body.status) {
+            let data = response.body.data
+            console.log(data.lists)
+            // 处理传回来的数组并赋值
+            this.taskList = this.dataProcess(data.lists)
+          } else {
+            this.$vux.toast.text('获取任务列表失败')
+          }
+        })
+      },// 发送请求获取数据
+      dataProcess(taskList) {
+        let tempList = []
+        for (let task of taskList) {
+
+          // 构造数据
+          let tempItem = {
+            name: task.title,
+            minPrice: task.price_min,
+            maxPrice: task.price_max,
+            taskId: task.id,
+//            type: Math.floor(Math.random() * 6),
+            status: task.status,
+            on: task.on,
+            order_status: task.order_status,
+          }
+          tempList.push(tempItem)
+        }
+        return tempList
+      },// 处理数据并返回
     },
     components: {
+      Loading,
       'v-header': header
     }
   }
@@ -162,7 +221,6 @@
   .taskManageWrapper
     display: flex
     flex-direction: column
-    justify-content: center
     align-items: center
     min-height: 100vh
     font-size: px2-2-rem(32)

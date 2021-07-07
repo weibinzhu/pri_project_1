@@ -8,8 +8,8 @@
         </div>
         <transition name="fade">
           <ul class="filterPanel" v-show="currentIndex === 0" @click="onChoiceClick">
-            <li v-for="(item,index) in areaList" :class="[currentSelectedChoice===index?'active':'']"
-                :data-choice-id="index">{{item}}
+            <li v-for="(item,index) in cityList" :class="[currentSelectedChoice===index?'active':'']"
+                :data-index="index" :data-id="item.id">{{item.title}}
             </li>
           </ul>
         </transition>
@@ -18,19 +18,18 @@
         <transition name="fade">
           <ul class="filterPanel" v-show="currentIndex === 1" @click="onChoiceClick">
             <li v-for="(item,index) in typeList" :class="[currentSelectedChoice===index?'active':'']"
-                :data-choice-id="index">{{item}}
+                :data-index="index" :data-id="item.id">{{item.title}}
             </li>
           </ul>
         </transition>
       </div>
     </sticky>
     <!--内容块-->
-    <div class="projectBlock" v-for="(item,index) in projectList"
-         v-show="(item.location == areaList[choiceSelected[0]] || choiceSelected[0] === 0)
-         && (item.type == typeList[choiceSelected[1]] || choiceSelected[1] === 0)">
+    <div class="projectBlock" v-for="(item,index) in projectList" @click="toDetail(item.id)">
       <!--头图-->
       <div class="headImg" :data-large="item.imgUrl">
-        <img src="/static/loading.gif"/>
+        <!--<img src="/static/loading.gif"/>-->
+        <img :src="item.imgUrl" class="largeImg"/>
       </div>
       <div class="contentBlock">
         <p class="title">{{item.title}}</p>
@@ -41,7 +40,7 @@
           <div class="type">{{item.type}}</div>
         </div>
       </div>
-      <div class="status">{{item.status}}</div>
+      <!--<div class="status">{{item.status}}</div>-->
     </div>
   </div>
 </template>
@@ -53,53 +52,82 @@
   export default {
     data() {
       return {
-        areaList: ['全部', '北京', '上海', '平潭'],// 区域列表
-        typeList: ['全部', '商务合作', '移动开发', '业务推广'],// 类型列表
+        cityList: [{id: -1, title: '全部'}],
+        typeList: [{id: -1, title: '全部'}], // 暂时接行业列表进去
         choiceSelected: [0, 0],// 选择的过滤项
         currentSelectedChoice: 0,// 当前应该高亮显示的过滤项
         currentIndex: -1, // 当前选择的过滤类型
-        projectList: [
-          {
-            title: '案例标题-北京-商务合作',
-            desc: '简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介',
-            price: '面议',
-            status: '已完成',
-            type: '商务合作',
-            location: '北京',
-            imgUrl: '/static/discovery/picture@3x.png'
-          },
-          {
-            title: '案例标题-上海-移动开发',
-            desc: '简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介',
-            price: '面议',
-            status: '已完成',
-            location: '上海',
-            type: '移动开发',
-            imgUrl: '/static/discovery/picture@3x.png'
-          },
-          {
-            title: '案例标题-北京-移动开发',
-            desc: '简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介',
-            price: '面议',
-            status: '已完成',
-            location: '北京',
-            type: '移动开发',
-            imgUrl: '/static/discovery/picture@3x.png'
-          },
-          {
-            title: '案例标题-上海-商务合作',
-            desc: '简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介',
-            price: '面议',
-            status: '已完成',
-            location: '上海',
-            type: '商务合作',
-            imgUrl: '/static/discovery/picture@3x.png'
-          },
-        ],// 项目列表
+        currentCityId:-1,// 当前选择的城市id
+        currentTypeId:-1, // 当前选择的类型（行业）id
+        projectList: [],// 项目列表
+      }
+    },
+    computed:{
+      globalDOMAIN(){
+        return this.$store.state.globalDOMAIN
+      },
+      token(){
+        return sessionStorage.getItem('token')
       }
     },
     methods: {
-      onFilterBarClick(e) { // 点击筛选栏
+      getList(type) {
+        let url
+        switch (type) {
+          case 'city':
+            url = 'Api/Common/getCity'
+            break
+          case 'industry':
+            url = 'Api/Common/getIndustry'
+            break
+        }
+        this.$http.get(`${this.globalDOMAIN}${url}`).then(res => {
+          this.$store.commit('saveBaseData', {baseData: res.body.data.lists, type: type})
+          if (type == 'city') {
+            this.cityList = this.cityList.concat(this.$store.state.cityList)
+          } else {
+            this.typeList = this.typeList.concat(this.$store.state.industryList)
+            this.getSampleList()
+          }
+        })
+      },// 获取城市、行业列表，并存入vuex
+      getSampleList(cityId,typeId){
+        if(cityId == -1){
+          cityId = ''
+        }
+        if (typeId == -1){
+          typeId = ''
+        }
+        this.$http.get(`${this.globalDOMAIN}Api/Common/getSample`,{
+          params:{type:typeId,city:cityId}
+        }).then(res=>{
+//          {
+//            title: '案例标题-北京-商务合作',
+//              desc: '简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介简介',
+//            price: '面议',
+//            status: '已完成',
+//            type: '商务合作',
+//            location: '北京',
+//            imgUrl: '/static/discovery/picture@3x.png'
+//          },
+          let tempList = []
+          for (let item of res.body.data.lists){
+            let tempItem = {
+              id:item.id,
+              title:item.title,
+              desc:item.desc,
+              price:item.price,
+              imgUrl:`${this.globalDOMAIN.slice(0, -11)}${item.img}`
+            }
+            tempItem.type = (this.typeList.find(function(element){
+              return element.id == item.type
+            })).title
+            tempList.push(tempItem)
+          }
+          this.projectList = tempList
+        })
+      },// 获取项目列表
+      onFilterBarClick(e) {
         let id = e.target.dataset.filterItemId
         switch (id) {
           case '0' :
@@ -121,34 +149,44 @@
           default:
             return false
         }
-      },
-      onChoiceClick(e) { // 点击下拉的筛选项列表
-        let id = e.target.dataset.choiceId
-        if (id != undefined) {
-          id = Number(id)
-          this.currentSelectedChoice = id
+      },// 点击筛选栏
+      onChoiceClick(e) {
+        let index = e.target.dataset.index
+        let id = e.target.dataset.id
+        if (index != undefined) {
+          index = Number(index)
+          this.currentSelectedChoice = index
           if (this.currentIndex === 0) {
-            this.choiceSelected[0] = id
+            this.currentCityId = id
+            this.choiceSelected[0] = index
           } else if (this.currentIndex === 1) {
-            this.choiceSelected[1] = id
+            this.currentTypeId = id
+            this.choiceSelected[1] = index
           } else {
             return false
           }
         }
-      }
+        this.getSampleList(this.currentCityId,this.currentTypeId)
+      },// 点击下拉的筛选项列表
+      toDetail(id){
+        this.$router.push({ path: '/projectDetail', query: { id: id }})
+      },// 跳转到详情页
     },
     mounted(){
       // 图片加载过程优化，先显示一个loading的gif，图片加载完再显示实际图片
       // 因此图片这部分不能用scoped，另外给他一个<style>
-      let headImgContainer = document.querySelectorAll('.headImg')
-      headImgContainer.forEach((item,index) => {
-        let largeImg = new Image()
-        largeImg.src = item.dataset.large
-        largeImg.onload = () => {
-          largeImg.classList.add('largeImg')
-          item.appendChild(largeImg)
-        }
-      })
+//      let headImgContainer = document.querySelectorAll('.headImg')
+//      headImgContainer.forEach((item,index) => {
+//        let largeImg = new Image()
+//        largeImg.src = item.dataset.large
+//        largeImg.onload = () => {
+//          largeImg.classList.add('largeImg')
+//          item.appendChild(largeImg)
+//        }
+//      })
+
+      this.getList('city')
+      this.getList('industry')// 在industry的回调中拿sample
     },
     components: {
       Sticky,
@@ -267,6 +305,7 @@
       justify-content :center
       width: px2-2-rem(710)
       height: px2-2-rem(404)
+      overflow :hidden
       .largeImg
         position :absolute
         top: 0

@@ -1,56 +1,73 @@
 <template>
   <div class="taskRelease2Wrapper">
     <v-header title="发布任务"></v-header>
+    <loading v-show="isLoading"></loading>
     <img class="headImg" src="/static/releaseTask/banner@3x.png"/>
     <div class="taskInfoBlock">
-      <div class="taskInfoHeader">任务名称</div>
+      <div class="taskInfoHeader">
+        任务名称<span class="asteroid">*</span>
+        <!--<div v-show="errors.has('taskName')" class="validateNotice is-danger">{{ errors.first('taskName') }}</div>-->
+      </div>
       <div class="taskInfoContent">
-        <textarea :placeholder="taskNamePlaceholder" class="taskInfoName"></textarea>
+        <textarea name="taskName" :placeholder="taskNamePlaceholder" class="taskInfoName"
+                  v-model="taskName" v-validate="'required'"></textarea>
         <div class="count">
-          {{nameWordCount}}/500
+          {{taskName.length}}/{{wordLimit}}
         </div>
       </div>
-      <div class="taskInfoHeader borderTop">任务要求</div>
+      <div class="taskInfoHeader borderTop">
+        任务要求<span class="asteroid">*</span>
+        <!--<div v-show="errors.has('taskDemand')" class="validateNotice is-danger">{{ errors.first('taskDemand') }}</div>-->
+      </div>
       <div class="taskInfoContent">
-        <textarea :placeholder="taskDemandPlaceholder" class="taskInfoDemand"></textarea>
+        <textarea name="taskDemand" :placeholder="taskDemandPlaceholder" class="taskInfoDemand" v-model="taskDemand"
+                  v-validate="'required|min:10'"></textarea>
         <div class="count">
-          {{demandWordCount}}/500
+          {{taskDemand.length}}/{{wordLimit}}
         </div>
       </div>
     </div>
-    <input-select :index="0" @onInputSelectChange="changeValue" title="任务类别" :data="taskType" :isRequire=true placeholder="请选择"></input-select>
-    <input-select :index="1" @onInputSelectChange="changeValue" title="城市选择" :data="cities" :isRequire=false placeholder="请选择"></input-select>
-    <input-select :index="2" @onInputSelectChange="changeValue" title="所需人数" :data="peopleNum" :isRequire=false placeholder="请选择"></input-select>
+    <input-select :index="0" @onInputSelectChange="changeValue" title="任务类别" :data="taskType" :isRequire=true
+                  placeholder="请选择"></input-select>
+    <!--只是用来做表单验证-->
+    <input type="text" style="display: none" id="taskType" name="taskType" v-validate="'required'"/>
+    <!--<div v-show="errors.has('taskType')" class="validateNotice is-danger">{{ errors.first('taskType') }}</div>-->
+    <input-select :index="1" @onInputSelectChange="changeValue" title="城市选择" :data="cities" :isRequire=true
+                  placeholder="请选择"></input-select>
+    <!--只是用来做表单验证-->
+    <input type="text" style="display: none" id="cities" name="cities" v-validate="'required'"/>
     <div class="taskInfoBlock">
-      <div class="taskInfoHeader">工作形式</div>
+      <div class="taskInfoHeader">工作形式<span class="asteroid">*</span></div>
       <div class="taskInfoContent">
         <div class="radio">
-          <input id="asRequest" type="radio" name="taskForm" value="asRequest">
+          <input id="asRequest" type="radio" name="taskForm" value="按需出勤（时间相对灵活）" v-model="taskFormPicked"
+                 v-validate="'required'">
           <label class="taskReleaseRadioLabel" for="asRequest">按需出勤（时间相对灵活）</label>
         </div>
         <div class="radio">
-          <input id="asRoutine" type="radio" name="taskForm" value="asRoutine">
+          <input id="asRoutine" type="radio" name="taskForm" value="固定出勤（按时到岗办公）" v-model="taskFormPicked">
           <label class="taskReleaseRadioLabel" for="asRoutine">固定出勤（按时到岗办公）</label>
         </div>
         <div class="radio">
-          <input id="asDiscuss" type="radio" name="taskForm" value="asDiscuss">
+          <input id="asDiscuss" type="radio" name="taskForm" value="双方协定（协作方式选定）" v-model="taskFormPicked">
           <label class="taskReleaseRadioLabel" for="asDiscuss">双方协定（协作方式选定）</label>
         </div>
       </div>
     </div>
     <div class="taskInfoBlock">
-      <div class="taskInfoHeader">项目周期</div>
+      <div class="taskInfoHeader">项目周期<span class="asteroid">*</span></div>
       <div class="taskInfoContent">
         <div class="radio">
-          <input id="month" type="radio" name="taskPeriod" value="month">
+          <input id="month" type="radio" name="taskPeriod" value="按月计算" v-model="taskPeriodPicked"
+                 v-validate="'required'">
           <label class="taskReleaseRadioLabel" for="month">按月计算</label>
         </div>
         <div class="radio">
-          <input id="day" type="radio" name="taskPeriod" value="day">
+          <input id="day" type="radio" name="taskPeriod" value="按天计算" v-model="taskPeriodPicked">
           <label class="taskReleaseRadioLabel" for="day">按天计算</label>
         </div>
         <div class="radio">
-          <input id="hour" type="radio" name="taskPeriod" value="hour">
+          <input id="hour" type="radio" name="taskPeriod" value="按小时计算" v-model="taskPeriodPicked">
           <label class="taskReleaseRadioLabel" for="hour">按小时计算</label>
         </div>
       </div>
@@ -58,14 +75,12 @@
     <div class="taskInfoBlock">
       <div class="taskInfoHeader">项目总预算</div>
       <div class="taskInputItem">
-        <div class="itemTitle">最低价</div>
-        <input type="text" placeholder="请填写" name="minPrice"/>
-        <!--<div class="block"></div>-->
+        <div class="itemTitle">最低价<span class="asteroid">*</span></div>
+        <input type="text" placeholder="请填写" name="minPrice" v-model="price_min" v-validate="'required|numeric'"/>
       </div>
       <div class="taskInputItem">
-        <div class="itemTitle">最高价</div>
-        <input type="text" placeholder="请填写" name="maxPrice"/>
-        <!--<div class="block"></div>-->
+        <div class="itemTitle">最高价<span class="asteroid">*</span></div>
+        <input type="text" placeholder="请填写" name="maxPrice" v-model="price_max" v-validate="'required|numeric'"/>
       </div>
     </div>
     <div class="releaseTask2Notice">
@@ -96,42 +111,72 @@
   import header from '../../../../components/v-header/v-header'
   import inputSelect from '@/components/inputSelect/inputSelect'
   import Clipboard from 'clipboard'
-  // 放在这里是为了避免多次绑定事件
-  // 这里不需要再弄一个，task主页已经创建一个了
-//  var clipboard2 = new Clipboard('.getWxIdBtn') // 绑定到【点击复制客服微信号】按钮
-//  clipboard2.on('success', (e) => {
-//    console.log(e)
-//    alert('复制成功!')
-//    clipboard2 = {} // 清除实例，避免多次生成
-//  })
-//  clipboard2.on('error', (e) => {
-//    console.log(e)
-//    alert('请选择“拷贝”进行复制!')
-//  })
+  import {Validator} from 'vee-validate';
+  import Loading from '@/components/loading'
+
   export default {
     data() {
       return {
+        isLoading: false,
+        wordLimit: 500,// 输入字数限制
         taskNamePlaceholder: '任务名称尽量直观清晰，包含必要的关键词，可以帮助您受到更多关注。例如：引爆公众号阅读量',
         taskDemandPlaceholder: '请详细描述您的任务要求，需要创客解决什么问题，不得少于10个字',
-        nameWordCount: 0,
-        demandWordCount: 0,
-        taskType:[['巴拉巴拉','喇叭喇叭','拔拔拔']], //任务类别
-        cities:[['全部','北京','上海']],
-        peopleNum:[['1-10人','11-30人','30人以上']],
-        selectValue:[],// 储存弹出选择框选择的值
-        noticeText:'请认真填写任务内容，如发现虚假信息，后果自负。',// 最下方温馨提示文字
+        taskType: [['巴拉巴拉', '喇叭喇叭', '拔拔拔']], //任务类别
+        cities: [['全部', '北京', '上海']],
+        noticeText: '请认真填写任务内容，如发现虚假信息，后果自负。',// 最下方温馨提示文字
         wxId: 'fwfa21', // 客服微信号
         showGetWxModel: false,// 客服微信号弹框显隐
+        // 将要存起来的输入值
+        taskName: '',
+        taskDemand: '',
+        selectValue: [],// 储存弹出选择框选择的值
+        taskFormPicked: '',
+        taskPeriodPicked: '',
+        price_min: '',
+        price_max: '',
       }
     },
-    methods:{
-      // 将选择的数据存入
-      changeValue(msg,index){
-        this.selectValue[index]= msg[0]
-        console.log(this.selectValue)
+    computed: {
+      globalDOMAIN() {
+        return this.$store.state.globalDOMAIN
       },
-      releaseTask2(){
-        alert('任务已发布')
+      token() {
+        return sessionStorage.getItem('token')
+      }
+    },
+    methods: {
+      // 将选择的数据存入
+      changeValue(msg, index) {
+        this.selectValue[index] = msg[0]
+
+        // 仅为表单验证，蠢方法
+        if (index == 0) {
+          document.getElementById('taskType').value = msg[0]
+        } else {
+          document.getElementById('cities').value = msg[0]
+        }
+      },
+      releaseTask2() {
+        let data = {
+          title: this.taskName,
+          desc: this.taskDemand,
+          task_type: this.selectValue[0],
+          city: this.selectValue[1],
+          work_type: this.taskFormPicked,
+          cycle: this.taskPeriodPicked,
+          price_min: this.price_min,
+          price_max: this.price_max
+        }
+        this.$validator.validateAll().then((result) => {
+          // 前端校验
+          if (result) {
+            this.sendTaskReleaseRequest(data)
+          } else {
+            this.$vux.toast.text('请正确填写全部必填项')
+            return false
+          }
+        })
+
       },
       toggleWxId() { // 弹出或隐藏【点击复制客服微信】框
         let y = window.scrollY + 200;
@@ -143,10 +188,24 @@
         if (navigator.userAgent.match(/ipad|ipod|iphone/i)) {
           alert('如果复制失败请手动复制')
         }
+      },
+      sendTaskReleaseRequest(data) {
+        this.$http.post(`${this.globalDOMAIN}Employ/Task/create`, data, {
+          emulateJSON: true,
+          headers: {'token': this.token}
+        }).then((res) => {
+          if (res.body.status) {
+            this.$vux.toast.text('任务发布成功')
+            setTimeout(this.$router.go(-1), 1000)
+          } else {
+            this.$vux.toast.text(`${res.body.msg}`)
+          }
+        })
       }
     },
     components: {
-      'input-select':inputSelect,
+      Loading,
+      'input-select': inputSelect,
       'v-header': header
     }
   }
@@ -162,28 +221,34 @@
     background-color: #f7f9f9
     color: #404040
     padding-bottom: 1.1466rem
+    .validateNotice
+      display: inline-block
+      margin-left: px2-2-rem(30)
+      color: #f0724f
+      font-size: px2-2-rem(26)
+    .asteroid
+      color: #f0724f
     .releaseTask2Notice
-      position :relative
+      position: relative
       padding: 0 0.4rem
-      color :#888888
-      margin-bottom :px2-2-rem(26)
+      color: #888888
+      margin-bottom: px2-2-rem(26)
       font-size: px2-2-rem(26)
       .noticeText
-        padding-right :px2-2-rem(80)
+        padding-right: px2-2-rem(80)
       .service
-        position :absolute
-        right : px2-2-rem(36)
+        position: absolute
+        right: px2-2-rem(36)
         top: px2-2-rem(-10)
-        display :flex
-        align-items :center
-        justify-content :center
-        /*width :px2-2-rem(62)
+        display: flex
+        align-items: center
+        justify-content: center /*width :px2-2-rem(62)
         height :px2-2-rem(62)*/
         img
-          width :px2-2-rem(62)
-          height :px2-2-rem(62)
-          /*border-radius :50%
-          box-shadow: 0px 2px 10px 0px rgba(194,194,194,1);*/
+          width: px2-2-rem(62)
+          height: px2-2-rem(62)
+    /*border-radius :50%
+	box-shadow: 0px 2px 10px 0px rgba(194,194,194,1);*/
     .taskInfoBlock
       padding: 0 0.4rem
       background-color: #ffffff
@@ -191,7 +256,7 @@
       margin: 0.26666rem 0
       font-size: px2-2-rem(32)
     .taskInfoHeader
-      font-size:px2-2-rem(36)
+      font-size: px2-2-rem(36)
       height: 1.12rem
       line-height: 1.12rem
     .taskInputItem
@@ -199,19 +264,19 @@
       flex-direction: row
       align-items: center
       height: 1.146rem
-      font-size : px2-2-rem(26)
+      font-size: px2-2-rem(26)
       border-bottom: 1px solid #e7e7e7
       justify-content: space-between
       input
         flex-grow: 1
         text-align: right
       .block
-        width :px2-2-rem(16)
-        margin-left :px2-2-rem(28)
+        width: px2-2-rem(16)
+        margin-left: px2-2-rem(28)
       ::-webkit-input-placeholder // 修改这里的输入框的placeholder
-        font-size :px2-2-rem(26)
+        font-size: px2-2-rem(26)
     .taskInputItem:last-child
-      border :none
+      border: none
     .taskInfoContent
       margin-bottom: 0.26666rem
     .taskInfoName, .taskInfoDemand
@@ -232,17 +297,17 @@
       height: px2-2-rem(190)
     /*radio 样式*/
     .radio
-      display :flex
+      display: flex
       /*flex-direction:column*/
-      align-items :center
-      height : px2-2-rem(90)
-      border-top : 1px solid #e7e7e7
+      align-items: center
+      height: px2-2-rem(90)
+      border-top: 1px solid #e7e7e7
     .taskReleaseRadioLabel
       flex: 1
       display: inline-block
       position: relative
       padding-left: 0.58666rem
-      font-size :px2-2-rem(26)
+      font-size: px2-2-rem(26)
 
     .taskReleaseRadioLabel:before
       content: ""
@@ -296,7 +361,6 @@
     ::-webkit-input-placeholder // 修改placeholder
       color: #999999
       font-size: 0.4rem
-
 
   .overlay {
     position: fixed;

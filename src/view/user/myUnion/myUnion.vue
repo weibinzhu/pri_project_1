@@ -1,10 +1,11 @@
 <template>
   <div class="myUnionWrapper">
     <v-header title="我的联盟"></v-header>
+    <loading v-show="isLoading"></loading>
     <div class="notice">须知</div>
-    <img class="banner" src="/static/banner_@3x.png"/>
-    <router-link :to="{name:'unionDetail',params:{id:item.id}}" class="unionItemWrapper"
-                 v-for="(item,index) in unionListSorted">
+    <img class="banner" :src="banner"/>
+    <div @click="toDetail(item)" :key="index" class="unionItemWrapper"
+                 v-for="(item,index) in unionList">
       <div class="itemInfoWrapper">
         <div class="info">
           <img class="avatar" :src="item.avatar"/>
@@ -13,24 +14,27 @@
             <p class="peopleNum">成员 {{item.peopleNum}} ></p>
           </div>
         </div>
-        <div class="hasAdd" v-if="item.isIn">已加入</div>
+        <div @click.stop="hasAddClick" class="hasAdd" v-if="item.isIn == 1">已加入</div>
         <!--不知道为什么这里使用prevent不用stop，反正就可以了-->
-        <div @click.prevent="add(index)" class="addBtn" v-else>+联盟</div>
+        <div @click.prevent="add(item.id)" class="addBtn" v-else>+联盟</div>
       </div>
       <div class="desc">
         {{item.desc}}
       </div>
-    </router-link>
+    </div>
   </div>
 </template>
 
 <script type="text/ecmascript-6">
   import header from '@/components/v-header/v-header'
-
+  import loading from '@/components/loading'
   export default {
+    name:'myUnion',
     data() {
       return {
-        unionListUnsorted: [
+        isLoading:false,
+        banner:'',// 广告头图
+        unionList: [
           {
             name: '移动办公1',// 联盟名称
             peopleNum: 50, // 成员人数
@@ -39,56 +43,98 @@
             avatar: '/static/xiake/head@2x.png',
             id: 1,
           },
-          {
-            name: '移动办公2',// 联盟名称
-            peopleNum: 50, // 成员人数
-            desc: '选择自己喜欢的空间，OVE创客里实现和小伙伴们的沟通和协作OVE创客里实现和小伙伴的沟通',// 描述
-            isIn: false,// 是否已经加入
-            avatar: '/static/xiake/head@2x.png',
-            id: 2,
-          },
-          {
-            name: '移动办公3',// 联盟名称
-            peopleNum: 50, // 成员人数
-            desc: '选择自己喜欢的空间，OVE创客里实现和小伙伴们的沟通和协作OVE创客里实现和小伙伴的沟通',// 描述
-            isIn: false,// 是否已经加入
-            avatar: '/static/xiake/head@2x.png',
-            id: 3,
-          },
-          {
-            name: '移动办公4',// 联盟名称
-            peopleNum: 50, // 成员人数
-            desc: '选择自己喜欢的空间，OVE创客里实现和小伙伴们的沟通和协作OVE创客里实现和小伙伴的沟通',// 描述
-            isIn: true,// 是否已经加入
-            avatar: '/static/xiake/head@2x.png',
-            id: 4,
-          },
         ], // 拿回来的原始数据，未排序
-        unionListSorted: [], // 存放已排序的数组
+//        unionListSorted: [], // 存放已排序的数组
       }
     },
     created() {
-      this.sortUnionList(this.unionListUnsorted)
+      this.getUnion()
+      this.getAd()
+//      this.sortUnionList(this.unionListUnsorted)
+    },
+    computed:{
+      globalDOMAIN(){
+        return this.$store.state.globalDOMAIN
+      },
+      token(){
+        return sessionStorage.getItem('token')
+      }
     },
     methods: {
-      sortUnionList(toBeSort) {
-        toBeSort.forEach((item) => {
-          if (item.isIn) {
-            this.unionListSorted.push(item)
-          } else {
-            this.unionListSorted.unshift(item)
+      getAd(){
+        this.$http.get(`${this.globalDOMAIN}Api/Common/getAd`,{params:{type:4}}).then(res => {
+          if(res.body.status){
+            this.banner = `${this.globalDOMAIN.slice(0, -11)}${res.body.data.lists[0].img}`
+          }
+        })
+      },// 获取banner广告图
+      getUnion(){
+        this.$http.post(`${this.globalDOMAIN}Employ/User/getUnion`,{},{
+          headers:{token:this.token},
+          emulateJSON:true
+        }).then(res=>{
+//          unionList: [
+//            {
+//              name: '移动办公1',// 联盟名称
+//              peopleNum: 50, // 成员人数
+//              desc: '选择自己喜欢的空间，OVE创客里实现和小伙伴们的沟通和协作OVE创客里实现和小伙伴的沟通',// 描述
+//              isIn: true,// 是否已经加入
+//              avatar: '/static/xiake/head@2x.png',
+//              id: 1,
+//            },
+//          ],
+          if(res.body.status){
+            let list = res.body.data.lists
+            let tempList = []
+            for (let item of list){
+              let tempItem = {
+                name: item.title,
+                peopleNum: item.member_num,
+                desc: item.desc,
+                isIn: item.is_join, // is_join==1代表已加入，0代表未加入
+                avatar:`${this.globalDOMAIN.slice(0, -11)}${item.img}`,
+                id:item.id
+              }
+              tempList.unshift(tempItem)
+            }
+            this.unionList = tempList
+          }
+        })
+      },// 获取联盟列表
+//      sortUnionList(toBeSort) {
+//        toBeSort.forEach((item) => {
+//          if (item.isIn) {
+//            this.unionListSorted.push(item)
+//          } else {
+//            this.unionListSorted.unshift(item)
+//          }
+//        })
+//      }, // 排序（弃用）
+      add(id) {
+        // 点击加入
+        this.$http.post(`${this.globalDOMAIN}Employ/User/joinUnion`,{union_id:id},{
+          headers:{token:this.token},
+          emulateJSON:true
+        }).then(res=>{
+          if(res.body.status){
+            this.$vux.toast.text('加入成功')
+            this.getUnion()
           }
         })
       },
-      add(index) {
-        // 点击加入
-        // 该项的按钮会变成【已加入】同时放到最下面
-        this.unionListSorted[index].isIn = true
-        let item = this.unionListSorted.splice(index,1)
-        this.unionListSorted.push(item[0])
+      hasAddClick(){
+        this.$vux.toast.text('已加入')
+      },
+      toDetail(item){
+        if(item.isIn == 1){
+          this.$router.push({name:'unionDetail',query:{id:item.id}})
+        }else{
+          this.$vux.toast.text('您还没加入这个联盟')
+        }
       }
     },
     components: {
+      loading,
       'v-header': header
     }
   }

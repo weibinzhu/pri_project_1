@@ -5,6 +5,8 @@
     <header class="employerHeader">
       <img class="avatar" src="./avatar@3x.png"/>
       <div class="name">{{employerName}}
+        <!--<tag :tagClass="'tagBlueWhite'"></tag>-->
+        <!--这里的tag排列方式有点不一样，暂时不用组件-->
         <div class="certification" v-if="isCertificated">已认证</div>
       </div>
       <div class="tagWrapper">
@@ -50,7 +52,7 @@
   import header from '../../../components/v-header/v-header'
   import stars from '@/components/stars/stars'
   import taskItem from '@/view/task/taskItem/taskItem'
-
+  import Tag from '@/components/tag'
   export default {
     data() {
       return {
@@ -97,6 +99,7 @@
       }
     },
     components: {
+      Tag,
       stars,
       "taskitem": taskItem,
       'v-header': header
